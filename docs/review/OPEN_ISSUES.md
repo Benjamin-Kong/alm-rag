@@ -40,3 +40,25 @@
 | OI-024 | Private GitHub repository 소유자, 원격 URL, 접근권한 및 생성/Push 별도 확인 필요 | User / GitHub 연결 | NOT CONFIGURED |
 | OI-025 | 로컬 사용자 Codex CLI 버전과 6개 role spawn/Worktree 충돌/approval sandbox 테스트 | 사용자 실제 실행 환경, M1 전 | NOT VERIFIED |
 | OI-026 | 기준선 ZIP/로컬 Git Commit은 생성됐지만 GitHub 원격 동기화와 Notion 자동 발행은 미구현 | M1/M5, 별도 승인 | NOT IMPLEMENTED |
+
+## 로컬 개발 환경 사전 검증 추기 — 2026-10-19
+
+상세 증거: [CODEX_PREFLIGHT_REPORT.md](CODEX_PREFLIGHT_REPORT.md). 기존 컨테이너 관찰과 현재 로컬 상태를 구분한다.
+
+| ID | 관찰 / 남은 조치 | 상태 |
+|---|---|---|
+| OI-027 | 기본 python3=3.9.6에서 tomllib 오류(exit 1); 설치된 Python 3.12.12에서도 PyYAML 누락(exit 2). 검증 환경 준비 후 Baseline 재실행 필요 | FAIL; 전체 정적 Baseline NOT VERIFIED |
+| OI-028 | Docker/Compose PATH 미발견, Docker.app 없음. 로컬 Node 25와 초안 Node 22 기준 차이. 도구 경로/버전 정리 필요 | Docker 가용성 FAIL; Build/Boot NOT VERIFIED |
+| OI-017 / OI-022 / OI-025 | CLI 0.163.0, multi_agent=true, 6개 역할 TOML/등록 PASS. qa spawn/지시 전달 PASS. 다른 5개 역할 실행, 동시 제한, Worktree 경합 및 포괄적 Sandbox 실효성은 미검증 | PARTIAL / NOT VERIFIED |
+| OI-008 / OI-024 | 현재 origin URL은 설정됨. 로컬 origin/main과 HEAD 동일. 원격 최신성/비공개 여부/접근권한/Push 별도 승인은 확인하지 않음 | 설정 존재 PASS; 원격 검증 NOT VERIFIED |
+| OI-026 | 로컬 원격 추적 참조 존재만으로 원격 동기화 성공을 재판정하지 않음. Notion 자동 발행 미구현 상태 유지 | NOT VERIFIED / NOT IMPLEMENTED |
+
+### 환경 보완 재검증 — 동일 날짜, 최초 결과를 대체하는 최신 상태
+
+| ID | 후속 증거 | 최신 상태 |
+|---|---|---|
+| OI-027 | Python 3.12.12 `.venv` + PyYAML 6.0.3 준비. 활성화 후 동일 Baseline 스크립트 exit 0, DOC_STATIC_PASS | RESOLVED for documented environment; 시스템 Python 3.9 유지 |
+| OI-028 | Node 22.23.3 설치/세션 PATH 선택. Docker CLI/Compose/Colima 설치, Compose config exit 0, 전용 VM의 hello-world exit 0 | 도구/단일 컨테이너 PASS; 앱 Build/Boot NOT VERIFIED |
+| OI-017 / OI-022 / OI-025 | 6개 역할 모두 실제 spawn 및 역할 지시 전달 확인 | 역할 smoke PASS; 동시 상한/Worktree 경합/포괄적 Sandbox 강제성 NOT VERIFIED |
+
+M1 착수 승인, 원격 Push 승인, Legacy 원문 및 외부 통합 관련 미결사항은 해소된 것으로 간주하지 않는다.

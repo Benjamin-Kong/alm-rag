@@ -1,0 +1,2 @@
+# Documentation baseline validation only; not application dependencies.
+PyYAML==6.0.3
