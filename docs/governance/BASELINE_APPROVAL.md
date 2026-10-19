@@ -15,3 +15,7 @@
 
 ## Human Gate
 After Codex setup and remote repository configuration, user must explicitly instruct `Start M1` before developers or agents write application code. M1 QA approval will be a separate decision before M2.
+
+## Subsequent M1 start authorization — 2026-10-19
+
+The user instructed “커밋반영하고 착수해” after environment remediation. This authorizes the local preparation commit and M1 implementation. It does not approve M1 completion, M2, GitHub Push, deployment or live ALM access. See `docs/milestones/M1/PLAN.md`.

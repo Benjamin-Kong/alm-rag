@@ -1,6 +1,6 @@
 # M1 — Foundation & Database
 
-Status: PLANNED — NOT STARTED
+Status: IN_PROGRESS — user explicitly authorized M1 on 2026-10-19 (“커밋반영하고 착수해”). See docs/milestones/M1/PLAN.md. M2 and remote Push remain gated.
 
 ## Goal
 공통 데이터 모델과 SQLite 마이그레이션, FastAPI CLI, 인증/Secrets, 영속 Worker Queue, Ollama/Qdrant 연결 스텁, Compose/Native 스켈레톤
