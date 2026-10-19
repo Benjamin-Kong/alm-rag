@@ -1,0 +1,14 @@
+{
+  "schema_version": "0.1",
+  "note": "EXAMPLE ONLY — all IDs and labels here are synthetic; replace with verified ALM golden cases",
+  "cases": [
+    {
+      "case_id": "EVAL-001",
+      "project_uid": "cb-prod:project-42",
+      "query": "SOME/IP-SD UDP 30490",
+      "relevant_item_uids": ["cb-prod:project-42:item-1001"],
+      "tags": ["exact_keyword", "port_number"],
+      "review_status": "synthetic_not_verified"
+    }
+  ]
+}

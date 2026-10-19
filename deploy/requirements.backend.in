@@ -1,0 +1,17 @@
+# DESIGN-REVIEW dependency candidates; no lock yet. M1 must pin and hash.
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+sqlalchemy
+alembic
+httpx
+tenacity
+anyio
+cryptography
+argon2-cffi
+lxml
+beautifulsoup4
+qdrant-client
+structlog
+typer

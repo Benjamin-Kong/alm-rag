@@ -1,0 +1,233 @@
+{
+  "package": "ALM RAG Git-ready Codex Docs Baseline",
+  "version": "0.3-conditional-approved-git-setup",
+  "generated_date": "2026-10-19",
+  "status": "CONDITIONALLY_APPROVED_PREPARATION_ONLY_M1_NOT_STARTED",
+  "count_files_excluding_manifest": 56,
+  "files": [
+    {
+      "path": ".codex/agents/alm_collector.toml",
+      "sha256": "8a6e1835b33aef557b450d4b8bc92f1c854099568fb4b76732169019e995662a"
+    },
+    {
+      "path": ".codex/agents/architect.toml",
+      "sha256": "c22187a21b6289a79615c22869deadd0122c514164f0baf92d1777db30b437bd"
+    },
+    {
+      "path": ".codex/agents/frontend.toml",
+      "sha256": "9a82ce8b64142f9cd039af7c57618c81a651fe59e639892c11f01be41b80af51"
+    },
+    {
+      "path": ".codex/agents/qa.toml",
+      "sha256": "5730ca42821bb5ab648b05f40ba874862f9adfd36f996409c9f43b57d8b8917a"
+    },
+    {
+      "path": ".codex/agents/rag_engineer.toml",
+      "sha256": "dd7902385b3ec36e20a03b3c0549599d309699b8e8ea2a302a8b412d08e512c5"
+    },
+    {
+      "path": ".codex/agents/requirements.toml",
+      "sha256": "eedb8d2b168839531f49b783609d02e0a96b36083c106793176d68e0a3146f43"
+    },
+    {
+      "path": ".codex/config.toml",
+      "sha256": "924c7d9a5f4135f3b13349303f93aa71c76cdadd3efe76d8531cb91ddb4818e4"
+    },
+    {
+      "path": ".dockerignore",
+      "sha256": "4a5d5ebc5e13106e4d627d1d6125bf33f0156428c8f2b3e507783e8e2aae6e52"
+    },
+    {
+      "path": ".env.example",
+      "sha256": "e61ac21259f37544fdb73fd22cee9fa3b3c7b79849d0c2627aa8035437509808"
+    },
+    {
+      "path": ".gitignore",
+      "sha256": "a8f04741e8902b016bf5a83e266689b670d7b8275dca4ab24c2ab191e04744b2"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "ecc9ca5f042f57c68ea086c348f374b42c285a8a284b0d78ed82465e53d89eac"
+    },
+    {
+      "path": "PROMPTS.md",
+      "sha256": "fd7c788f95fb730d3dfdad6bef723dfbfc22665fd56c93a1c82b22d067e385a7"
+    },
+    {
+      "path": "README.md",
+      "sha256": "e9ba19d217b4932701a257d05ed8cb3211e1bf92560830597f32ddce4d76cbb4"
+    },
+    {
+      "path": "deploy/Dockerfile.backend",
+      "sha256": "b191848eb7060aa4043cb939e8cd1eb3a70ef5445bc379f149c8f2ea7726cbde"
+    },
+    {
+      "path": "deploy/Dockerfile.frontend",
+      "sha256": "dd5ed3ef584d3c2934056b75568174f0d717fe26f7c3ce4775a0399ac95c9e2d"
+    },
+    {
+      "path": "deploy/compose.yaml",
+      "sha256": "06baf1e6e645dc6e2f31b892f0d307177ef38100c509fd52995bafc4941e8468"
+    },
+    {
+      "path": "deploy/requirements.backend.in",
+      "sha256": "23f3bcfd76b75a9c1d0f6ca6ce389aa4ca65da1d3ec415a9a8a025d8da4ba416"
+    },
+    {
+      "path": "docs/api/API_COVERAGE.md",
+      "sha256": "0e99e8f361e6ff5968a517cbd018828cf8006fe205f3739a3ea714ee853ae5f4"
+    },
+    {
+      "path": "docs/api/openapi.yaml",
+      "sha256": "a4a07bbbdf64dbbe2cba694084d64b05aae5a47e5e09209c0fb388dc32a17a0b"
+    },
+    {
+      "path": "docs/architecture/DATA_MODEL.md",
+      "sha256": "67bd44c3785f96a36ca33e71314d35804f4977ad3a9200dd5b1d31d8701aad09"
+    },
+    {
+      "path": "docs/architecture/DEPLOYMENT_AND_DEPENDENCIES.md",
+      "sha256": "30b5f03105793402998777b9f741e6197eda03255d5f30428944a2be40b7dee5"
+    },
+    {
+      "path": "docs/architecture/INTERFACES.md",
+      "sha256": "7d008da13f5cdf4151bdf93876a98a0026abee77f0207728e01e63a246af1ce7"
+    },
+    {
+      "path": "docs/architecture/SAD.md",
+      "sha256": "753b087da5e40fa78a7445e5a9909af18f21e4ba4caa646e87f644690f192b80"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-001-sqlite-qdrant.md",
+      "sha256": "707d82ab2c78c51b89c4b74206712b81933d2280d82b092c2922a34199bf0c66"
+    },
+    {
+      "path": "docs/architecture/adr/ADR-002-project-scope.md",
+      "sha256": "28b3821988cc09c00d9a0c462d16974c9106c01f165a93b09b17ad0781c49421"
+    },
+    {
+      "path": "docs/design/ALM_ONBOARDING.md",
+      "sha256": "88ca7fa83dc6ba4964cf5bc1b43c999fd34cd6b5ae95af0693dda6dbcc6affbc"
+    },
+    {
+      "path": "docs/design/API_THROTTLING_AND_RETRY.md",
+      "sha256": "d8808eca7c5d1e55d4595b85997f7c5416e300b54ff0ceeca51958dc1fa95faf"
+    },
+    {
+      "path": "docs/design/CHUNKING_POLICY.md",
+      "sha256": "0360a601fd087a31f645139cd9625d745d7821df44d6009af3ab6022efb175ed"
+    },
+    {
+      "path": "docs/design/CONTENT_PROCESSING.md",
+      "sha256": "96f4af1ddc79b63a126ef1b493b14577c208171cb79aaa69fe20288dfcb8eecc"
+    },
+    {
+      "path": "docs/design/FAIL_SAFE_AND_REPLAY.md",
+      "sha256": "5efc820610ffe71d29cf3066f3a5a01cd972a7d1bab4fc6f529d6776d3f2e0df"
+    },
+    {
+      "path": "docs/design/TDD_POLICY.md",
+      "sha256": "bc339ce76e8e59dd7a6fe1c8ef92070bd80e3425b6faa14ed9ec0e2187cae231"
+    },
+    {
+      "path": "docs/governance/BASELINE_APPROVAL.md",
+      "sha256": "0e95227ee8722df71a791125d2520df49a3cc7bd2840474013192a699c39be4e"
+    },
+    {
+      "path": "docs/governance/CODEX_PREFLIGHT.md",
+      "sha256": "6fe29a772312359f52a147ea9f7c12d2b27a3f9dd76e8723a11e615ef0d7ed69"
+    },
+    {
+      "path": "docs/governance/GITHUB_SETUP.md",
+      "sha256": "f3ac3fd7a4f327dcd3eab307f41bda88d3050e34cdd109e1e4af108ece976b7c"
+    },
+    {
+      "path": "docs/governance/PREPARATION_STATUS.md",
+      "sha256": "8c681189e06a02a8c1a4500ec06b10e0401ab7cd11bc8b7f85778cefff7a67d3"
+    },
+    {
+      "path": "docs/requirements/CHANGE_LOG_V0.2.md",
+      "sha256": "cf33614901d57b11fc0828c3ce0322a10e542d089bacf6da32f1635d39e0027a"
+    },
+    {
+      "path": "docs/requirements/DECISIONS.md",
+      "sha256": "8bfa9430b5ba0b1dbf9b51332dc259b2de7abb44540583427311b87a8c0b8939"
+    },
+    {
+      "path": "docs/requirements/DECISION_COVERAGE.csv",
+      "sha256": "079c2df1676bf8547c893cdf335273c1754fdacd5ea5a17235616f9265e5fb78"
+    },
+    {
+      "path": "docs/requirements/LEGACY_REQ_TRACEABILITY.csv",
+      "sha256": "f0f0e3845ab22647a6f87ec4564ca78ec3f426eb4effe6fd41eebb4e2a51351f"
+    },
+    {
+      "path": "docs/requirements/SRS.md",
+      "sha256": "631a73b57752a521b68355517bbf3c5696da627f77bf61507e5cf07faddd120c"
+    },
+    {
+      "path": "docs/requirements/TRACEABILITY.csv",
+      "sha256": "6b79df0e2899ed6d0973279d7113446ad7bad57f2f4a1e017fe888e6289d5b33"
+    },
+    {
+      "path": "docs/review/BASELINE_AUDIT.md",
+      "sha256": "781d5c6821c962663169b24368ab443d3d6c0b068bcaa7a2759fda2bd50dcd06"
+    },
+    {
+      "path": "docs/review/OPEN_ISSUES.md",
+      "sha256": "231a83567b6d00572f9a002c2b60719d8cbd4c633b2ccd5425e587937acf2569"
+    },
+    {
+      "path": "docs/review/READINESS_REVIEW.md",
+      "sha256": "314e94dbf04d3966d873e794a11fc4a78d2ef956e469497cff6c7f7de9a07a86"
+    },
+    {
+      "path": "docs/testing/EVALUATION_DATASET.example.json",
+      "sha256": "8b969a58b429dd70c8e506663b72d7ac0b1ef59256c416d25b2ed6ca67bd47c7"
+    },
+    {
+      "path": "docs/testing/TEST_CASES.md",
+      "sha256": "90599a64d3787f2ed5c3579bb968c31503d0ac5ba621ed28261b47d651096491"
+    },
+    {
+      "path": "docs/testing/TEST_PLAN.md",
+      "sha256": "ed5ac4b61765c9b23ffeb8adc1fcb532fca9312ccec7189f202a968ead3b22ea"
+    },
+    {
+      "path": "plans/M1_Foundation_AND_Database.md",
+      "sha256": "6999ab6823ff968408e759f6cf118718effaccec5d67c8c7d2b5e00dfdb8dce3"
+    },
+    {
+      "path": "plans/M2_ALM_Collectors.md",
+      "sha256": "c9a8d6b79ade6aac0ed065a965041c2d19cf2e83c303ebac78a8cfb784507af0"
+    },
+    {
+      "path": "plans/M3_Content_Processing.md",
+      "sha256": "05644098d9384cdbe66e54dff17919ea800fbbb2fcbb9209fc95eae5f983e4dd"
+    },
+    {
+      "path": "plans/M4_Hybrid_Retrieval.md",
+      "sha256": "e9451a94995455cdc6fad120719ad08e4872f1d3ed2ed00daab4710b4db52bb6"
+    },
+    {
+      "path": "plans/M5_Web_UI_AND_Operations.md",
+      "sha256": "6822c94ca0775e7d55e0bfc547d54615e8182a0bd6b57cbe3b11f369e6df7663"
+    },
+    {
+      "path": "plans/M6_Integration_AND_Quality.md",
+      "sha256": "d5935b639792efe8089ced5f8bcca8965a90d757ed76f53858012bda6bf6a370"
+    },
+    {
+      "path": "plans/MASTER_PLAN.md",
+      "sha256": "5fd9079aafd0ab7247508ddd43ec4dea823b8b11340835d72fb12d79baa2515d"
+    },
+    {
+      "path": "templates/MILESTONE_COMPLETION.md",
+      "sha256": "4c25ac7bc928f6db9c5bad2e500dfe567b583873201f1bb3764f13fcab4706ff"
+    },
+    {
+      "path": "tools/validate_baseline.py",
+      "sha256": "b652ea5b751fd1b3ba22061fca5405d0a88b59c7826848700e68a43f2c207f08"
+    }
+  ]
+}

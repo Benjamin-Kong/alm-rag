@@ -1,0 +1,16 @@
+# REVIEW SCAFFOLD: installs candidate packages; NOT runnable until source exists.
+# M1 must replace requirements.backend.in with pinned, hash-verified runtime lock.
+FROM python:3.12-slim AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates libxml2 libxslt1.1 \
+    && rm -rf /var/lib/apt/lists/*
+COPY deploy/requirements.backend.in /tmp/requirements.backend.in
+RUN python -m pip install --no-cache-dir -r /tmp/requirements.backend.in
+RUN groupadd --system almrag && useradd --system --gid almrag --home /app almrag \
+    && mkdir -p /app/data && chown -R almrag:almrag /app/data
+# M1: COPY src/ /app/src/; set PYTHONPATH or install the app wheel with --no-deps.
+# M1: healthcheck via HTTP /healthz (not installed at present)
+USER almrag
+EXPOSE 8000
+CMD ["python", "-m", "almrag.api"]

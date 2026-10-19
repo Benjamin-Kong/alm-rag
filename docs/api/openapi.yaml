@@ -1,0 +1,1198 @@
+openapi: 3.0.3
+info:
+  title: ALM Unified Retrieval API (DRAFT)
+  version: 0.3.0-review-candidate
+  description: Proposed contract only. Unimplemented; all endpoints subject to code/contract tests and explicit
+    baseline approval. Required permissions are specified by x-required-scope.
+servers:
+- url: /api/v1
+security:
+- ApiKeyAuth: []
+- AdminSession: []
+paths:
+  /search:
+    post:
+      operationId: searchItems
+      summary: Project-scoped, item-grouped hybrid search
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SearchRequest'
+      responses:
+        '200':
+          description: Distinct matched Items
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+        '400':
+          description: Invalid request or missing project scope
+        '401':
+          description: Invalid API key
+        '403':
+          description: Unauthorized project scope
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      x-required-scope: search
+  /projects/{project_uid}/sync:
+    post:
+      operationId: startSync
+      summary: Queue project sync job
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Sync job queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      x-required-scope: project_manage
+  /jobs/{job_id}:
+    get:
+      operationId: getJob
+      summary: Read job progress and checkpoint status
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Job state and metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobStatus'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+      x-required-scope: project_read
+  /alm-instances:
+    post:
+      operationId: registerAlmInstance
+      summary: Register Codebeamer/Polarion server without inline secrets
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlmInstanceCreate'
+      responses:
+        '201':
+          description: Server registered; not yet probed
+        '400':
+          description: Invalid URL/type/profile
+        '403':
+          description: Admin authorization required
+        '401':
+          description: Authentication required
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      x-required-scope: system_admin
+  /alm-instances/{instance_uid}/probe:
+    post:
+      operationId: probeAlmInstance
+      summary: Read-only connection and capability test
+      parameters:
+      - name: instance_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Capability profile and auth outcome
+        '503':
+          description: Server unavailable or rate-limited
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      x-required-scope: system_admin
+  /alm-instances/{instance_uid}/projects:
+    get:
+      operationId: discoverAlmProjects
+      summary: Source-specific project discovery
+      parameters:
+      - name: instance_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Visible projects and source IDs
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+      x-required-scope: system_admin
+  /alm-instances/{instance_uid}/projects/{source_project_id}/scopes:
+    get:
+      operationId: discoverCollectionScopes
+      summary: Tracker IDs for CB or Work Item Type IDs for Polarion
+      parameters:
+      - name: instance_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: source_project_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Discriminated source-specific collectable scope catalog
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+      x-required-scope: system_admin
+  /projects/{project_uid}/collection-config:
+    put:
+      operationId: configureCollectionScope
+      summary: Configure and validate ALL/SELECTED source-specific scope
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CollectionScope'
+      responses:
+        '200':
+          description: Validated collection policy saved
+        '422':
+          description: Scope kind mismatched with ALM source type
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      x-required-scope: project_manage
+  /projects/{project_uid}/preflight:
+    post:
+      operationId: preflightProject
+      summary: Preview server, scope, fields, estimated size, throttling before job
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Preflight readiness and estimate
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      x-required-scope: project_manage
+  /alm-instances/{instance_uid}/rate-policy:
+    put:
+      operationId: setServerRateLimit
+      summary: Update server-wide rate and backoff policy
+      parameters:
+      - name: instance_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlmHttpPolicy'
+      responses:
+        '200':
+          description: Rate policy saved and versioned
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      x-required-scope: system_admin
+  /jobs/{job_id}/failed-items:
+    get:
+      operationId: listFailedItems
+      summary: Stage-coded failed items and retry eligibility
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Failed items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FailedItem'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+      x-required-scope: project_read
+  /jobs/{job_id}/failed-items/{item_uid}/retry:
+    post:
+      operationId: retryFailedItem
+      summary: Enqueue stage-aware idempotent retry for one Item
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: item_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetryItemRequest'
+      responses:
+        '202':
+          description: Replay queued
+        '409':
+          description: Item/stage no longer eligible
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+      x-required-scope: project_manage
+  /jobs/{job_id}/failed-items/retry:
+    post:
+      operationId: retryFailedItems
+      summary: Queue retry of eligible failures from a job
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Retry job queued
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      x-required-scope: project_manage
+  /jobs/{job_id}/resume:
+    post:
+      operationId: resumeJob
+      summary: Resume a recoverable paused job with checkpoint
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Resume accepted
+        '409':
+          description: Blocked until issue resolved
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+      x-required-scope: project_manage
+  /auth/login:
+    post:
+      operationId: adminLogin
+      summary: Admin session login; session cookie is HttpOnly Secure SameSite, CSRF-protected
+      x-required-scope: public
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminLoginRequest'
+      responses:
+        '204':
+          description: Session established, no token echoed in response
+        '401':
+          description: Invalid credentials
+      security: []
+  /auth/logout:
+    post:
+      operationId: adminLogout
+      summary: Revoke current admin session
+      x-required-scope: authenticated
+      responses:
+        '204':
+          description: Session ended
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+  /api-keys:
+    post:
+      operationId: createApiKey
+      summary: Generate project-scoped API key, raw value returned once
+      x-required-scope: system_admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApiKeyCreateRequest'
+      responses:
+        '201':
+          description: One-time secret (never persisted in plaintext)
+        '403':
+          description: Admin role required
+        '401':
+          description: Authentication required
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+  /api-keys/{key_id}:
+    delete:
+      operationId: revokeApiKey
+      summary: Revoke API key
+      x-required-scope: system_admin
+      parameters:
+      - name: key_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Key revoked
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+  /projects:
+    get:
+      operationId: listProjects
+      summary: List only permitted projects
+      x-required-scope: project_read
+      responses:
+        '200':
+          description: Authorized project catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectInfo'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /projects/{project_uid}/jobs:
+    post:
+      operationId: startProjectStageJob
+      summary: Queue specified isolated stage or full pipeline
+      x-required-scope: project_manage
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PipelineJobRequest'
+      responses:
+        '202':
+          description: Job queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+  /jobs:
+    get:
+      operationId: listJobs
+      summary: List jobs filtered by caller project ACL
+      x-required-scope: project_read
+      responses:
+        '200':
+          description: Authorized job summaries
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /projects/{project_uid}/items:
+    get:
+      operationId: listProjectItems
+      summary: Browse Items metadata including revision and failure state
+      x-required-scope: project_read
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Paginated project Item results
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /items/{item_uid}:
+    get:
+      operationId: getItemDetail
+      summary: View full Item raw/normalized fields, subject to project ACL
+      x-required-scope: project_read
+      parameters:
+      - name: item_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Item detail; HTML must be sanitized by client
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /items/{item_uid}/revisions:
+    get:
+      operationId: getItemRevisions
+      summary: View captured immutable revisions
+      x-required-scope: project_read
+      parameters:
+      - name: item_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Revision history
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /items/{item_uid}/chunks:
+    get:
+      operationId: getItemChunks
+      summary: Inspect derived chunk text, hash, token count and publication status
+      x-required-scope: project_read
+      parameters:
+      - name: item_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Authorized chunk list
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /projects/{project_uid}/integrity:
+    post:
+      operationId: startIntegrityReport
+      summary: Run provenance/completeness/index consistency check
+      x-required-scope: project_manage
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Integrity job queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+  /projects/{project_uid}/evaluations:
+    post:
+      operationId: startRetrievalEvaluation
+      summary: Run retrieval gold-set comparison
+      x-required-scope: project_manage
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvaluationRequest'
+      responses:
+        '202':
+          description: Evaluation queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+  /projects/{project_uid}/export:
+    post:
+      operationId: exportProject
+      summary: Export raw and normalized Items; never include secrets or embeddings
+      x-required-scope: project_manage
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ArtifactJobRequest'
+      responses:
+        '202':
+          description: Export job queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+  /projects/{project_uid}/import:
+    post:
+      operationId: importProject
+      summary: Import staged package by server-side reference and conflict-safe merge
+      x-required-scope: project_manage
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectImportRequest'
+      responses:
+        '202':
+          description: Import job queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+  /backups:
+    post:
+      operationId: createBackup
+      summary: Create consistent SQLite/Qdrant/attachment backup
+      x-required-scope: system_admin
+      responses:
+        '202':
+          description: Backup job queued
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+    get:
+      operationId: listBackups
+      summary: List backup manifests and restore compatibility
+      x-required-scope: system_admin
+      responses:
+        '200':
+          description: Backup manifests
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /backups/{backup_id}/restore:
+    post:
+      operationId: restoreBackup
+      summary: Restore only with explicit administrative confirmation and backup checks
+      x-required-scope: system_admin
+      parameters:
+      - name: backup_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '202':
+          description: Restore job queued after separate confirmation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobAccepted'
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+        '409':
+          description: 'Conflict: revision, stage, approval or idempotency check'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackupRestoreRequest'
+  /audit-events:
+    get:
+      operationId: listAuditEvents
+      summary: Review redacted administrative audit events
+      x-required-scope: system_admin
+      responses:
+        '200':
+          description: Paginated audit events
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /jobs/{job_id}/events:
+    get:
+      operationId: listJobEvents
+      summary: Query redacted event/log trace for a job
+      x-required-scope: project_read
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Redacted job events
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+  /healthz:
+    get:
+      operationId: healthz
+      summary: Liveness endpoint no sensitive status
+      x-required-scope: public
+      responses:
+        '200':
+          description: Alive
+      security: []
+  /readyz:
+    get:
+      operationId: readyz
+      summary: Readiness without secret leakage
+      x-required-scope: system_admin
+      responses:
+        '200':
+          description: Ready
+        '503':
+          description: Dependency unavailable
+        '401':
+          description: Authentication required
+        '403':
+          description: Forbidden by scope/project ACL
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    AdminSession:
+      type: apiKey
+      in: cookie
+      name: almrag_session
+      description: HttpOnly Secure SameSite session; unsafe methods also require CSRF token.
+  schemas:
+    SearchRequest:
+      type: object
+      required:
+      - query
+      - project_uids
+      properties:
+        query:
+          type: string
+          minLength: 1
+        project_uids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+          description: Required non-empty list; the API rejects absent, empty, unauthorized or cross-project scopes.
+        top_k:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 10
+        response:
+          $ref: '#/components/schemas/ResponseOptions'
+    ResponseOptions:
+      type: object
+      properties:
+        include_full_item:
+          type: boolean
+          default: false
+        include_matched_chunks:
+          type: boolean
+          default: true
+        include_chunk_text:
+          type: boolean
+          default: false
+        max_chunks_per_item:
+          type: integer
+          minimum: 0
+          maximum: 100
+          default: 2
+        include_relations:
+          type: boolean
+          default: false
+        include_attachments:
+          type: boolean
+          default: false
+    SearchResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        results:
+          type: array
+          items:
+            type: object
+            required:
+            - item_uid
+            - project_uid
+            - title
+            - score
+            properties:
+              item_uid:
+                type: string
+              project_uid:
+                type: string
+              title:
+                type: string
+              source_url:
+                type: string
+                format: uri
+              score:
+                type: number
+                description: RRF rank fusion score, not a probability or calibrated confidence.
+              matched_chunks:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+              item:
+                type: object
+                additionalProperties: true
+      required:
+      - results
+    AlmInstanceCreate:
+      type: object
+      required:
+      - source_type
+      - display_name
+      - base_url
+      - auth_ref
+      properties:
+        source_type:
+          type: string
+          enum:
+          - codebeamer
+          - polarion
+        display_name:
+          type: string
+        base_url:
+          type: string
+          format: uri
+        api_profile:
+          type: string
+        auth_ref:
+          type: string
+          description: Reference only, NEVER raw secret
+        http_policy:
+          $ref: '#/components/schemas/AlmHttpPolicy'
+    AlmHttpPolicy:
+      type: object
+      properties:
+        requests_per_second:
+          type: number
+          exclusiveMinimum: 0
+          default: 2
+        burst:
+          type: integer
+          minimum: 1
+          default: 2
+        max_inflight:
+          type: integer
+          minimum: 1
+          default: 2
+        min_interval_ms:
+          type: integer
+          minimum: 0
+          default: 200
+        timeout_seconds:
+          type: number
+          minimum: 1
+          default: 30
+        max_attempts:
+          type: integer
+          minimum: 1
+          default: 5
+    CollectionScope:
+      type: object
+      required:
+      - selection_mode
+      - scope_kind
+      properties:
+        selection_mode:
+          type: string
+          enum:
+          - ALL
+          - SELECTED
+        scope_kind:
+          type: string
+          enum:
+          - TRACKER
+          - WORK_ITEM_TYPE
+        source_scope_ids:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        project_uid:
+          type: string
+        embedding_fields:
+          type: array
+          items:
+            type: string
+      description: Validator must require >=1 source_scope_ids when selection_mode=SELECTED and enforce scope_kind
+        matching ALM source_type; cross-property constraints enforced server-side.
+    FailedItem:
+      type: object
+      properties:
+        job_id:
+          type: string
+        item_uid:
+          type: string
+        failed_stage:
+          type: string
+          enum:
+          - COLLECT
+          - PROCESS
+          - EMBED
+          - INDEX
+          - ATTACHMENT
+        error_code:
+          type: string
+        retryable:
+          type: boolean
+        attempts:
+          type: integer
+        trace_id:
+          type: string
+        last_seen_at:
+          type: string
+          format: date-time
+    RetryItemRequest:
+      type: object
+      properties:
+        from_stage:
+          type: string
+          enum:
+          - FAILED_STAGE
+          - COLLECT
+          - PROCESS
+          - EMBED
+          - INDEX
+          default: FAILED_STAGE
+        force_recollect:
+          type: boolean
+          default: false
+        expected_revision_uid:
+          type: string
+    JobStatus:
+      type: object
+      properties:
+        job_id:
+          type: string
+        state:
+          type: string
+          enum:
+          - QUEUED
+          - RUNNING
+          - SUCCEEDED
+          - COMPLETED_WITH_ERRORS
+          - RETRY_WAIT
+          - PAUSED
+          - BLOCKED
+          - FAILED
+          - CANCELLED
+        processed_items:
+          type: integer
+        failed_items:
+          type: integer
+        skipped_items:
+          type: integer
+        total_items:
+          type: integer
+        last_error_code:
+          type: string
+      required:
+      - job_id
+      - state
+    ApiError:
+      type: object
+      required:
+      - code
+      - message
+      - trace_id
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        trace_id:
+          type: string
+        job_id:
+          type: string
+        retryable:
+          type: boolean
+    ProjectInfo:
+      type: object
+      required:
+      - project_uid
+      - alm_instance_uid
+      - source_project_id
+      - name
+      properties:
+        project_uid:
+          type: string
+        alm_instance_uid:
+          type: string
+        source_project_id:
+          type: string
+        name:
+          type: string
+        selection_mode:
+          type: string
+          enum:
+          - ALL
+          - SELECTED
+    AdminLoginRequest:
+      type: object
+      required:
+      - username
+      - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+          format: password
+    ApiKeyCreateRequest:
+      type: object
+      required:
+      - name
+      - project_uids
+      - permissions
+      properties:
+        name:
+          type: string
+        project_uids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        permissions:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            enum:
+            - search
+            - project_read
+            - project_manage
+            - system_admin
+    PipelineJobRequest:
+      type: object
+      required:
+      - stage
+      properties:
+        stage:
+          type: string
+          enum:
+          - SYNC
+          - COLLECT
+          - PROCESS
+          - EMBED
+          - INDEX
+          - REBUILD_INDEX
+        force:
+          type: boolean
+          default: false
+        config_revision:
+          type: string
+    JobAccepted:
+      type: object
+      required:
+      - job_id
+      - state
+      properties:
+        job_id:
+          type: string
+        state:
+          type: string
+          enum:
+          - QUEUED
+    ArtifactJobRequest:
+      type: object
+      properties:
+        include_attachments:
+          type: boolean
+          default: true
+        schema_version:
+          type: string
+        retention_policy:
+          type: string
+        import_mode:
+          type: string
+          enum:
+          - MERGE_ONLY
+          default: MERGE_ONLY
+    ProjectRevisions:
+      type: object
+      properties:
+        item_uid:
+          type: string
+        active_revision_uid:
+          type: string
+        revisions:
+          type: array
+          items:
+            type: object
+    EvaluationRequest:
+      type: object
+      required:
+      - project_uids
+      - dataset_ref
+      properties:
+        project_uids:
+          type: array
+          minItems: 1
+          items:
+            type: string
+        dataset_ref:
+          type: string
+          description: Local server side reference, not raw data or arbitrary external URL
+        methods:
+          type: array
+          items:
+            type: string
+            enum:
+            - dense
+            - keyword
+            - hybrid
+    ProjectImportRequest:
+      type: object
+      required:
+      - artifact_ref
+      - import_mode
+      properties:
+        artifact_ref:
+          type: string
+          description: Opaque reference to a previously validated local staging artifact; not a pathname or URL
+        import_mode:
+          type: string
+          enum:
+          - MERGE_ONLY
+        expected_sha256:
+          type: string
+          minLength: 64
+          maxLength: 64
+    BackupRestoreRequest:
+      type: object
+      required:
+      - manifest_hash
+      - confirmation_nonce
+      properties:
+        manifest_hash:
+          type: string
+        confirmation_nonce:
+          type: string
+          description: One-use admin confirmation derived from server-side approval workflow, not arbitrary yes/no
+            string
+tags:
+- name: DRAFT
+  description: Contract design only; no endpoints are implemented.

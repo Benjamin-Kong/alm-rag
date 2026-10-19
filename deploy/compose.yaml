@@ -1,0 +1,43 @@
+# DRAFT only: services require M1 code + lock files before functional verification.
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+    command: ["python", "-m", "almrag.api"]
+    environment:
+      ALMRAG_DATABASE_URL: sqlite:////app/data/alm.sqlite
+      ALMRAG_QDRANT_URL: ${ALMRAG_QDRANT_URL:-http://qdrant:6333}
+      ALMRAG_OLLAMA_BASE_URL: ${ALMRAG_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    volumes:
+      - almrag_data:/app/data
+    ports: ["127.0.0.1:8000:8000"]
+    depends_on: {qdrant: {condition: service_started}}
+    restart: unless-stopped
+  worker:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.backend
+    command: ["python", "-m", "almrag.worker"]
+    environment:
+      ALMRAG_DATABASE_URL: sqlite:////app/data/alm.sqlite
+      ALMRAG_QDRANT_URL: ${ALMRAG_QDRANT_URL:-http://qdrant:6333}
+      ALMRAG_OLLAMA_BASE_URL: ${ALMRAG_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+    volumes:
+      - almrag_data:/app/data
+    depends_on: {qdrant: {condition: service_started}}
+    restart: unless-stopped
+  frontend:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.frontend
+    ports: ["127.0.0.1:8080:80"]
+    depends_on: [api]
+  qdrant:
+    image: qdrant/qdrant:latest  # M1: MUST PIN digest and version before release
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+volumes:
+  almrag_data:
+  qdrant_data:

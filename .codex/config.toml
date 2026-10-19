@@ -1,0 +1,34 @@
+# Codex CLI multi-agent configuration (reviewed against current docs); validate installed client version before use.
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+
+[features]
+multi_agent = true
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 3 # Six available roles; maximum 3 concurrently, one milestone at a time.
+
+[agents.requirements]
+description = "Requirements and traceability specialist"
+config_file = "agents/requirements.toml"
+
+[agents.architect]
+description = "Software architecture specialist"
+config_file = "agents/architect.toml"
+
+[agents.alm_collector]
+description = "Codebeamer and Polarion connector specialist"
+config_file = "agents/alm_collector.toml"
+
+[agents.rag_engineer]
+description = "Content processing and retrieval specialist"
+config_file = "agents/rag_engineer.toml"
+
+[agents.frontend]
+description = "React and TypeScript administration specialist"
+config_file = "agents/frontend.toml"
+
+[agents.qa]
+description = "Independent QA and security reviewer"
+config_file = "agents/qa.toml"
