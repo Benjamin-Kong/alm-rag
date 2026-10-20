@@ -1,6 +1,6 @@
 # M1 completion candidate
 
-**PENDING_APPROVAL — implementation and applicable local foundation verification complete; user Human Approval not yet granted.** M2 has not started.
+**APPROVED by the user on 2026-10-20:** “M1승인. 다음 단계를 진행해”. Approval covers the documented M1 foundation and retained limitations. M2 is now explicitly authorized; its own completion gate remains separate.
 
 M1 was explicitly authorized by “커밋반영하고 착수해”. Critical Frontend dependency remediation was separately approved by “진행해”; it was fixed and retested. Preparation commit: a4dbaa6. Authorization/design commit:8859fb7. Implementation is on codex/m1-foundation; final local commit is identified by Git history and the delivery message. No remote Push or deployment occurred.
 
@@ -10,4 +10,4 @@ Verified: **38 Python tests + 6 Frontend tests**, independent QA, static baselin
 
 Retained limitations: legacy REQ original clauses, real ALM/model/Qdrant behavior, actual search publication/replay and full UI belong to their later milestones; Windows/native Linux/AMD64 containers, external TLS environments, image OS-layer scans and remote GitHub CI remain NOT VERIFIED. Notion auto-publishing remains unimplemented. Existing failed-item-list permission conflict OI-029 is deferred before that API's implementation, not silently changed. M1 routes do not implement that disputed API.
 
-No unresolved concrete Critical/Major/Medium defect remained in the final bounded independent QA. Full SRS requirements spanning later milestones are partial, not blanket PASS. Approve or reject this M1 foundation candidate before any M2 work. Remote Push/deployment still need separate authorization.
+No unresolved concrete Critical/Major/Medium defect remained in the final bounded independent QA. Full SRS requirements spanning later milestones are partial, not blanket PASS. Implementation commit: `13e1f30`. Remote Push/deployment still need separate authorization.

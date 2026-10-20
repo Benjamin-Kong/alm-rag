@@ -1,6 +1,6 @@
 # M2 — ALM Collectors
 
-Status: PLANNED — NOT STARTED
+Status: IN_PROGRESS — explicitly authorized after M1 approval on 2026-10-20. See docs/milestones/M2/PLAN.md.
 
 ## Goal
 CB/Polarion 커넥터/프로젝트 탐색/Tracker Type 선택/Revision/Fields/Relations/Attachments/수동 증분 동기화

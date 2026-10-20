@@ -28,3 +28,4 @@ build/
 *.pyc
 .DS_Store
 .worktrees/
+*.swp

@@ -1,6 +1,6 @@
 # M1 — Foundation & Database
 
-Status: PENDING_APPROVAL — authorized M1 implementation and local foundation verification complete; Critical dependency remediation approved and resolved. See docs/milestones/M1/COMPLETION.md, TEST_REPORT.md and QA_REPORT.md. User M1 completion approval, M2 and remote Push remain gated.
+Status: APPROVED — user on 2026-10-20: “M1승인. 다음 단계를 진행해”. M2 start authorized; remote Push/deployment remain separately gated. See docs/milestones/M1/COMPLETION.md.
 
 ## Goal
 공통 데이터 모델과 SQLite 마이그레이션, FastAPI CLI, 인증/Secrets, 영속 Worker Queue, Ollama/Qdrant 연결 스텁, Compose/Native 스켈레톤

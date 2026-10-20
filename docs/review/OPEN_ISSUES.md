@@ -80,3 +80,5 @@ M1 착수 승인, 원격 Push 승인, Legacy 원문 및 외부 통합 관련 미
 - OI-009: M1 시작/보완은 승인됨. M1 완료는 PENDING_APPROVAL, M2 미착수.
 - OI-019/OI-023 및 OI-029 권한 문서 충돌은 열린 상태 유지. M1에 미구현인 failed-item route의 정책을 임의 선택하지 않았음.
 - OI-033: 이 로컬 Python 배포에서 stdlib venv의 ensurepip가 SIGABRT로 중단됨(일반/elevated 동일). 표준 개발 경로인 uv venv + 오프라인 wheel 설치·migration은 PASS. stdlib ensurepip 원인 분석은 환경 backlog이며 uv 실행경로를 막지 않음.
+- OI-034: 시스템 기본 Node25.8.0이 simdjson dylib 불일치로 중단됨. 프로젝트 Node22 PATH에서 Codex0.163.0/feature 조회 PASS. 전역 Node 환경 수리는 별도 환경 backlog; M2는 지정된 Node22 사용.
+- M1은 사용자 2026-10-20 승인됨(13e1f30). M2 시작 승인; M2 완료/M3는 별도 Human Gate.

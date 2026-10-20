@@ -19,3 +19,7 @@ After Codex setup and remote repository configuration, user must explicitly inst
 ## Subsequent M1 start authorization — 2026-10-19
 
 The user instructed “커밋반영하고 착수해” after environment remediation. This authorizes the local preparation commit and M1 implementation. It does not approve M1 completion, M2, GitHub Push, deployment or live ALM access. See `docs/milestones/M1/PLAN.md`.
+
+## M1 approval and M2 start — 2026-10-20
+
+The user instructed “M1승인. 다음 단계를 진행해”. M1 commit `13e1f30` and its documented limitations are approved; M2 is authorized. No remote Push, deployment or live customer ALM access is inferred. M2 must stop at its own Human Gate.
