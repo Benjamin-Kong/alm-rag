@@ -2,6 +2,8 @@
 
 **Gate:** v0.3 documentation was conditionally approved on 2026-10-19 for repository/Codex setup. **M1 implementation is NOT part of this preparation authorization** and requires an explicit subsequent M1 start instruction. Each Milestone has its own Human Gate.
 
+**Current:** M1 subsequently started and was user-approved at13e1f30. M2 was explicitly authorized, implemented and locally/mock verified; it is PENDING_APPROVAL with external verification limits and an initial-profile TDD evidence exception. See docs/milestones/M2/COMPLETION.md. M3 is not authorized or started. Historical preparation conditions above remain the original baseline record.
+
 ## Milestones
 | ID | Theme | Acceptance |
 |---|---|---|

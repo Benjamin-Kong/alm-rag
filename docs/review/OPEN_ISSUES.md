@@ -82,3 +82,30 @@ M1 착수 승인, 원격 Push 승인, Legacy 원문 및 외부 통합 관련 미
 - OI-033: 이 로컬 Python 배포에서 stdlib venv의 ensurepip가 SIGABRT로 중단됨(일반/elevated 동일). 표준 개발 경로인 uv venv + 오프라인 wheel 설치·migration은 PASS. stdlib ensurepip 원인 분석은 환경 backlog이며 uv 실행경로를 막지 않음.
 - OI-034: 시스템 기본 Node25.8.0이 simdjson dylib 불일치로 중단됨. 프로젝트 Node22 PATH에서 Codex0.163.0/feature 조회 PASS. 전역 Node 환경 수리는 별도 환경 backlog; M2는 지정된 Node22 사용.
 - M1은 사용자 2026-10-20 승인됨(13e1f30). M2 시작 승인; M2 완료/M3는 별도 Human Gate.
+
+### M2 구현 중 독립 QA 중단 — 2026-10-20 (최신 상태)
+
+- **OI-035 / Major / OPEN:** 큰 429 본문이 응답 크기 제한에 먼저 걸려 Retry-After 전역 pause가 저장되지 않음. Mock 실제 재현: Retry-After15초, 본문100바이트/제한10바이트 → pause_until=0, 다음 요청1000.2초(요구>=1015초). 동일 처리 순서의 401 영향은 코드 추론이며 별도 재현 미실행. SRS-053/054. M2/QA_REPORT.md 참조.
+- **OI-036 / Major / OPEN:** timeout+5초 permit이 활성 스트림 종료 전에 만료됨. Mock 실제 재현: max_inflight1/timeout1초/전체예산100초,7초 경과 후 두 번째 요청 허용 → 동시 스트림2. SRS-053/054.
+- **OI-037 / Minor / OPEN:** 전체예산1초에도2초 후 빈200 응답을 성공 반환. acquire/응답 완료 시 deadline 검증 필요. SRS-053/054.
+- AGENTS.md의 unresolved Critical/Major 즉시중단 규칙 적용: M2 BLOCKED_FOR_HUMAN_REVIEW. 구현/통합/수정 작업 중단, 두 specialist worktree 보존. 기존10테스트 PASS는 위 결함 해소나 M2 완료 증거가 아님. 사용자 검토 후 수정 재개 승인 필요.
+
+### M2 수정 재개 후 추가 통합 발견 — 2026-10-20
+
+- 사용자가 “수정안을 적용하고 계속진행해”로 OI-035/036/037 보완과 M2 재개를 승인함. 해당 Transport 수정은 별도 Worktree에서 실제 Red/Green으로 진행; 최종 통합/QA 결과는 M2/TRANSPORT_TDD.md 및 QA_REPORT.md 최신 추기 참조. 과거 FAIL 기록은 삭제하지 않음.
+- **OI-038 / Major / OPEN:** 실제 Codebeamer 어댑터의 첫 Item customFields 형식 오류가 전역 INVALID_SOURCE_PAYLOAD로 분류됨. 두 Item Mock 실측: preflight READY → Job BLOCKED, 정상 두 번째 Item 미요청, 실패 큐0/저장 Revision0. SRS-055 및 FAIL_SAFE_AND_REPLAY의 Item 필드 변환 오류 격리 정책 위반. 인증/페이지/Scope/저장소 무결성 실패가 아닌 Item 변환 오류만 로컬 격리하도록 경계 보완 필요. 새로운 Major 확인 후 추가 구현 중단; 별도 Human Review 필요.
+- **OI-039 / Medium / OPEN:** 예상 요청량이 부가 관계/첨부/Scope 재검증 호출을 누락. 합성1 Item에서 예상6/실제8. 확정치로 표시 금지; 보수적 산정 또는 하한·불확실성 명시 필요.
+- **OI-040 / Medium / OPEN:** FieldDefinition UID에 CB Tracker Scope가 없어 동일 프로젝트의 Tracker별 같은 필드ID가 합쳐질 수 있음. 원본 envelope는 보존되지만 메타데이터 식별자 보완 필요.
+- **OI-041 / Integration / OPEN:** Codebeamer 숫자형 원본 Field ID와 normalized title/description 정책을 직접 비교하여 기본 Preflight가 BLOCKED. 원본 catalog ID를 변경하지 않고 normalized 필드 네임스페이스를 별도로 명시해야 함. Main API 통합 테스트2건은 현재 FAIL,3건 PASS; 완료 주장 없음.
+- 실제 커넥터는 deleted bool 외에 확정 deletion_evidence를 제공하지 않으므로 삭제 확정 수집 능력은 NOT VERIFIED/미지원. Stub의 명시적 삭제 테스트 PASS를 실제 어댑터 삭제 검증으로 간주하지 않음.
+- **OI-035/OI-036/OI-037 RESOLVED for tested local scope:** Main 반영 후 독립 QA20테스트 PASS(1.34s), Main 관련92PASS. 오류 헤더 우선 저장/활성 OS slot 소유권/프로세스 사망 회복/빈응답 deadline 확인. Linux/Windows·공유파일시스템·실제socket hard interruption은 NOT VERIFIED. M2 전체132PASS/3FAIL이며 OI-038 새 Major로 BLOCKED 유지.
+
+### M2 최종 로컬/Mock 검증 — 2026-10-20 (위 중간 상태를 대체하는 최신 상태)
+
+- **OI-038/039/040/041 RESOLVED within local/mock scope:** 사용자 “보완하고 계속 진행해” 후 실제 실패12건을 Main에서 확인하고 보완. 두 제품 Item 필드/본문/관계 변환 오류는 실패 큐로 격리하고 정상 형제 Item 계속 처리. 원본 catalog와 normalized 필드 분리, Tracker별 field UID, 명시적 UNKNOWN 요청량/하한, 정책 fingerprint 검증. 실제 서버/전체 요청량 확정값은 여전히 미검증.
+- **OI-042 / Major / RESOLVED:** 동등 URL의 기본443/80이 다른 server key로 전역pause/lock을 우회하던 독립 QA 재현. 사용자 “진행중인가? 계속 구현해” 이후 회귀 Red4FAIL→보완. 프로필/정책/allowlist/전역budget/lock에 HTTPX 기준 canonical origin 적용, 원래 재현 및 독립 QA PASS. 기존 비정규 prototype budget은 SERVER_ORIGIN_MIGRATION_REQUIRED로 fail-closed; 실제 상태 병합/삭제/lock 이전은 자동 수행하지 않음.
+- **OI-043 / Minor / RESOLVED:** Worker가 ALMRAG_ATTACHMENT_ROOT를 무시하던 문제. 실제 Red2FAIL→공통 Settings.attachment_directory로 API/Worker 일치; 기본은 DB volume 내부. 독립 QA PASS.
+- **OI-044 / Minor / RESOLVED:** 잘못된 포트 입력에서 httpx.InvalidURL이 검증기를 벗어나500. 실제 Red1FAIL→ValueError로 매핑→422 INVALID_REQUEST, 등록0/외부요청0; 독립 QA 새1테스트 PASS.
+- **OI-045 / Process exception / OPEN FOR USER REVIEW:** 최초 connection/config 프로필 prototype을 테스트보다 먼저 작성함. 후속 경계/결함 수정 Red→Green은 있지만 최초 chronology는 TDD_NOT_EVIDENCED. TEST-058 PARTIAL; 기록 삭제/사후 조작 없이 M2 Human Gate에서 예외 검토 필요.
+- 최신 실제 Main: Python178PASS, Frontend7PASS/build, 두 이미지/세서비스 healthy, network-none 수집 smoke39 합성GET, wheel migrations[1,2,3], Python/Node dependency audit0. 독립 QA full177PASS + 마지막 신규minor1PASS. 알려진 미해결 code Major/Critical 없음; M2 PENDING_APPROVAL, M3 미착수.
+- OI-001/002/010/011/015 실서버 및 확정 삭제/렌더링 안전, OI-019/023 Legacy 원문, OI-029 public replay ACL 충돌, OI-030 다중플랫폼/OS image scan, 원격 CI/Push/Notion은 OPEN/NOT VERIFIED 유지. Source 관측 안전을 실제 ALM 기능 완전 검증으로 승격하지 않음.

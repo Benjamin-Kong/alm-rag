@@ -17,3 +17,8 @@ def test_source_specific_profiles_reject_wrong_scope():
     assert SourceProfile(source_type='polarion', base_url='https://po.example.invalid', scope_kind='WORK_ITEM_TYPE').source_type == 'polarion'
     with pytest.raises(ValueError):
         SourceProfile(source_type='polarion', base_url='https://po.example.invalid', scope_kind='TRACKER')
+
+
+def test_default_attachments_follow_database_volume(tmp_path):
+    """SRS-005/051: default assets remain in the durable data directory."""
+    assert Settings(database_path=str(tmp_path/'db/alm.sqlite')).attachment_directory==tmp_path/'db/attachments'

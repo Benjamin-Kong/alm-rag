@@ -1,7 +1,7 @@
 # ALM RAG — Codex Development Package (Review Candidate v0.3)
 
 ## Status
-**M1 FOUNDATION — PENDING HUMAN APPROVAL (2026-10-20).** M1 was explicitly authorized and implemented locally. Python 38 tests, Frontend 6 tests, API/Worker/Frontend build and local container boot were verified; see `docs/milestones/M1/COMPLETION.md`. Real ALM and later milestone behavior remain unimplemented/unverified. M2, remote Push and deployment remain gated. All 50 decisions and SRS-044~059 are retained; legacy REQ clause-level traceability remains OPEN.
+**M1 APPROVED; M2 LOCAL/MOCK CANDIDATE — PENDING HUMAN APPROVAL (2026-10-20).** M2 adds read-only product adapters, REST/CLI source/scope discovery, preflight, shared throttling and a lease-fenced COLLECT worker. Python178 tests, Frontend7 tests, six-project mock acceptance and local container build/boot passed. See `docs/milestones/M2/COMPLETION.md` for the retained external verification limits and initial-profile TDD evidence exception. Actual ALM access, M3, remote Push and production deployment remain gated. Legacy REQ clause-level traceability stays OPEN.
 
 ## Goal
 Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (fields, relationships, attachments), retain raw/HTML + immutable revisions in normalized SQLite schema, generate table-aware field-specific chunks, embed with Ollama EmbeddingGemma 2, and return authorized project-restricted distinct Item results from Vector+Keyword hybrid search via REST/CLI/Web UI.
@@ -16,9 +16,9 @@ Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (f
 7. `docs/testing/TEST_PLAN.md` — non-fabricated quality evidence requirements.
 
 ## What to do now
-- Read `docs/milestones/M1/COMPLETION.md`, `TEST_REPORT.md` and `QA_REPORT.md` for the M1 approval candidate and explicit limitations.
-- Use `docs/milestones/M1/RUNBOOK.md` for Native/Compose verification. Pipeline requests fail closed until real stage handlers arrive in M2+.
-- Review and approve M1 before M2. GitHub Push and deployment require separate authorization; neither was performed in this work.
+- Read `docs/milestones/M2/COMPLETION.md`, `TEST_REPORT.md`, `QA_REPORT.md` and `GATE_MATRIX.md` for M2 results and limitations.
+- Use `docs/milestones/M2/RUNBOOK.md` for Native/Compose verification. COLLECT is implemented; full SYNC/PROCESS/EMBED/INDEX remain unavailable. The UI remains the M1 foundation until M5.
+- Review M2 before M3, including the recorded TDD exception. Remote Push and production deployment require separate authorization; neither was performed.
 
 ## Security
 Do not put customer ALM raw text, screenshots, database exports, attachment contents, passwords or tokens into GitHub or Notion. `.gitignore` is defense in depth only; manually inspect staged changes and run secret scanning before any remote Push.

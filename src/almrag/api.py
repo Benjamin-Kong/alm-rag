@@ -1,4 +1,4 @@
-"""M1 API. Unsupported pipeline stages fail closed until their milestone."""
+"""Authenticated source administration and collection; later stages fail closed."""
 import json
 import secrets
 import sqlite3
@@ -12,6 +12,10 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from almrag.config import Settings
 from almrag.security import Security, digest
+from almrag.alm_http import AlmError, HttpPolicy
+from almrag.collection import CollectionError, CollectionService
+from almrag.connection import Connections, SourceProfileCreate
+from almrag.connectors import ConnectorError
 
 
 class Input(BaseModel):
@@ -65,6 +69,56 @@ class ApiError(BaseModel):
     trace_id: str
 
 
+class CollectionConfig(Input):
+    selection_mode: Literal['ALL','SELECTED'] = 'ALL'
+    scope_kind: Literal['TRACKER','WORK_ITEM_TYPE']
+    source_scope_ids: list[str] = Field(default_factory=list,max_length=10000)
+    embedding_fields: list[str] = Field(default_factory=lambda:['title','description'],min_length=1,max_length=1000)
+
+
+class ProjectCreate(CollectionConfig):
+    alm_instance_uid: str
+    source_project_id: str = Field(min_length=1,max_length=200)
+    name: str = Field(min_length=1,max_length=200)
+
+
+class InstanceInfo(BaseModel):
+    instance_uid: str
+    source_type: Literal['codebeamer','polarion']
+    display_name: str
+    base_url: str
+    api_profile: str
+    auth_configured: bool
+
+
+class SourceProject(BaseModel):
+    id: str
+    name: str
+    url: str
+
+
+class SourceScope(BaseModel):
+    id: str
+    name: str
+    kind: Literal['TRACKER','WORK_ITEM_TYPE']
+
+
+class PreflightInfo(BaseModel):
+    status: Literal['READY','BLOCKED']
+    collect_ready: bool
+    sync_ready: bool
+    scope_kind: str | None
+    source_scope_ids: list[str]
+    readable_fields: list[dict]
+    normalized_fields: list[str] = Field(default_factory=list)
+    estimated_items: int | None
+    estimated_requests: int | None
+    request_estimate_kind: Literal['UNKNOWN'] = 'UNKNOWN'
+    request_count_lower_bound: int | None = None
+    config_revision: str | None
+    diagnostics: list[str]
+
+
 class JobEvent(BaseModel):
     event_id: int
     job_id: str
@@ -82,15 +136,29 @@ def error(request, status, code):
     return JSONResponse(status_code=status, content={'code':code,'message':code.lower().replace('_',' '), 'trace_id':request.state.trace_id}, headers={'Cache-Control':'no-store'})
 
 
-def create_app(settings=None, db=None):
+def create_app(settings=None, db=None, *, connections=None, collection=None):
     settings = settings or Settings.from_env()
     if db is None:
         from almrag.storage import Database
         db = Database(settings.database_path)
         db.migrate()
     auth = Security(db, settings.session_seconds)
-    app = FastAPI(title='ALM RAG M1', version='0.1.0', docs_url=None, redoc_url=None, openapi_url=None)
+    connections=connections or Connections(db,settings)
+    collection=collection or CollectionService(db,connections.connector,settings.attachment_directory)
+    app = FastAPI(title='ALM RAG M2', version='0.2.0', docs_url=None, redoc_url=None, openapi_url=None)
     app.state.security, app.state.db = auth, db
+    app.state.connections,app.state.collection=connections,collection
+
+    @app.exception_handler(AlmError)
+    @app.exception_handler(CollectionError)
+    @app.exception_handler(ConnectorError)
+    async def source_failure(request,exc):
+        code=exc.code
+        if code in {'INSTANCE_NOT_FOUND','PROJECT_NOT_CONFIGURED'}:status=404
+        elif code in {'STALE_PREFLIGHT'}:status=409
+        elif code in {'INVALID_SCOPE','INVALID_SCOPE_KIND','EMPTY_SCOPE','INVALID_FIELDS','PROJECT_NOT_DISCOVERED','SCOPE_NOT_DISCOVERED'}:status=422
+        else:status=503
+        return error(request,status,code)
 
     @app.exception_handler(ApiFailure)
     async def failure(request, exc):
@@ -149,6 +217,57 @@ def create_app(settings=None, db=None):
         with db.connect() as c:
             if not c.execute('SELECT 1 FROM projects WHERE project_uid=?',(project,)).fetchone():
                 raise ApiFailure(404,'NOT_FOUND')
+
+    @app.post('/api/v1/alm-instances',status_code=201,response_model=InstanceInfo,operation_id='registerAlmInstance',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def register_instance(payload:SourceProfileCreate,request:Request):
+        require(request,'system_admin',session_only=True)
+        return connections.register(payload)
+
+    @app.post('/api/v1/alm-instances/{instance_uid}/probe',response_model=dict,operation_id='probeAlmInstance',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def probe_instance(instance_uid:str,request:Request):
+        require(request,'system_admin',session_only=True)
+        return connections.connector(instance_uid).probe()
+
+    @app.get('/api/v1/alm-instances/{instance_uid}/projects',response_model=list[SourceProject],operation_id='discoverAlmProjects',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def discover_projects(instance_uid:str,request:Request):
+        require(request,'system_admin',session_only=True)
+        return connections.connector(instance_uid).list_projects()
+
+    @app.get('/api/v1/alm-instances/{instance_uid}/projects/{source_project_id}/scopes',response_model=list[SourceScope],operation_id='discoverCollectionScopes',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def discover_scopes(instance_uid:str,source_project_id:str,request:Request):
+        require(request,'system_admin',session_only=True)
+        return connections.connector(instance_uid).list_scopes(source_project_id)
+
+    @app.get('/api/v1/alm-instances/{instance_uid}/projects/{source_project_id}/fields',response_model=list[dict],operation_id='discoverCollectionFields',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def discover_fields(instance_uid:str,source_project_id:str,request:Request):
+        require(request,'system_admin',session_only=True)
+        return connections.connector(instance_uid).list_fields(source_project_id)
+
+    @app.put('/api/v1/alm-instances/{instance_uid}/rate-policy',response_model=HttpPolicy,operation_id='setServerRateLimit',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def rate_policy(instance_uid:str,payload:HttpPolicy,request:Request):
+        require(request,'system_admin',session_only=True)
+        connections.set_policy(instance_uid,payload)
+        return payload
+
+    @app.post('/api/v1/projects',status_code=201,response_model=ProjectInfo,operation_id='registerProject',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def register_project(payload:ProjectCreate,request:Request):
+        require(request,'system_admin',session_only=True)
+        uid=collection.configure_project(payload.alm_instance_uid,payload.source_project_id,payload.name,payload.selection_mode,payload.scope_kind,payload.source_scope_ids,payload.embedding_fields)
+        return ProjectInfo(project_uid=uid,alm_instance_uid=payload.alm_instance_uid,source_project_id=payload.source_project_id,name=payload.name)
+
+    @app.put('/api/v1/projects/{project_uid}/collection-config',response_model=ProjectInfo,operation_id='configureCollectionScope',openapi_extra={'x-required-scope':'project_manage'})
+    def collection_config(project_uid:str,payload:CollectionConfig,request:Request):
+        require(request,'project_manage',project_uid)
+        project_exists(project_uid)
+        with db.connect() as c:row=c.execute('SELECT * FROM projects WHERE project_uid=?',(project_uid,)).fetchone()
+        collection.configure_project(row['instance_uid'],row['source_project_id'],row['name'],payload.selection_mode,payload.scope_kind,payload.source_scope_ids,payload.embedding_fields)
+        return ProjectInfo(project_uid=project_uid,alm_instance_uid=row['instance_uid'],source_project_id=row['source_project_id'],name=row['name'])
+
+    @app.post('/api/v1/projects/{project_uid}/preflight',response_model=PreflightInfo,operation_id='preflightProject',openapi_extra={'x-required-scope':'project_manage'})
+    def preflight_project(project_uid:str,request:Request):
+        require(request,'project_manage',project_uid)
+        project_exists(project_uid)
+        return collection.preflight(project_uid)
 
     @app.get('/api/v1/healthz',response_model=Health,operation_id='healthz',openapi_extra={'x-required-scope':'public'})
     def health():
@@ -241,11 +360,12 @@ def create_app(settings=None, db=None):
         require(request,'project_read',row['project_uid'])
         return JobInfo(**dict(row))
 
-    @app.post('/api/v1/projects/{project_uid}/jobs',status_code=202,operation_id='startProjectStageJob',openapi_extra={'x-required-scope':'project_manage'})
+    @app.post('/api/v1/projects/{project_uid}/jobs',status_code=202,response_model=JobInfo,operation_id='startProjectStageJob',openapi_extra={'x-required-scope':'project_manage'})
     def stage(project_uid:str,payload:Stage,request:Request):
         require(request,'project_manage',project_uid)
         project_exists(project_uid)
-        raise ApiFailure(409,'STAGE_UNAVAILABLE')
+        if payload.stage!='COLLECT':raise ApiFailure(409,'STAGE_UNAVAILABLE')
+        return collection.enqueue(project_uid,payload.config_revision)
 
     @app.get('/api/v1/jobs/{job_id}/events',response_model=list[JobEvent],operation_id='listJobEvents',openapi_extra={'x-required-scope':'project_read'})
     def job_events(job_id:str,request:Request,limit:int=100,offset:int=0):
@@ -279,20 +399,24 @@ def create_app(settings=None, db=None):
         schema['components']['schemas']['ApiError']=ApiError.model_json_schema()
         for path,methods in schema['paths'].items():
             for method,op in methods.items():
-                if method not in {'get','post','delete'}:
+                if method not in {'get','post','put','delete'}:
                     continue
                 public=op['x-required-scope']=='public'
                 op['security']=[] if public else [{'ApiKeyAuth':[]},{'AdminSession':[]}]
-                if path in {'/api/v1/audit-events','/api/v1/auth/logout'}:
+                if op.get('x-session-only') or path in {'/api/v1/audit-events','/api/v1/auth/logout'}:
                     op['security']=[{'AdminSession':[]}]
                 op['x-implementation-status']='M1_IMPLEMENTED'
+                if op.get('x-session-only') or 'collection-config' in path or 'preflight' in path:
+                    op['x-implementation-status']='M2_IMPLEMENTED'
                 codes=[422,503] + ([] if public else [401,403,404])
                 if path.endswith('/auth/login'):
                     codes += [401,403]
                 if method=='post' and (path.endswith('/jobs') or path.endswith('/sync')):
                     codes += [409]
-                    op['responses'].pop('202',None)
-                    op['x-implementation-status']='M1_FAIL_CLOSED_STAGE_GUARD'
+                    if path.endswith('/sync'):
+                        op['responses'].pop('202',None)
+                        op['x-implementation-status']='M2_FAIL_CLOSED_SYNC_GUARD'
+                    else:op['x-implementation-status']='M2_COLLECT_ONLY'
                 for code in codes:
                     op['responses'][str(code)]={'description':'Sanitized error','content':{'application/json':{'schema':{'$ref':'#/components/schemas/ApiError'}}}}
         return schema

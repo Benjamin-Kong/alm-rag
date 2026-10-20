@@ -159,7 +159,7 @@ def test_exported_contract_matches_executed_api(env):
     import yaml
     app,_=env
     root=Path(__file__).resolve().parents[1]
-    exported=json.loads((root/'docs/api/m1-openapi.json').read_text())
+    exported=json.loads((root/'docs/api/m2-openapi.json').read_text())
     assert exported==app.openapi()
     draft=yaml.safe_load((root/'docs/api/openapi.yaml').read_text())
     for path,methods in exported['paths'].items():

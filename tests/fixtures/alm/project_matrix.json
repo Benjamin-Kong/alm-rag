@@ -1,0 +1,13 @@
+{
+  "notice": "Entirely synthetic data; no live ALM export or customer content.",
+  "codebeamer": [
+    {"project_id": "1", "scope_id": "31", "item_id": "100"},
+    {"project_id": "2", "scope_id": "32", "item_id": "101"},
+    {"project_id": "3", "scope_id": "33", "item_id": "102"}
+  ],
+  "polarion": [
+    {"project_id": "alpha", "scope_id": "requirement", "item_id": "ALPHA-1"},
+    {"project_id": "beta", "scope_id": "bug", "item_id": "BETA-1"},
+    {"project_id": "gamma", "scope_id": "task", "item_id": "GAMMA-1"}
+  ]
+}

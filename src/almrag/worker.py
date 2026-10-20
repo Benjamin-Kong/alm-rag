@@ -1,14 +1,16 @@
-"""Independent worker shell; real ALM stage handlers arrive in M2+."""
+"""Independent COLLECT worker with durable lease renewal and liveness checks."""
 import argparse
 import json
-import os
+import math
 from pathlib import Path
 import signal
+import threading
 import time
 from uuid import uuid4
 
 from almrag.config import Settings
 from almrag.security import safe_event
+from almrag.queue import LeaseLost
 
 
 def write_health(path, now=None):
@@ -28,13 +30,81 @@ def healthy(path, now=None):
         return False
 
 
-def run_once(queue, owner):
-    job=queue.claim(owner,lease_seconds=30)
+def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
+             health_path=None, lease_seconds=30, heartbeat_interval=5):
+    """Claim one job; CollectionService alone owns normal terminal transitions.
+
+    Heartbeats run independently while a connector performs network work or waits.
+    Any heartbeat failure revokes this worker's permission to continue and leaves
+    the persisted lease/checkpoint for recovery; no unguarded finish is attempted.
+    """
+    if not math.isfinite(lease_seconds) or lease_seconds <= 0:
+        raise ValueError('invalid lease')
+    if not math.isfinite(heartbeat_interval) or heartbeat_interval <= 0:
+        raise ValueError('invalid heartbeat interval')
+    interval = min(heartbeat_interval, lease_seconds / 3, 10)
+    job = queue.claim(owner, lease_seconds=lease_seconds)
     if job is None:
         return False
-    queue.finish(job['job_id'],job['fencing_token'],state='BLOCKED',error_code='STAGE_UNAVAILABLE')
-    print(json.dumps(safe_event(action='job_blocked',outcome='blocked',job_uid=job['job_id'],stage=job['stage'],error_code='STAGE_UNAVAILABLE')),flush=True)
+    if job['stage'] != 'COLLECT' or collection_service is None:
+        queue.finish(job['job_id'], job['fencing_token'], state='BLOCKED', error_code='STAGE_UNAVAILABLE')
+        print(json.dumps(safe_event(action='job_blocked', outcome='blocked', job_uid=job['job_id'],
+                                    stage=job['stage'], error_code='STAGE_UNAVAILABLE')), flush=True)
+        return True
+
+    finished = threading.Event()
+    heartbeat_errors = []
+
+    def abort_check():
+        if heartbeat_errors:
+            raise heartbeat_errors[0]
+        return bool(stop_check())
+
+    def renew():
+        while not finished.wait(interval):
+            try:
+                queue.heartbeat(job['job_id'], job['fencing_token'], lease_seconds=lease_seconds)
+                if health_path is not None:
+                    write_health(health_path)
+            except Exception as error:
+                # Report no raw database/transport exception text to logs or API.
+                heartbeat_errors.append(error if isinstance(error, LeaseLost) else LeaseLost('heartbeat unavailable'))
+                return
+
+    heartbeat = threading.Thread(target=renew, name='almrag-heartbeat-' + job['job_id'], daemon=True)
+    try:
+        if health_path is not None:
+            write_health(health_path)
+        heartbeat.start()
+        try:
+            collection_service.run(job, abort_check=abort_check)
+        except LeaseLost:
+            raise
+        except Exception:
+            abort_check()  # A failed heartbeat must never become a local handler error.
+            queue.finish(job['job_id'], job['fencing_token'], state='BLOCKED', error_code='WORKER_ERROR')
+            print(json.dumps(safe_event(action='job_blocked', outcome='blocked', job_uid=job['job_id'],
+                                        stage=job['stage'], error_code='WORKER_ERROR')), flush=True)
+        abort_check()
+    finally:
+        finished.set()
+        if heartbeat.ident is not None:
+            heartbeat.join()
     return True
+
+
+class _ConfiguredCollection:
+    """Delay profile/credential construction until a supported job is claimed."""
+    def __init__(self, db, settings):
+        self.db = db
+        self.settings = settings
+
+    def run(self, job, abort_check):
+        from almrag.collection import CollectionService
+        from almrag.connection import Connections
+        connections = Connections(self.db, self.settings)
+        service = CollectionService(self.db, connections.connector, self.settings.attachment_directory)
+        return service.run(job, abort_check=abort_check)
 
 
 def main():
@@ -52,6 +122,7 @@ def main():
     db.migrate()
     queue=Queue(db)
     owner=str(uuid4())
+    collection_service=_ConfiguredCollection(db,settings)
     stopping=False
     def stop(*_):
         nonlocal stopping
@@ -61,7 +132,10 @@ def main():
     print(json.dumps(safe_event(action='worker_start',outcome='ok')),flush=True)
     try:
         while not stopping:
-            run_once(queue,owner)
+            try:
+                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path)
+            except LeaseLost:
+                print(json.dumps(safe_event(action='lease_lost',outcome='aborted')),flush=True)
             write_health(path)
             if args.once:
                 break

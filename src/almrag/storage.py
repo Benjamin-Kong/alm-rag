@@ -44,18 +44,20 @@ class Database:
         self.path.touch(mode=0o600,exist_ok=True)
         with self.transaction() as c:
             c.execute('CREATE TABLE IF NOT EXISTS schema_migrations(version INTEGER PRIMARY KEY)')
-            if c.execute('SELECT 1 FROM schema_migrations WHERE version=1').fetchone():
-                return
-            # executescript commits implicitly; execute complete statements individually.
-            buffer=''
-            for line in (Path(__file__).parent/'migrations'/'001_initial.sql').read_text().splitlines(True):
-                buffer+=line
-                if sqlite3.complete_statement(buffer):
-                    c.execute(buffer)
-                    buffer=''
-            if buffer.strip():
-                raise ValueError('incomplete migration')
-            c.execute('INSERT INTO schema_migrations VALUES(1)')
+            for path in sorted((Path(__file__).parent/'migrations').glob('[0-9]*_*.sql')):
+                version=int(path.name.split('_',1)[0])
+                if c.execute('SELECT 1 FROM schema_migrations WHERE version=?',(version,)).fetchone():
+                    continue
+                # executescript commits implicitly; execute complete statements individually.
+                buffer=''
+                for line in path.read_text().splitlines(True):
+                    buffer+=line
+                    if sqlite3.complete_statement(buffer):
+                        c.execute(buffer)
+                        buffer=''
+                if buffer.strip():
+                    raise ValueError('incomplete migration')
+                c.execute('INSERT INTO schema_migrations VALUES(?)',(version,))
 
     def add_instance(self,source_type,base_url,display_name,auth_ref):
         with self.transaction() as c:

@@ -20,3 +20,17 @@ test('never echoes error bodies or transport exceptions', async () => {
   const unavailable = new ApiClient({}, vi.fn().mockRejectedValue(new Error('private-value')));
   await expect(unavailable.projects()).rejects.toThrow('Service unavailable');
 });
+
+test('M2 discovery, source-specific policy and COLLECT use generated request types', async () => {
+  const fetcher = vi.fn().mockResolvedValue({ ok: true, status: 202, json: async () => ({ job_id: 'job', state: 'QUEUED' }) });
+  const client = new ApiClient({ csrf: 'synthetic-csrf' }, fetcher);
+  await client.discoverProjects('source/id');
+  expect(fetcher.mock.calls[0][0]).toBe('/api/v1/alm-instances/source%2Fid/projects');
+  await client.configureCollection('project', {scope_kind: 'WORK_ITEM_TYPE', selection_mode: 'SELECTED', source_scope_ids: ['requirement'], embedding_fields: ['title']});
+  expect(fetcher.mock.calls[1][1].method).toBe('PUT');
+  await client.preflight('project');
+  expect(fetcher.mock.calls[2][0]).toBe('/api/v1/projects/project/preflight');
+  const job = await client.startJob('project', {stage: 'COLLECT', force: false, config_revision: 'observed'});
+  expect(job.job_id).toBe('job');
+  expect(JSON.parse(fetcher.mock.calls[3][1].body).stage).toBe('COLLECT');
+});

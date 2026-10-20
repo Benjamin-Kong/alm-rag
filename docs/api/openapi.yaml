@@ -2,8 +2,9 @@ openapi: 3.0.3
 info:
   title: ALM Unified Retrieval API (DRAFT)
   version: 0.3.0-review-candidate
-  description: M1 executed subset is marked x-implementation-status; other endpoints
-    remain draft and unimplemented. See m1-openapi.json for the executable M1 contract.
+  description: M2 executed subset is marked x-implementation-status; other endpoints
+    remain draft and unimplemented. See m2-openapi.json for the current executable
+    contract; m1-openapi.json is historical.
 servers:
 - url: /api/v1
 security:
@@ -89,7 +90,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - AdminSession: []
-      x-implementation-status: M1_FAIL_CLOSED_STAGE_GUARD
+      x-implementation-status: M2_FAIL_CLOSED_SYNC_GUARD
   /jobs/{job_id}:
     get:
       summary: Job
@@ -145,169 +146,408 @@ paths:
       x-implementation-status: M1_IMPLEMENTED
   /alm-instances:
     post:
+      summary: Register Instance
       operationId: registerAlmInstance
-      summary: Register Codebeamer/Polarion server without inline secrets
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AlmInstanceCreate'
+              oneOf:
+              - $ref: '#/components/schemas/CodebeamerProfile'
+              - $ref: '#/components/schemas/PolarionProfile'
+              title: Payload
+              discriminator:
+                propertyName: source_type
+                mapping:
+                  codebeamer: '#/components/schemas/CodebeamerProfile'
+                  polarion: '#/components/schemas/PolarionProfile'
+        required: true
       responses:
         '201':
-          description: Server registered; not yet probed
-        '400':
-          description: Invalid URL/type/profile
-        '403':
-          description: Admin authorization required
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InstanceInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: system_admin
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /alm-instances/{instance_uid}/probe:
     post:
+      summary: Probe Instance
       operationId: probeAlmInstance
-      summary: Read-only connection and capability test
       parameters:
       - name: instance_uid
         in: path
         required: true
         schema:
           type: string
+          title: Instance Uid
       responses:
         '200':
-          description: Capability profile and auth outcome
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Probealminstance
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '503':
-          description: Server unavailable or rate-limited
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: system_admin
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /alm-instances/{instance_uid}/projects:
     get:
+      summary: Discover Projects
       operationId: discoverAlmProjects
-      summary: Source-specific project discovery
       parameters:
       - name: instance_uid
         in: path
         required: true
         schema:
           type: string
+          title: Instance Uid
       responses:
         '200':
-          description: Visible projects and source IDs
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SourceProject'
+                title: Response Discoveralmprojects
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: system_admin
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /alm-instances/{instance_uid}/projects/{source_project_id}/scopes:
     get:
+      summary: Discover Scopes
       operationId: discoverCollectionScopes
-      summary: Tracker IDs for CB or Work Item Type IDs for Polarion
       parameters:
       - name: instance_uid
         in: path
         required: true
         schema:
           type: string
+          title: Instance Uid
       - name: source_project_id
         in: path
         required: true
         schema:
           type: string
+          title: Source Project Id
       responses:
         '200':
-          description: Discriminated source-specific collectable scope catalog
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SourceScope'
+                title: Response Discovercollectionscopes
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: system_admin
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /projects/{project_uid}/collection-config:
     put:
+      summary: Collection Config
       operationId: configureCollectionScope
-      summary: Configure and validate ALL/SELECTED source-specific scope
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
+          title: Project Uid
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CollectionScope'
+              $ref: '#/components/schemas/CollectionConfig'
       responses:
         '200':
-          description: Validated collection policy saved
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectInfo'
         '422':
-          description: Scope kind mismatched with ALM source type
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: project_manage
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /projects/{project_uid}/preflight:
     post:
+      summary: Preflight Project
       operationId: preflightProject
-      summary: Preview server, scope, fields, estimated size, throttling before job
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
+          title: Project Uid
       responses:
         '200':
-          description: Preflight readiness and estimate
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PreflightInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: project_manage
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /alm-instances/{instance_uid}/rate-policy:
     put:
+      summary: Rate Policy
       operationId: setServerRateLimit
-      summary: Update server-wide rate and backoff policy
       parameters:
       - name: instance_uid
         in: path
         required: true
         schema:
           type: string
+          title: Instance Uid
       requestBody:
+        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AlmHttpPolicy'
+              $ref: '#/components/schemas/HttpPolicy'
       responses:
         '200':
-          description: Rate policy saved and versioned
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HttpPolicy'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: system_admin
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /jobs/{job_id}/failed-items:
     get:
       operationId: listFailedItems
@@ -652,6 +892,57 @@ paths:
       - ApiKeyAuth: []
       - AdminSession: []
       x-implementation-status: M1_IMPLEMENTED
+    post:
+      summary: Register Project
+      operationId: registerProject
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreate'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /projects/{project_uid}/jobs:
     post:
       summary: Stage
@@ -670,6 +961,12 @@ paths:
             schema:
               $ref: '#/components/schemas/Stage'
       responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobInfo'
         '422':
           description: Sanitized error
           content:
@@ -710,7 +1007,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - AdminSession: []
-      x-implementation-status: M1_FAIL_CLOSED_STAGE_GUARD
+      x-implementation-status: M2_COLLECT_ONLY
   /jobs:
     get:
       summary: Jobs
@@ -1230,6 +1527,69 @@ paths:
       - ApiKeyAuth: []
       - AdminSession: []
       x-implementation-status: M1_IMPLEMENTED
+  /alm-instances/{instance_uid}/projects/{source_project_id}/fields:
+    get:
+      summary: Discover Fields
+      operationId: discoverCollectionFields
+      parameters:
+      - name: instance_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Instance Uid
+      - name: source_project_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Source Project Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Discovercollectionfields
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -1860,6 +2220,399 @@ components:
       - msg
       - type
       title: ValidationError
+    CodebeamerProfile:
+      properties:
+        display_name:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Display Name
+        base_url:
+          type: string
+          title: Base Url
+        auth_ref:
+          type: string
+          pattern: ^(env:[A-Z][A-Z0-9_]*|vault:[A-Za-z0-9_-]+)$
+          title: Auth Ref
+        http_policy:
+          $ref: '#/components/schemas/HttpPolicy'
+        ca_bundle_ref:
+          title: Ca Bundle Ref
+          nullable: true
+          type: string
+          pattern: ^env:[A-Z][A-Z0-9_]*$
+        source_type:
+          type: string
+          title: Source Type
+          enum:
+          - codebeamer
+        api_profile:
+          type: string
+          title: Api Profile
+          default: cb-rest-v3
+          enum:
+          - cb-rest-v3
+        auth_method:
+          type: string
+          enum:
+          - bearer
+          - basic
+          title: Auth Method
+          default: bearer
+        username:
+          title: Username
+          nullable: true
+          type: string
+      additionalProperties: false
+      type: object
+      required:
+      - display_name
+      - base_url
+      - auth_ref
+      - source_type
+      title: CodebeamerProfile
+    CollectionConfig:
+      properties:
+        selection_mode:
+          type: string
+          enum:
+          - ALL
+          - SELECTED
+          title: Selection Mode
+          default: ALL
+        scope_kind:
+          type: string
+          enum:
+          - TRACKER
+          - WORK_ITEM_TYPE
+          title: Scope Kind
+        source_scope_ids:
+          items:
+            type: string
+          type: array
+          maxItems: 10000
+          title: Source Scope Ids
+        embedding_fields:
+          items:
+            type: string
+          type: array
+          maxItems: 1000
+          minItems: 1
+          title: Embedding Fields
+      additionalProperties: false
+      type: object
+      required:
+      - scope_kind
+      title: CollectionConfig
+    HttpPolicy:
+      properties:
+        requests_per_second:
+          type: number
+          maximum: 1000.0
+          exclusiveMinimum: 0.0
+          title: Requests Per Second
+          default: 2
+        burst:
+          type: integer
+          maximum: 1000.0
+          minimum: 1.0
+          title: Burst
+          default: 2
+        max_inflight:
+          type: integer
+          maximum: 32.0
+          minimum: 1.0
+          title: Max Inflight
+          default: 2
+        min_interval_ms:
+          type: integer
+          maximum: 60000.0
+          minimum: 0.0
+          title: Min Interval Ms
+          default: 200
+        timeout_seconds:
+          type: number
+          maximum: 300.0
+          exclusiveMinimum: 0.0
+          title: Timeout Seconds
+          default: 30
+        max_attempts:
+          type: integer
+          maximum: 10.0
+          minimum: 1.0
+          title: Max Attempts
+          default: 5
+        backoff_base_seconds:
+          type: number
+          maximum: 120.0
+          minimum: 0.0
+          title: Backoff Base Seconds
+          default: 2
+        backoff_max_seconds:
+          type: number
+          maximum: 600.0
+          minimum: 0.0
+          title: Backoff Max Seconds
+          default: 120
+        total_budget_seconds:
+          type: number
+          maximum: 3600.0
+          exclusiveMinimum: 0.0
+          title: Total Budget Seconds
+          default: 180
+        circuit_breaker_window:
+          type: integer
+          maximum: 100.0
+          minimum: 1.0
+          title: Circuit Breaker Window
+          default: 20
+        max_response_bytes:
+          type: integer
+          maximum: 1073741824.0
+          minimum: 1.0
+          title: Max Response Bytes
+          default: 16777216
+      additionalProperties: false
+      type: object
+      title: HttpPolicy
+    InstanceInfo:
+      properties:
+        instance_uid:
+          type: string
+          title: Instance Uid
+        source_type:
+          type: string
+          enum:
+          - codebeamer
+          - polarion
+          title: Source Type
+        display_name:
+          type: string
+          title: Display Name
+        base_url:
+          type: string
+          title: Base Url
+        api_profile:
+          type: string
+          title: Api Profile
+        auth_configured:
+          type: boolean
+          title: Auth Configured
+      type: object
+      required:
+      - instance_uid
+      - source_type
+      - display_name
+      - base_url
+      - api_profile
+      - auth_configured
+      title: InstanceInfo
+    PolarionProfile:
+      properties:
+        display_name:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Display Name
+        base_url:
+          type: string
+          title: Base Url
+        auth_ref:
+          type: string
+          pattern: ^(env:[A-Z][A-Z0-9_]*|vault:[A-Za-z0-9_-]+)$
+          title: Auth Ref
+        http_policy:
+          $ref: '#/components/schemas/HttpPolicy'
+        ca_bundle_ref:
+          title: Ca Bundle Ref
+          nullable: true
+          type: string
+          pattern: ^env:[A-Z][A-Z0-9_]*$
+        source_type:
+          type: string
+          title: Source Type
+          enum:
+          - polarion
+        api_profile:
+          type: string
+          title: Api Profile
+          default: polarion-rest-v1
+          enum:
+          - polarion-rest-v1
+        auth_method:
+          type: string
+          title: Auth Method
+          default: bearer
+          enum:
+          - bearer
+      additionalProperties: false
+      type: object
+      required:
+      - display_name
+      - base_url
+      - auth_ref
+      - source_type
+      title: PolarionProfile
+    PreflightInfo:
+      properties:
+        status:
+          type: string
+          enum:
+          - READY
+          - BLOCKED
+          title: Status
+        collect_ready:
+          type: boolean
+          title: Collect Ready
+        sync_ready:
+          type: boolean
+          title: Sync Ready
+        scope_kind:
+          title: Scope Kind
+          nullable: true
+          type: string
+        source_scope_ids:
+          items:
+            type: string
+          type: array
+          title: Source Scope Ids
+        readable_fields:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Readable Fields
+        normalized_fields:
+          items:
+            type: string
+          type: array
+          title: Normalized Fields
+        estimated_items:
+          title: Estimated Items
+          nullable: true
+          type: integer
+        estimated_requests:
+          title: Estimated Requests
+          nullable: true
+          type: integer
+        request_estimate_kind:
+          type: string
+          title: Request Estimate Kind
+          default: UNKNOWN
+          enum:
+          - UNKNOWN
+        request_count_lower_bound:
+          title: Request Count Lower Bound
+          nullable: true
+          type: integer
+        config_revision:
+          title: Config Revision
+          nullable: true
+          type: string
+        diagnostics:
+          items:
+            type: string
+          type: array
+          title: Diagnostics
+      type: object
+      required:
+      - status
+      - collect_ready
+      - sync_ready
+      - scope_kind
+      - source_scope_ids
+      - readable_fields
+      - estimated_items
+      - estimated_requests
+      - config_revision
+      - diagnostics
+      title: PreflightInfo
+    ProjectCreate:
+      properties:
+        selection_mode:
+          type: string
+          enum:
+          - ALL
+          - SELECTED
+          title: Selection Mode
+          default: ALL
+        scope_kind:
+          type: string
+          enum:
+          - TRACKER
+          - WORK_ITEM_TYPE
+          title: Scope Kind
+        source_scope_ids:
+          items:
+            type: string
+          type: array
+          maxItems: 10000
+          title: Source Scope Ids
+        embedding_fields:
+          items:
+            type: string
+          type: array
+          maxItems: 1000
+          minItems: 1
+          title: Embedding Fields
+        alm_instance_uid:
+          type: string
+          title: Alm Instance Uid
+        source_project_id:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Source Project Id
+        name:
+          type: string
+          maxLength: 200
+          minLength: 1
+          title: Name
+      additionalProperties: false
+      type: object
+      required:
+      - scope_kind
+      - alm_instance_uid
+      - source_project_id
+      - name
+      title: ProjectCreate
+    SourceProject:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        url:
+          type: string
+          title: Url
+      type: object
+      required:
+      - id
+      - name
+      - url
+      title: SourceProject
+    SourceScope:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        kind:
+          type: string
+          enum:
+          - TRACKER
+          - WORK_ITEM_TYPE
+          title: Kind
+      type: object
+      required:
+      - id
+      - name
+      - kind
+      title: SourceScope
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

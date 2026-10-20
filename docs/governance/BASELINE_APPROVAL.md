@@ -23,3 +23,15 @@ The user instructed “커밋반영하고 착수해” after environment remedia
 ## M1 approval and M2 start — 2026-10-20
 
 The user instructed “M1승인. 다음 단계를 진행해”. M1 commit `13e1f30` and its documented limitations are approved; M2 is authorized. No remote Push, deployment or live customer ALM access is inferred. M2 must stop at its own Human Gate.
+
+## M2 transport remediation authorization — 2026-10-20
+
+The user instructed “수정안을 적용하고 계속진행해” after reviewing M2/COMPLETION.md. This authorizes the proposed OI-035/036/037 corrective work, regression tests and resumption of M2. It does not accept the defects as risks or waive the AGENTS.md stop rule for newly discovered unresolved Major issues. M2 completion/M3, remote Push, deployment and live ALM remain separate gates.
+
+## M2 Item isolation and integration remediation authorization — 2026-10-20
+
+The user instructed “보완하고 계속 진행해” after the OI-038 Major and associated integration findings were reported. This authorizes the concrete OI-038/039/040/041 corrections described in M2/COMPLETION.md, completion of M2 REST/CLI/contracts/worker/mock acceptance and independent QA. It does not authorize M3, live ALM, remote Push or deployment, nor accept known failures as passed. M2 resumes IN_PROGRESS and retains its completion Human Gate.
+
+## Continued M2 corrective implementation — 2026-10-20
+
+After the next independent QA checkpoint identified equivalent-origin/default-port budget separation and the Worker attachment-directory mismatch, the user instructed “진행중인가? 계속 구현해”. Main announced these two concrete remaining corrections and continued their regression-first implementation within M2. Record them as OI-042/043; do not accept the initial QA FAIL as passed or waive the M2 completion gate. No external action or requirements change is authorized.

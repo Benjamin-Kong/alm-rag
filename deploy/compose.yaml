@@ -1,7 +1,7 @@
-# M1 foundation only. No live ALM/embedding/index stage handlers.
+# M2 local runtime. Live ALM is disabled by default; later stages stay unavailable.
 services:
   api:
-    image: almrag-api:m1
+    image: almrag-api:m2
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
@@ -16,7 +16,7 @@ services:
     cap_drop: [ALL]
     init: true
   worker:
-    image: almrag-api:m1
+    image: almrag-api:m2
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
@@ -35,7 +35,7 @@ services:
     cap_drop: [ALL]
     init: true
   frontend:
-    image: almrag-frontend:m1
+    image: almrag-frontend:m2
     build:
       context: ..
       dockerfile: deploy/Dockerfile.frontend

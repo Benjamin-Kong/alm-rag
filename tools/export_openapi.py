@@ -1,4 +1,4 @@
-"""Export the executed M1 contract and refresh only its subset of the draft."""
+"""Export the executed M2 contract; preserve the historical M1 snapshot."""
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -29,16 +29,16 @@ def as_openapi30(value):
 def main():
     with TemporaryDirectory() as directory:
         schema=create_app(Settings(database_path=str(Path(directory)/'schema.sqlite'))).openapi()
-    (ROOT/'docs/api/m1-openapi.json').write_text(json.dumps(schema,indent=2,ensure_ascii=False)+'\n')
+    (ROOT/'docs/api/m2-openapi.json').write_text(json.dumps(schema,indent=2,ensure_ascii=False)+'\n')
     path=ROOT/'docs/api/openapi.yaml'
     draft=yaml.safe_load(path.read_text())
-    draft['info']['description']='M1 executed subset is marked x-implementation-status; other endpoints remain draft and unimplemented. See m1-openapi.json for the executable M1 contract.'
+    draft['info']['description']='M2 executed subset is marked x-implementation-status; other endpoints remain draft and unimplemented. See m2-openapi.json for the current executable contract; m1-openapi.json is historical.'
     for methods in draft['paths'].values():
         for operation in methods.values():
             if isinstance(operation,dict) and 'operationId' in operation:
                 operation.setdefault('x-implementation-status','DRAFT_NOT_IMPLEMENTED')
     for route,methods in schema['paths'].items():
-        draft['paths'][route.removeprefix('/api/v1')]=as_openapi30(methods)
+        draft['paths'].setdefault(route.removeprefix('/api/v1'),{}).update(as_openapi30(methods))
     draft['components']['schemas'].update(as_openapi30(schema['components']['schemas']))
     draft['components']['securitySchemes'].update(schema['components']['securitySchemes'])
     path.write_text(yaml.safe_dump(draft,sort_keys=False,allow_unicode=True))

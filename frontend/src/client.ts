@@ -5,7 +5,7 @@ export class ApiRequestError extends Error {
   constructor(readonly status: number) { super(`Request failed (${status})`); }
 }
 
-/** Same-origin M1 client; credentials live only in the caller's memory. */
+/** Same-origin client; credentials live only in the caller's memory. */
 export class ApiClient {
   constructor(
     private readonly credentials: { apiKey?: string; csrf?: string } = {},
@@ -41,9 +41,31 @@ export class ApiClient {
   createKey(input: Schema['KeyCreate']) { return this.request<Schema['KeyCreated']>('POST', '/api-keys', input); }
   revokeKey(id: string) { return this.request<void>('DELETE', '/api-keys/' + encodeURIComponent(id)); }
   startJob(project: string, input: Schema['Stage']) {
-    // M1 returns a typed failure (409); real pipeline handlers arrive in M2+.
-    return this.request<never>('POST', '/projects/' + encodeURIComponent(project) + '/jobs', input);
+    return this.request<Schema['JobInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/jobs', input);
   }
+  registerSource(input: Schema['CodebeamerProfile'] | Schema['PolarionProfile']) {
+    return this.request<Schema['InstanceInfo']>('POST', '/alm-instances', input);
+  }
+  probeSource(source: string) {
+    return this.request<Record<string, unknown>>('POST', '/alm-instances/' + encodeURIComponent(source) + '/probe');
+  }
+  discoverProjects(source: string) {
+    return this.request<Schema['SourceProject'][]>('GET', '/alm-instances/' + encodeURIComponent(source) + '/projects');
+  }
+  discoverScopes(source: string, project: string) {
+    return this.request<Schema['SourceScope'][]>('GET', '/alm-instances/' + encodeURIComponent(source) + '/projects/' + encodeURIComponent(project) + '/scopes');
+  }
+  discoverFields(source: string, project: string) {
+    return this.request<Record<string, unknown>[]>('GET', '/alm-instances/' + encodeURIComponent(source) + '/projects/' + encodeURIComponent(project) + '/fields');
+  }
+  setRatePolicy(source: string, input: Schema['HttpPolicy']) {
+    return this.request<Schema['HttpPolicy']>('PUT', '/alm-instances/' + encodeURIComponent(source) + '/rate-policy', input);
+  }
+  registerProject(input: Schema['ProjectCreate']) { return this.request<Schema['ProjectInfo']>('POST', '/projects', input); }
+  configureCollection(project: string, input: Schema['CollectionConfig']) {
+    return this.request<Schema['ProjectInfo']>('PUT', '/projects/' + encodeURIComponent(project) + '/collection-config', input);
+  }
+  preflight(project: string) { return this.request<Schema['PreflightInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/preflight'); }
   sync(project: string) { return this.request<never>('POST', '/projects/' + encodeURIComponent(project) + '/sync'); }
   audit() { return this.request<Record<string, unknown>[]>('GET', '/audit-events'); }
 }
