@@ -34,3 +34,17 @@ test('M2 discovery, source-specific policy and COLLECT use generated request typ
   expect(job.job_id).toBe('job');
   expect(JSON.parse(fetcher.mock.calls[3][1].body).stage).toBe('COLLECT');
 });
+
+test('M3 processing policy and preflight use encoded project and typed input', async () => {
+  const fetcher = vi.fn().mockResolvedValue({ok:true,status:200,json:async()=>({status:'BLOCKED',process_ready:false})});
+  const client = new ApiClient({csrf:'fixture'},fetcher);
+  await client.configureProcessing('p/id',{fields:[{kind:'SOURCE',key:'title'}]});
+  expect(fetcher.mock.calls[0][0]).toBe('/api/v1/projects/p%2Fid/processing-config');
+  expect(JSON.parse(fetcher.mock.calls[0][1].body).fields[0].kind).toBe('SOURCE');
+  await client.processingConfig('p/id');
+  expect(fetcher.mock.calls[1][1].method).toBe('GET');
+  const pre = await client.processingPreflight('p/id');
+  expect(pre.process_ready).toBe(false);
+  await client.configureProcessingDefaults('i/id',{fields:[]});
+  expect(fetcher.mock.calls[3][0]).toBe('/api/v1/alm-instances/i%2Fid/processing-defaults');
+});

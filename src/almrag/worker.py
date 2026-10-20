@@ -31,7 +31,7 @@ def healthy(path, now=None):
 
 
 def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
-             health_path=None, lease_seconds=30, heartbeat_interval=5):
+             health_path=None, lease_seconds=30, heartbeat_interval=5, processing_service=None):
     """Claim one job; CollectionService alone owns normal terminal transitions.
 
     Heartbeats run independently while a connector performs network work or waits.
@@ -46,7 +46,8 @@ def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
     job = queue.claim(owner, lease_seconds=lease_seconds)
     if job is None:
         return False
-    if job['stage'] != 'COLLECT' or collection_service is None:
+    service = collection_service if job['stage']=='COLLECT' else processing_service if job['stage'] in {'PROCESS','EMBED'} else None
+    if service is None:
         queue.finish(job['job_id'], job['fencing_token'], state='BLOCKED', error_code='STAGE_UNAVAILABLE')
         print(json.dumps(safe_event(action='job_blocked', outcome='blocked', job_uid=job['job_id'],
                                     stage=job['stage'], error_code='STAGE_UNAVAILABLE')), flush=True)
@@ -77,7 +78,7 @@ def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
             write_health(health_path)
         heartbeat.start()
         try:
-            collection_service.run(job, abort_check=abort_check)
+            service.run(job, abort_check=abort_check)
         except LeaseLost:
             raise
         except Exception:
@@ -100,6 +101,13 @@ class _ConfiguredCollection:
         self.settings = settings
 
     def run(self, job, abort_check):
+        if job.get('stage') in {'PROCESS','EMBED'}:
+            from almrag.processing import ProcessingService
+            from almrag.model_runtime import ModelRuntimeRegistry
+            if not hasattr(self,'processing'):
+                self.registry=ModelRuntimeRegistry(self.settings,self.db)
+                self.processing=ProcessingService(self.db,self.registry.get)
+            return self.processing.run(job,abort_check=abort_check)
         from almrag.collection import CollectionService
         from almrag.connection import Connections
         connections = Connections(self.db, self.settings)
@@ -133,7 +141,7 @@ def main():
     try:
         while not stopping:
             try:
-                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path)
+                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path,processing_service=collection_service)
             except LeaseLost:
                 print(json.dumps(safe_event(action='lease_lost',outcome='aborted')),flush=True)
             write_health(path)

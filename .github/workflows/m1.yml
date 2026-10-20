@@ -1,4 +1,4 @@
-name: Foundation and M2 collection gates
+name: Foundation, collection and M3 processing gates
 on: [push, pull_request]
 jobs:
   foundation:
@@ -22,10 +22,11 @@ jobs:
         working-directory: frontend
       - run: npm audit --audit-level=moderate
         working-directory: frontend
-      - run: git diff --exit-code -- docs/api/m2-openapi.json docs/api/openapi.yaml frontend/src/generated-api.d.ts
+      - run: git diff --exit-code -- docs/api/m3-openapi.json docs/api/openapi.yaml frontend/src/generated-api.d.ts
       - run: docker compose -p almrag-ci -f deploy/compose.yaml build
       - run: docker compose -p almrag-ci -f deploy/compose.yaml up -d --wait --wait-timeout 90
       - run: python -c "import urllib.request; assert b'ok' in urllib.request.urlopen('http://127.0.0.1:8080/api/v1/healthz').read()"
-      - run: docker run --rm -i --network none --entrypoint python almrag-api:m2 - < tools/smoke_m2.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m3 - < tools/smoke_m2.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m3 - < tools/smoke_m3.py
       - if: always()
         run: docker compose -p almrag-ci -f deploy/compose.yaml down -v

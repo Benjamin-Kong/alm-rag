@@ -1,6 +1,6 @@
 # M2 — ALM Collectors
 
-Status: PENDING_APPROVAL — M1 approved; M2 known code findings corrected and local/mock acceptance observed. See docs/milestones/M2/COMPLETION.md for external limits and the initial-profile TDD chronology exception. User approval is required before M3; M3 is not started.
+Status: APPROVED_WITH_DOCUMENTED_LIMITATIONS (2026-10-20), user “계속진행해” after commit0b38393 delivery. Initial-profile TDD_NOT_EVIDENCED and external verification limits retained; M3 separately started and now has its own QA gate. See COMPLETION.md and docs/governance/BASELINE_APPROVAL.md.
 
 ## Goal
 CB/Polarion 커넥터/프로젝트 탐색/Tracker Type 선택/Revision/Fields/Relations/Attachments/수동 증분 동기화

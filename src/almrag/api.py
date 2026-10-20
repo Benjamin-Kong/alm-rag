@@ -16,6 +16,9 @@ from almrag.alm_http import AlmError, HttpPolicy
 from almrag.collection import CollectionError, CollectionService
 from almrag.connection import Connections, SourceProfileCreate
 from almrag.connectors import ConnectorError
+from almrag.processing import FieldRef, ProcessingPolicy, ProcessingService, ProcessingError
+from almrag.embedding import ModelError
+from almrag.model_runtime import ModelRuntimeRegistry
 
 
 class Input(BaseModel):
@@ -127,6 +130,36 @@ class JobEvent(BaseModel):
     error_code: str | None = None
 
 
+class EffectiveProcessingPolicy(BaseModel):
+    fields: list[FieldRef]
+    scope_fields: dict[str,list[FieldRef]] = Field(default_factory=dict)
+    chunking: dict
+
+
+class ProcessingConfigInfo(BaseModel):
+    project_uid: str
+    instance_uid: str
+    policy: ProcessingPolicy
+    instance_policy: ProcessingPolicy
+    effective_policy: EffectiveProcessingPolicy
+    config_revision: str
+
+
+class ProcessingDefaultsInfo(BaseModel):
+    instance_uid: str
+    policy: ProcessingPolicy
+
+
+class ProcessingPreflightInfo(BaseModel):
+    status: Literal['READY','BLOCKED']
+    process_ready: bool
+    embed_ready: bool
+    sync_ready: Literal[False] = False
+    config_revision: str | None
+    estimated_items: int | None
+    diagnostics: list[str]
+
+
 class ApiFailure(Exception):
     def __init__(self, status, code):
         self.status, self.code = status, code
@@ -136,7 +169,7 @@ def error(request, status, code):
     return JSONResponse(status_code=status, content={'code':code,'message':code.lower().replace('_',' '), 'trace_id':request.state.trace_id}, headers={'Cache-Control':'no-store'})
 
 
-def create_app(settings=None, db=None, *, connections=None, collection=None):
+def create_app(settings=None, db=None, *, connections=None, collection=None, processing=None):
     settings = settings or Settings.from_env()
     if db is None:
         from almrag.storage import Database
@@ -145,9 +178,19 @@ def create_app(settings=None, db=None, *, connections=None, collection=None):
     auth = Security(db, settings.session_seconds)
     connections=connections or Connections(db,settings)
     collection=collection or CollectionService(db,connections.connector,settings.attachment_directory)
-    app = FastAPI(title='ALM RAG M2', version='0.2.0', docs_url=None, redoc_url=None, openapi_url=None)
+    registry=ModelRuntimeRegistry(settings,db)
+    processing=processing or ProcessingService(db,registry.get)
+    app = FastAPI(title='ALM RAG M3', version='0.3.0', docs_url=None, redoc_url=None, openapi_url=None)
     app.state.security, app.state.db = auth, db
     app.state.connections,app.state.collection=connections,collection
+
+    app.state.processing=processing
+
+    @app.exception_handler(ProcessingError)
+    @app.exception_handler(ModelError)
+    async def processing_failure(request,exc):
+        status=404 if exc.code in {'PROJECT_NOT_CONFIGURED','INSTANCE_NOT_CONFIGURED'} else 409
+        return error(request,status,exc.code)
 
     @app.exception_handler(AlmError)
     @app.exception_handler(CollectionError)
@@ -269,6 +312,29 @@ def create_app(settings=None, db=None, *, connections=None, collection=None):
         project_exists(project_uid)
         return collection.preflight(project_uid)
 
+    @app.get('/api/v1/projects/{project_uid}/processing-config',response_model=ProcessingConfigInfo,operation_id='getProcessingConfig',openapi_extra={'x-required-scope':'project_read'})
+    def get_processing_config(project_uid:str,request:Request):
+        require(request,'project_read',project_uid)
+        project_exists(project_uid)
+        return app.state.processing.get_config(project_uid)
+
+    @app.put('/api/v1/projects/{project_uid}/processing-config',response_model=ProcessingConfigInfo,operation_id='configureProcessing',openapi_extra={'x-required-scope':'project_manage'})
+    def configure_processing(project_uid:str,payload:ProcessingPolicy,request:Request):
+        require(request,'project_manage',project_uid)
+        project_exists(project_uid)
+        return app.state.processing.configure(project_uid,payload)
+
+    @app.put('/api/v1/alm-instances/{instance_uid}/processing-defaults',response_model=ProcessingDefaultsInfo,operation_id='configureProcessingDefaults',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def processing_defaults(instance_uid:str,payload:ProcessingPolicy,request:Request):
+        require(request,'system_admin',session_only=True)
+        return app.state.processing.configure_instance(instance_uid,payload)
+
+    @app.post('/api/v1/projects/{project_uid}/processing-preflight',response_model=ProcessingPreflightInfo,operation_id='preflightProcessing',openapi_extra={'x-required-scope':'project_manage'})
+    def processing_preflight(project_uid:str,request:Request):
+        require(request,'project_manage',project_uid)
+        project_exists(project_uid)
+        return app.state.processing.preflight(project_uid)
+
     @app.get('/api/v1/healthz',response_model=Health,operation_id='healthz',openapi_extra={'x-required-scope':'public'})
     def health():
         return Health()
@@ -364,8 +430,10 @@ def create_app(settings=None, db=None, *, connections=None, collection=None):
     def stage(project_uid:str,payload:Stage,request:Request):
         require(request,'project_manage',project_uid)
         project_exists(project_uid)
-        if payload.stage!='COLLECT':raise ApiFailure(409,'STAGE_UNAVAILABLE')
-        return collection.enqueue(project_uid,payload.config_revision)
+        if payload.stage=='COLLECT':return collection.enqueue(project_uid,payload.config_revision)
+        if payload.stage in {'PROCESS','EMBED'}:
+            return app.state.processing.enqueue(project_uid,payload.stage,config_revision=payload.config_revision)
+        raise ApiFailure(409,'STAGE_UNAVAILABLE')
 
     @app.get('/api/v1/jobs/{job_id}/events',response_model=list[JobEvent],operation_id='listJobEvents',openapi_extra={'x-required-scope':'project_read'})
     def job_events(job_id:str,request:Request,limit:int=100,offset:int=0):
@@ -416,7 +484,10 @@ def create_app(settings=None, db=None, *, connections=None, collection=None):
                     if path.endswith('/sync'):
                         op['responses'].pop('202',None)
                         op['x-implementation-status']='M2_FAIL_CLOSED_SYNC_GUARD'
-                    else:op['x-implementation-status']='M2_COLLECT_ONLY'
+                    else:op['x-implementation-status']='M3_COLLECT_PROCESS_EMBED'
+                if 'processing-' in path:
+                    op['x-implementation-status']='M3_IMPLEMENTED'
+                    codes += [409]
                 for code in codes:
                     op['responses'][str(code)]={'description':'Sanitized error','content':{'application/json':{'schema':{'$ref':'#/components/schemas/ApiError'}}}}
         return schema

@@ -43,6 +43,8 @@ class Settings:
     live_alm_enabled: bool = False
     allowed_alm_origins: tuple[str,...] = ()
     attachment_root: str | None = None
+    model_profile_path: str | None = None
+    live_model_enabled: bool = False
 
     @property
     def attachment_directory(self):
@@ -70,7 +72,9 @@ class Settings:
                    qdrant_auth_ref=os.getenv('ALMRAG_QDRANT_AUTH_REF'),
                    live_alm_enabled=os.getenv('ALMRAG_LIVE_ALM_ENABLED','false').lower()=='true',
                    allowed_alm_origins=tuple(x.strip().rstrip('/') for x in os.getenv('ALMRAG_ALLOWED_ALM_ORIGINS','').split(',') if x.strip()),
-                   attachment_root=os.getenv('ALMRAG_ATTACHMENT_ROOT'))
+                   attachment_root=os.getenv('ALMRAG_ATTACHMENT_ROOT'),
+                   model_profile_path=os.getenv('ALMRAG_MODEL_PROFILE_PATH'),
+                   live_model_enabled=os.getenv('ALMRAG_LIVE_MODEL_ENABLED','false').lower()=='true')
 
 
 class SourceProfile(BaseModel):

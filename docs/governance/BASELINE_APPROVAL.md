@@ -35,3 +35,11 @@ The user instructed “보완하고 계속 진행해” after the OI-038 Major a
 ## Continued M2 corrective implementation — 2026-10-20
 
 After the next independent QA checkpoint identified equivalent-origin/default-port budget separation and the Worker attachment-directory mismatch, the user instructed “진행중인가? 계속 구현해”. Main announced these two concrete remaining corrections and continued their regression-first implementation within M2. Record them as OI-042/043; do not accept the initial QA FAIL as passed or waive the M2 completion gate. No external action or requirements change is authorized.
+
+## M2 approval and M3 start — 2026-10-20
+
+After delivery of M2 commit0b38393 and its completion report, including the initial-profile TDD chronology exception and retained live/platform verification limits, the user instructed “계속진행해”. Main interprets this continuation of the milestone sequence as approval of the reported M2 candidate/exception and authorization to start M3. The missing historical test-first evidence remains TDD_NOT_EVIDENCED; approval does not retroactively make it PASS. No live ALM, remote Push, production deployment or new unexpected transmission is authorized. M3 has a separate completion Human Gate.
+
+## M3 tokenizer remediation authorization — 2026-10-20
+
+The user instructed “수정안 적용하고 재검증해” after OI-047 and TOKENIZER_FIX_PROPOSAL.patch were reported. This explicitly authorizes applying that tokenizer truncation/padding/identity correction and focused/full regression plus independent QA. It does not accept the defect as a risk, waive the M3 completion gate, or authorize M4, live ALM/model access, remote Push or deployment.

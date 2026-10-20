@@ -66,6 +66,18 @@ export class ApiClient {
     return this.request<Schema['ProjectInfo']>('PUT', '/projects/' + encodeURIComponent(project) + '/collection-config', input);
   }
   preflight(project: string) { return this.request<Schema['PreflightInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/preflight'); }
+  processingConfig(project: string) {
+    return this.request<Schema['ProcessingConfigInfo']>('GET', '/projects/' + encodeURIComponent(project) + '/processing-config');
+  }
+  configureProcessing(project: string, input: Schema['ProcessingPolicy']) {
+    return this.request<Schema['ProcessingConfigInfo']>('PUT', '/projects/' + encodeURIComponent(project) + '/processing-config', input);
+  }
+  processingPreflight(project: string) {
+    return this.request<Schema['ProcessingPreflightInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/processing-preflight');
+  }
+  configureProcessingDefaults(source: string, input: Schema['ProcessingPolicy']) {
+    return this.request<Schema['ProcessingDefaultsInfo']>('PUT', '/alm-instances/' + encodeURIComponent(source) + '/processing-defaults', input);
+  }
   sync(project: string) { return this.request<never>('POST', '/projects/' + encodeURIComponent(project) + '/sync'); }
   audit() { return this.request<Record<string, unknown>[]>('GET', '/audit-events'); }
 }

@@ -2,9 +2,9 @@ openapi: 3.0.3
 info:
   title: ALM Unified Retrieval API (DRAFT)
   version: 0.3.0-review-candidate
-  description: M2 executed subset is marked x-implementation-status; other endpoints
-    remain draft and unimplemented. See m2-openapi.json for the current executable
-    contract; m1-openapi.json is historical.
+  description: M3 executed subset is marked x-implementation-status; other endpoints
+    remain draft and unimplemented. See m3-openapi.json for the current executable
+    contract; m1-openapi.json and m2-openapi.json are historical.
 servers:
 - url: /api/v1
 security:
@@ -1007,7 +1007,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - AdminSession: []
-      x-implementation-status: M2_COLLECT_ONLY
+      x-implementation-status: M3_COLLECT_PROCESS_EMBED
   /jobs:
     get:
       summary: Jobs
@@ -1590,6 +1590,253 @@ paths:
       security:
       - AdminSession: []
       x-implementation-status: M2_IMPLEMENTED
+  /projects/{project_uid}/processing-config:
+    get:
+      summary: Get Processing Config
+      operationId: getProcessingConfig
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingConfigInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M3_IMPLEMENTED
+    put:
+      summary: Configure Processing
+      operationId: configureProcessing
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessingPolicy'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingConfigInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M3_IMPLEMENTED
+  /alm-instances/{instance_uid}/processing-defaults:
+    put:
+      summary: Processing Defaults
+      operationId: configureProcessingDefaults
+      parameters:
+      - name: instance_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Instance Uid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProcessingPolicy'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingDefaultsInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M3_IMPLEMENTED
+  /projects/{project_uid}/processing-preflight:
+    post:
+      summary: Processing Preflight
+      operationId: preflightProcessing
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProcessingPreflightInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M3_IMPLEMENTED
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -2613,6 +2860,193 @@ components:
       - name
       - kind
       title: SourceScope
+    ChunkConfig:
+      properties:
+        target_chunk_tokens:
+          type: integer
+          exclusiveMinimum: 0.0
+          title: Target Chunk Tokens
+          default: 512
+        max_chunk_tokens:
+          type: integer
+          exclusiveMinimum: 0.0
+          title: Max Chunk Tokens
+          default: 1024
+        overlap_tokens:
+          type: integer
+          minimum: 0.0
+          title: Overlap Tokens
+          default: 64
+        reserved_context_tokens:
+          type: integer
+          minimum: 0.0
+          title: Reserved Context Tokens
+          default: 128
+        min_chunk_tokens:
+          type: integer
+          exclusiveMinimum: 0.0
+          title: Min Chunk Tokens
+          default: 64
+        effective_max_input_tokens:
+          type: integer
+          exclusiveMinimum: 0.0
+          title: Effective Max Input Tokens
+          default: 1024
+        safety_margin:
+          type: integer
+          minimum: 0.0
+          title: Safety Margin
+          default: 0
+        prefix:
+          type: string
+          title: Prefix
+          default: ''
+      additionalProperties: false
+      type: object
+      title: ChunkConfig
+    EffectiveProcessingPolicy:
+      properties:
+        fields:
+          items:
+            $ref: '#/components/schemas/FieldRef'
+          type: array
+          title: Fields
+        scope_fields:
+          additionalProperties:
+            items:
+              $ref: '#/components/schemas/FieldRef'
+            type: array
+          type: object
+          title: Scope Fields
+        chunking:
+          additionalProperties: true
+          type: object
+          title: Chunking
+      type: object
+      required:
+      - fields
+      - chunking
+      title: EffectiveProcessingPolicy
+    FieldRef:
+      properties:
+        kind:
+          type: string
+          enum:
+          - NORMALIZED
+          - SOURCE
+          title: Kind
+        key:
+          type: string
+          maxLength: 512
+          minLength: 1
+          title: Key
+      additionalProperties: false
+      type: object
+      required:
+      - kind
+      - key
+      title: FieldRef
+    ProcessingConfigInfo:
+      properties:
+        project_uid:
+          type: string
+          title: Project Uid
+        instance_uid:
+          type: string
+          title: Instance Uid
+        policy:
+          $ref: '#/components/schemas/ProcessingPolicy'
+        instance_policy:
+          $ref: '#/components/schemas/ProcessingPolicy'
+        effective_policy:
+          $ref: '#/components/schemas/EffectiveProcessingPolicy'
+        config_revision:
+          type: string
+          title: Config Revision
+      type: object
+      required:
+      - project_uid
+      - instance_uid
+      - policy
+      - instance_policy
+      - effective_policy
+      - config_revision
+      title: ProcessingConfigInfo
+    ProcessingDefaultsInfo:
+      properties:
+        instance_uid:
+          type: string
+          title: Instance Uid
+        policy:
+          $ref: '#/components/schemas/ProcessingPolicy'
+      type: object
+      required:
+      - instance_uid
+      - policy
+      title: ProcessingDefaultsInfo
+    ProcessingPolicy:
+      properties:
+        fields:
+          title: Fields
+          nullable: true
+          items:
+            $ref: '#/components/schemas/FieldRef'
+          type: array
+        scope_fields:
+          additionalProperties:
+            items:
+              $ref: '#/components/schemas/FieldRef'
+            type: array
+          type: object
+          title: Scope Fields
+        chunking:
+          nullable: true
+          $ref: '#/components/schemas/ChunkConfig'
+      additionalProperties: false
+      type: object
+      title: ProcessingPolicy
+    ProcessingPreflightInfo:
+      properties:
+        status:
+          type: string
+          enum:
+          - READY
+          - BLOCKED
+          title: Status
+        process_ready:
+          type: boolean
+          title: Process Ready
+        embed_ready:
+          type: boolean
+          title: Embed Ready
+        sync_ready:
+          type: boolean
+          title: Sync Ready
+          default: false
+          enum:
+          - false
+        config_revision:
+          title: Config Revision
+          nullable: true
+          type: string
+        estimated_items:
+          title: Estimated Items
+          nullable: true
+          type: integer
+        diagnostics:
+          items:
+            type: string
+          type: array
+          title: Diagnostics
+      type: object
+      required:
+      - status
+      - process_ready
+      - embed_ready
+      - config_revision
+      - estimated_items
+      - diagnostics
+      title: ProcessingPreflightInfo
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

@@ -10,7 +10,7 @@
 - Runtime portability: Windows/macOS/Linux; Docker/Native.
 
 ## Test traceability
-`docs/testing/TEST_CASES.md` defines TEST-001~043 at specification level; TEST-044~059 scenarios appear below. `docs/requirements/TRACEABILITY.csv` maps each `SRS-xxx` to `TEST-xxx`; test IDs are reserved names, NOT implemented tests. Each test must produce observed PASS/FAIL/NOT VERIFIED; no fabricated results.
+`docs/testing/TEST_CASES.md` defines TEST-001~043 at specification level; TEST-044~059 scenarios appear below. `docs/requirements/TRACEABILITY.csv` maps each `SRS-xxx` to `TEST-xxx`; test IDs identify specification scenarios; individual implemented subcases are linked by milestone traces, not proof that each full scenario has run. Each test must produce observed PASS/FAIL/NOT VERIFIED; no fabricated results.
 
 M1 supplement: applicable foundation subcases are now implemented in tests/ and frontend/src/*.test.*; execution evidence and code/test mapping are in docs/milestones/M1/TEST_REPORT.md and M1_TRACEABILITY.csv. Product-level TEST IDs remain only partially verified where their primary behavior belongs to later milestones. CI definition covers the current foundation; remote CI has not run.
 
@@ -44,3 +44,8 @@ Project UID + query + relevant item UID(s), ~20–50 manually verified queries i
 | TEST-059 | UI/429/Chunk/Docker/TDD 의무 Gate가 누락 없이 CI에서 판정 | SRS-059 |
 
 기존 Q40/B안 정책과 일치: Unit + Integration + Mock E2E 자동화를 기본 필수화하고 실제 ALM 접속은 환경 제공 시 추가 검증한다. Runtime 이미지 미빌드/미시험 상태는 PASS로 표시하지 않는다. 엄격한 일률 커버리지 수치 미강제(Q46 B).
+
+
+## M3 execution supplement — 2026-10-20
+
+M1/M2 approved with recorded limitations. M3 local candidate has271Python/8Frontend tests, offline packaging/container and synthetic model-client evidence. Current source/test boundaries and TEST-044..059 are in docs/milestones/M3/M3_TRACEABILITY.csv, TEST_REPORT.md and GATE_MATRIX.md. Real deployed model/tokenizer, ALM and remote CI remain NOT VERIFIED. Active search/publication/replay belong to M4; no full AC-02/03/05/10/12 acceptance is inferred from M3 stage tests. M3 completion Human Gate remains pending.

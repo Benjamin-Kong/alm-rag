@@ -104,7 +104,7 @@ def jobs():
 
 @app.command()
 def start_job(project_uid:str,stage:str):
-    """Request COLLECT; later pipeline stages return409 until implemented."""
+    """Request COLLECT, PROCESS or EMBED; indexing stages remain unavailable."""
     request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':stage})
 
 
@@ -187,6 +187,26 @@ def preflight(project_uid:str):
 @app.command()
 def collect(project_uid:str,config_revision:str|None=typer.Option(None)):
     request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':'COLLECT','config_revision':config_revision})
+
+
+@app.command()
+def configure_processing(project_uid:str,config_file:str):
+    request('PUT','/projects/'+quote(project_uid,safe='')+'/processing-config',_payload(config_file))
+
+
+@app.command()
+def processing_preflight(project_uid:str):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/processing-preflight')
+
+
+@app.command()
+def process(project_uid:str,config_revision:str|None=typer.Option(None)):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':'PROCESS','config_revision':config_revision})
+
+
+@app.command()
+def embed(project_uid:str,config_revision:str|None=typer.Option(None)):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':'EMBED','config_revision':config_revision})
 
 
 if __name__=='__main__':

@@ -1,7 +1,7 @@
-# M2 local runtime. Live ALM is disabled by default; later stages stay unavailable.
+# M3 local runtime. Live ALM/model are disabled by default; indexing stays unavailable.
 services:
   api:
-    image: almrag-api:m2
+    image: almrag-api:m3
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
@@ -16,7 +16,7 @@ services:
     cap_drop: [ALL]
     init: true
   worker:
-    image: almrag-api:m2
+    image: almrag-api:m3
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
@@ -35,7 +35,7 @@ services:
     cap_drop: [ALL]
     init: true
   frontend:
-    image: almrag-frontend:m2
+    image: almrag-frontend:m3
     build:
       context: ..
       dockerfile: deploy/Dockerfile.frontend

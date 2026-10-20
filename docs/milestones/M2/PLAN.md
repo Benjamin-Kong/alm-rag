@@ -1,6 +1,6 @@
 # M2 ALM Collectors
 
-Status: PENDING_APPROVAL (2026-10-20). M1 remains approved. M2 known code findings corrected through3 review rounds; Main178 Python/7 Frontend tests and local container runtime pass. Independent QA177 full tests plus final new targeted regression pass. Initial connection/config prototype TDD chronology exception and external limits require user review. See QA_REPORT.md/COMPLETION.md. Base:13e1f30, branch codex/m2-collectors; authorization/design commit:2a934c5. M3 not started.
+Status: APPROVED_WITH_DOCUMENTED_LIMITATIONS (2026-10-20), user “계속진행해” after commit0b38393 delivery. Initial-profile TDD_NOT_EVIDENCED and external verification limits retained; M3 separately started and now has its own QA gate. See COMPLETION.md and docs/governance/BASELINE_APPROVAL.md.
 
 Primary15: SRS-001/003/004/005/006/007/008/010/022/045/046/047/053/054/055. Shared6: SRS-039/041/044/049/058/059. Primary/Shared assignments remain unchanged.
 

@@ -1,0 +1,8 @@
+--- a/src/almrag/embedding.py
++++ b/src/almrag/embedding.py
+@@ -44,0 +45,2 @@
++            self._tokenizer.no_truncation()
++            self._tokenizer.no_padding()
+@@ -49 +51 @@
+-        self._identity='hf-json:'+expected_sha256+':special-tokens-on'
++        self._identity='hf-json:'+expected_sha256+':untruncated-unpadded-v1:special-tokens-on'

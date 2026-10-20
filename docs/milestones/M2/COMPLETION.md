@@ -1,6 +1,6 @@
 # M2 ALM collection — approval candidate
 
-Status: **PENDING_APPROVAL**, 2026-10-20. M1 was user-approved at13e1f30. M2 start/design authorization commit2a934c5 is on codex/m2-collectors. Subsequent user instructions authorized the recorded corrective work. No M3 implementation started.
+Status: **APPROVED_WITH_DOCUMENTED_LIMITATIONS**, 2026-10-20. After delivery of commit0b38393 and this report, user “계속진행해” authorizes the next milestone. This accepts the reported external limits and initial-profile TDD exception as a retained process deviation, not retroactive test-first PASS. M1 was approved at13e1f30; M2 design authorization was2a934c5. See BASELINE_APPROVAL.md for M3 start authorization.
 
 ## Delivered
 

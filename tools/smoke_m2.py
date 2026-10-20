@@ -49,7 +49,7 @@ def main():
             assert run_once(Queue(db),'smoke',service)
             assert Queue(db).get_job(queued['job_id'])['state']=='SUCCEEDED'
         with db.connect() as c:
-            assert [row[0] for row in c.execute('SELECT version FROM schema_migrations ORDER BY version')]==[1,2,3]
+            assert [row[0] for row in c.execute('SELECT version FROM schema_migrations ORDER BY version')]==[1,2,3,4]
             assert c.execute('SELECT count(*) FROM item_revisions').fetchone()[0]==1
             assert c.execute('SELECT active_revision_uid FROM items').fetchone()[0] is None
             assert json.loads(c.execute('SELECT raw_payload FROM item_revisions').fetchone()[0])['raw']==routes['/v3/items/100']

@@ -109,3 +109,23 @@ M1 착수 승인, 원격 Push 승인, Legacy 원문 및 외부 통합 관련 미
 - **OI-045 / Process exception / OPEN FOR USER REVIEW:** 최초 connection/config 프로필 prototype을 테스트보다 먼저 작성함. 후속 경계/결함 수정 Red→Green은 있지만 최초 chronology는 TDD_NOT_EVIDENCED. TEST-058 PARTIAL; 기록 삭제/사후 조작 없이 M2 Human Gate에서 예외 검토 필요.
 - 최신 실제 Main: Python178PASS, Frontend7PASS/build, 두 이미지/세서비스 healthy, network-none 수집 smoke39 합성GET, wheel migrations[1,2,3], Python/Node dependency audit0. 독립 QA full177PASS + 마지막 신규minor1PASS. 알려진 미해결 code Major/Critical 없음; M2 PENDING_APPROVAL, M3 미착수.
 - OI-001/002/010/011/015 실서버 및 확정 삭제/렌더링 안전, OI-019/023 Legacy 원문, OI-029 public replay ACL 충돌, OI-030 다중플랫폼/OS image scan, 원격 CI/Push/Notion은 OPEN/NOT VERIFIED 유지. Source 관측 안전을 실제 ALM 기능 완전 검증으로 승격하지 않음.
+
+### M3 checkpoint — latest,2026-10-20
+
+- M2 approved at0b38393 by subsequent user “계속진행해”; OI-045 accepted as retained TDD_NOT_EVIDENCED process exception, never retroactively PASS. M3 started on codex/m3-content.
+- **OI-046 / Major / RESOLVED in tested scope:** HTML recover parser dropped deep/huge input after FATAL resource limit; source retained but derived output incomplete. Actual Red1FAIL, Item-local HTML_PARSE_INCOMPLETE correction; independent300deep/>10MB repro rejected and49target testsPASS.
+- **OI-047 / Major / OPEN:** LocalTokenizer preserves artifact truncation/padding;2000 tokens count8, one token count16/32. Independent complete chunk repro actual2008>1024 but metadata8. Model truncate:false/count check mitigates accepted truncated vectors, no source loss demonstrated. Actual new regressions2FAIL; implementation stopped. See M3/QA_REPORT.md and unapplied TOKENIZER_FIX_PROPOSAL.patch. Human Review required before correction/resumption under AGENTS.
+- Main264PASS preceded OI-047 regressions; current tree is not all-green. Frontend8PASS/build, packagebuild/static3.12PASS. Real model/ALM/M3Docker and wheelisolatedinstall/fullmockE2E/remoteCI remain NOT VERIFIED. M3 incomplete and uncommitted, M4 not started.
+
+### M3 tokenizer correction revalidation — latest,2026-10-20
+
+- **OI-047 / Major / RESOLVED within local tested scope:** user “수정안 적용하고 재검증해” approved the saved proposal. LocalTokenizer explicitly disables artifact truncation/padding, preserves special tokens and source checksum, versions its identity. Actual Red3FAIL (including exact15k-token full-input chunk bounds/coverage)→focused62PASS6.35s→full267PASS22.58s. Independent43PASS1.72s and original long/padded-input repro corrected; oldprofile mismatch and modelcount checks remain fail-closed. See M3/TOKENIZER_REVALIDATION.md.
+- Frontend8PASS/build and project Python3.12 static gate PASS. No remaining Critical/Major identified in the bounded correction review. M3 resumes IN_PROGRESS; full mockE2E/container/wheel isolated install/final traceability/realmodel remain NOT VERIFIED. M3 completion/M4 are not approved; no remote action performed.
+
+### M3 final local candidate — latest,2026-10-20
+
+- OI-046/OI-047 remain RESOLVED within tested local scope. Main271PASS33.68s; independentQA271PASS33.18s; Frontend8PASS/build. No confirmed remaining code Critical/Major identified. Mock E2E4PASS includes15k+100row retention, zero-repeat embedding and100Items/3parser failures→97ready/all100raw.
+- M3 packaging/isolated wheel schema1..4, updated current contract/type-client/negative ACL, Python/Node audit0, local images/threehealthyservices, network-none runtime55chunks13content requests repeat0 and M2regression39GET PASS. Test services stopped; volumes retained. SRS assignments unchanged10Primary+7Shared; see M3/M3_TRACEABILITY.csv and GATE_MATRIX.md.
+- **OI-048 / Runtime verification / OPEN-NOT VERIFIED:** actual embeddinggemma-2 model/tokenizer artifacts and deployed context/digest/calibration/vector quality were not exercised. All runtime evidence FIXTURE_ONLY; no auto-download, live model disabled, unverified runtime BLOCKED. M3 acceptance must retain this limitation. It is not a claim of safe actual-model token accounting.
+- OI-019/023 original legacy clauses, OI-029 public replay ACL conflict, OI-030 platform/image-OS/remoteCI and actual ALM/renderer/deletion limits remain OPEN/NOT VERIFIED. M2 OI-045 accepted TDD exception retained. Full SYNC/active search/detail/Qdrant/public replay belongsM4 and notclaimed.
+- M3 PENDING_APPROVAL_WITH_DOCUMENTED_LIMITATIONS; M4 not started. No Push/Notion/liveALM/model/productiondeployment. User must approve the completion candidate before next milestone.

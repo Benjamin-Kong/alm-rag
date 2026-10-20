@@ -1,6 +1,6 @@
 # Software Requirements Specification — ALM Unified Retrieval (Review Candidate v0.3)
 
-> 문서 기준선: v0.3 조건부 승인(2026-10-19). M1 착수 승인 후 foundation 구현·부분 검증을 수행했으며, M1 완료 Human Approval은 대기 중이다. 요구사항 전체 구현·검증을 의미하지 않는다. 현재 증거는 docs/milestones/M1/COMPLETION.md 및 TRACEABILITY.csv 참조.
+> 문서 기준선: v0.3 조건부 승인(2026-10-19). M1/M2는 문서화된 제한과 함께 사용자 승인됐으며, M3 로컬/Mock 구현·검증은 완료 승인 대기 중이다. 실제 모델·ALM 및 후속 마일스톤을 포함한 전체 요구사항 검증을 의미하지 않는다. 현재 증거는 docs/milestones/M3/COMPLETION.md 및 TRACEABILITY.csv 참조. 아래 규범 요구사항은 변경하지 않았다.
 
 ## 1. 목적 및 범위
 Codebeamer Tracker Item과 Polarion Work Item을 공통 스키마로 수집하고 SQLite에 원본/Revision/첨부를 보존한다. HTML 구조를 분석하여 Field-aware Chunk를 생성하고 Ollama EmbeddingGemma 2와 Qdrant/Keyword Index를 활용해 프로젝트 제한 Hybrid Retrieval REST API를 제공한다.

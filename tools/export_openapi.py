@@ -1,4 +1,4 @@
-"""Export the executed M2 contract; preserve the historical M1 snapshot."""
+"""Export the executed M3 contract; preserve the historical M1 snapshot."""
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -29,10 +29,10 @@ def as_openapi30(value):
 def main():
     with TemporaryDirectory() as directory:
         schema=create_app(Settings(database_path=str(Path(directory)/'schema.sqlite'))).openapi()
-    (ROOT/'docs/api/m2-openapi.json').write_text(json.dumps(schema,indent=2,ensure_ascii=False)+'\n')
+    (ROOT/'docs/api/m3-openapi.json').write_text(json.dumps(schema,indent=2,ensure_ascii=False)+'\n')
     path=ROOT/'docs/api/openapi.yaml'
     draft=yaml.safe_load(path.read_text())
-    draft['info']['description']='M2 executed subset is marked x-implementation-status; other endpoints remain draft and unimplemented. See m2-openapi.json for the current executable contract; m1-openapi.json is historical.'
+    draft['info']['description']='M3 executed subset is marked x-implementation-status; other endpoints remain draft and unimplemented. See m3-openapi.json for the current executable contract; m1-openapi.json and m2-openapi.json are historical.'
     for methods in draft['paths'].values():
         for operation in methods.values():
             if isinstance(operation,dict) and 'operationId' in operation:
