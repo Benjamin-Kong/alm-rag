@@ -2,7 +2,7 @@
 """Static documentation baseline validation; NOT application/unit/integration tests."""
 from pathlib import Path
 from collections import Counter
-import csv, json, re, tomllib, hashlib, sys
+import csv, json, re, tomllib, hashlib, sys, os
 try: import yaml
 except ImportError: print("BLOCKED: PyYAML is required for schema validation");sys.exit(2)
 root=Path(__file__).resolve().parents[1]
@@ -38,7 +38,14 @@ assert len(ops)==len(set(ops)),"duplicate operationId"
 assert 'not probability' not in t('docs/api/openapi.yaml')
 refs=re.findall(r'#/components/schemas/([A-Za-z0-9_]+)',t('docs/api/openapi.yaml'))
 assert set(refs).issubset(api['components']['schemas']),set(refs)-set(api['components']['schemas'])
-for f in root.rglob('*.toml'):tomllib.loads(f.read_text())
-for f in root.rglob('*.yaml'):yaml.safe_load(f.read_text())
+# Dependency packages contain deliberate invalid syntax fixtures. Validate authored
+# files only, with the same behavior in a checkout and an extracted baseline ZIP.
+excluded={'.git','.venv','.worktrees','node_modules','dist','build','__pycache__','.pytest_cache'}
+for directory,dirs,files in os.walk(root):
+ dirs[:]=[d for d in dirs if d not in excluded]
+ for name in files:
+  f=Path(directory)/name
+  if f.suffix=='.toml':tomllib.loads(f.read_text())
+  if f.suffix in {'.yaml','.yml'}:yaml.safe_load(f.read_text())
 print('DOC_STATIC_PASS: 50 decisions, 252 legacy mapping rows, 59 SRS, 59 assigned milestones/tests, 6 subagents, '+str(len(ops))+' draft API operations, YAML+TOML valid')
 print('LIMITATIONS: original legacy REQ text unavailable; no live backend, database, ALM, Docker, model, Codex runtime tests executed')

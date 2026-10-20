@@ -12,3 +12,11 @@ This elaborates the approved SRS/SAD without changing their scope.
 - API and worker share the same non-root Python container. React foundation is separately built; no registration wizard. Default Docker ports bind loopback. No production secrets or ALM content in build context.
 
 Security tests include missing/revoked keys, cross-project UID access, read/manage permissions, cookie CSRF, secret/log non-disclosure, expiry and stale lease fencing. Database tests use temporary files and no production data.
+
+## Contract elaborations and remaining decisions
+
+- API/DB job states use the uppercase OpenAPI enumeration; FAILED_ITEM belongs to item attempts, not global Job state.
+- API keys with system_admin still have bounded project grants; they can only issue/revoke keys within their own grants and permissions. Global audit reads require an admin session because they contain cross-project events. No empty-scope wildcard.
+- Failed-item listing has a pre-existing conflict: OpenAPI says project_read while FAIL_SAFE_AND_REPLAY says project_manage for all failure APIs. M1 provides durable failure schema, not the disputed route. Keep this explicit at the M4/M5 integration gate; do not silently choose a policy.
+- Session CSRF header is X-CSRF-Token, matched against the hash of the session-bound almrag_csrf cookie; unsafe cookie requests and login require the configured Origin. Browser sessions require HTTPS even during local use. The M1 HTTP UI only shows public health.
+- Source profiles are foundation validation only. No manually created project is allowed to run an unverified ALM pipeline. Public stages return STAGE_UNAVAILABLE (409); internal synthetic queue tests do not define public executor support.

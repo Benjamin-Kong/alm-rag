@@ -1,43 +1,56 @@
-# DRAFT only: services require M1 code + lock files before functional verification.
+# M1 foundation only. No live ALM/embedding/index stage handlers.
 services:
   api:
+    image: almrag-api:m1
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
-    command: ["python", "-m", "almrag.api"]
     environment:
-      ALMRAG_DATABASE_URL: sqlite:////app/data/alm.sqlite
-      ALMRAG_QDRANT_URL: ${ALMRAG_QDRANT_URL:-http://qdrant:6333}
+      ALMRAG_DATABASE_PATH: /app/data/alm.sqlite
+      ALMRAG_QDRANT_URL: ${ALMRAG_QDRANT_URL:-http://host.docker.internal:6333}
       ALMRAG_OLLAMA_BASE_URL: ${ALMRAG_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-    volumes:
-      - almrag_data:/app/data
+      ALMRAG_ALLOWED_ORIGIN: ${ALMRAG_ALLOWED_ORIGIN:-https://localhost:8443}
+    volumes: [almrag_data:/app/data]
     ports: ["127.0.0.1:8000:8000"]
-    depends_on: {qdrant: {condition: service_started}}
-    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    init: true
   worker:
+    image: almrag-api:m1
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
     command: ["python", "-m", "almrag.worker"]
     environment:
-      ALMRAG_DATABASE_URL: sqlite:////app/data/alm.sqlite
-      ALMRAG_QDRANT_URL: ${ALMRAG_QDRANT_URL:-http://qdrant:6333}
+      ALMRAG_DATABASE_PATH: /app/data/alm.sqlite
+      ALMRAG_QDRANT_URL: ${ALMRAG_QDRANT_URL:-http://host.docker.internal:6333}
       ALMRAG_OLLAMA_BASE_URL: ${ALMRAG_OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-    volumes:
-      - almrag_data:/app/data
-    depends_on: {qdrant: {condition: service_started}}
-    restart: unless-stopped
+    volumes: [almrag_data:/app/data]
+    healthcheck:
+      test: [CMD, python, -m, almrag.worker, --health]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    init: true
   frontend:
+    image: almrag-frontend:m1
     build:
       context: ..
       dockerfile: deploy/Dockerfile.frontend
-    ports: ["127.0.0.1:8080:80"]
-    depends_on: [api]
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on:
+      api:
+        condition: service_healthy
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    init: true
   qdrant:
-    image: qdrant/qdrant:latest  # M1: MUST PIN digest and version before release
-    volumes:
-      - qdrant_data:/qdrant/storage
-    restart: unless-stopped
+    profiles: [services]
+    image: qdrant/qdrant@sha256:b7b0444c4c351c970b98e90a6f89c2ee4287c65b44e52b4cb503fa5b2aa927ad
+    volumes: [qdrant_data:/qdrant/storage]
+    ports: ["127.0.0.1:6333:6333"]
 volumes:
   almrag_data:
   qdrant_data:

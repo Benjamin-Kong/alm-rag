@@ -2,8 +2,8 @@ openapi: 3.0.3
 info:
   title: ALM Unified Retrieval API (DRAFT)
   version: 0.3.0-review-candidate
-  description: Proposed contract only. Unimplemented; all endpoints subject to code/contract tests and explicit
-    baseline approval. Required permissions are specified by x-required-scope.
+  description: M1 executed subset is marked x-implementation-status; other endpoints
+    remain draft and unimplemented. See m1-openapi.json for the executable M1 contract.
 servers:
 - url: /api/v1
 security:
@@ -36,52 +36,113 @@ paths:
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
       x-required-scope: search
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /projects/{project_uid}/sync:
     post:
+      summary: Sync
       operationId: startSync
-      summary: Queue project sync job
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
+          title: Project Uid
       responses:
-        '202':
-          description: Sync job queued
+        '422':
+          description: Sanitized error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobAccepted'
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: project_manage
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_FAIL_CLOSED_STAGE_GUARD
   /jobs/{job_id}:
     get:
+      summary: Job
       operationId: getJob
-      summary: Read job progress and checkpoint status
       parameters:
       - name: job_id
         in: path
         required: true
         schema:
           type: string
+          title: Job Id
       responses:
         '200':
-          description: Job state and metrics
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobStatus'
+                $ref: '#/components/schemas/JobInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: project_read
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
   /alm-instances:
     post:
       operationId: registerAlmInstance
@@ -104,6 +165,7 @@ paths:
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
       x-required-scope: system_admin
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /alm-instances/{instance_uid}/probe:
     post:
       operationId: probeAlmInstance
@@ -126,6 +188,7 @@ paths:
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
       x-required-scope: system_admin
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /alm-instances/{instance_uid}/projects:
     get:
       operationId: discoverAlmProjects
@@ -144,6 +207,7 @@ paths:
         '403':
           description: Forbidden by scope/project ACL
       x-required-scope: system_admin
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /alm-instances/{instance_uid}/projects/{source_project_id}/scopes:
     get:
       operationId: discoverCollectionScopes
@@ -167,6 +231,7 @@ paths:
         '403':
           description: Forbidden by scope/project ACL
       x-required-scope: system_admin
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /projects/{project_uid}/collection-config:
     put:
       operationId: configureCollectionScope
@@ -195,6 +260,7 @@ paths:
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
       x-required-scope: project_manage
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /projects/{project_uid}/preflight:
     post:
       operationId: preflightProject
@@ -215,6 +281,7 @@ paths:
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
       x-required-scope: project_manage
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /alm-instances/{instance_uid}/rate-policy:
     put:
       operationId: setServerRateLimit
@@ -240,6 +307,7 @@ paths:
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
       x-required-scope: system_admin
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /jobs/{job_id}/failed-items:
     get:
       operationId: listFailedItems
@@ -264,6 +332,7 @@ paths:
         '403':
           description: Forbidden by scope/project ACL
       x-required-scope: project_read
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /jobs/{job_id}/failed-items/{item_uid}/retry:
     post:
       operationId: retryFailedItem
@@ -294,6 +363,7 @@ paths:
         '403':
           description: Forbidden by scope/project ACL
       x-required-scope: project_manage
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /jobs/{job_id}/failed-items/retry:
     post:
       operationId: retryFailedItems
@@ -314,6 +384,7 @@ paths:
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
       x-required-scope: project_manage
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /jobs/{job_id}/resume:
     post:
       operationId: resumeJob
@@ -334,137 +405,376 @@ paths:
         '403':
           description: Forbidden by scope/project ACL
       x-required-scope: project_manage
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /auth/login:
     post:
+      summary: Login
       operationId: adminLogin
-      summary: Admin session login; session cookie is HttpOnly Secure SameSite, CSRF-protected
-      x-required-scope: public
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AdminLoginRequest'
+              $ref: '#/components/schemas/Login'
+        required: true
       responses:
         '204':
-          description: Session established, no token echoed in response
+          description: Successful Response
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Invalid credentials
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: public
       security: []
+      x-implementation-status: M1_IMPLEMENTED
   /auth/logout:
     post:
+      summary: Logout
       operationId: adminLogout
-      summary: Revoke current admin session
-      x-required-scope: authenticated
       responses:
         '204':
-          description: Session ended
+          description: Successful Response
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: authenticated
+      security:
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
   /api-keys:
     post:
+      summary: Create Key
       operationId: createApiKey
-      summary: Generate project-scoped API key, raw value returned once
-      x-required-scope: system_admin
       requestBody:
-        required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ApiKeyCreateRequest'
+              $ref: '#/components/schemas/KeyCreate'
+        required: true
       responses:
         '201':
-          description: One-time secret (never persisted in plaintext)
-        '403':
-          description: Admin role required
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyCreated'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
   /api-keys/{key_id}:
     delete:
+      summary: Revoke
       operationId: revokeApiKey
-      summary: Revoke API key
-      x-required-scope: system_admin
       parameters:
       - name: key_id
         in: path
         required: true
         schema:
           type: string
+          title: Key Id
       responses:
         '204':
-          description: Key revoked
+          description: Successful Response
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
   /projects:
     get:
+      summary: Projects
       operationId: listProjects
-      summary: List only permitted projects
-      x-required-scope: project_read
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Offset
       responses:
         '200':
-          description: Authorized project catalog
+          description: Successful Response
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProjectInfo'
+                title: Response Listprojects
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
   /projects/{project_uid}/jobs:
     post:
+      summary: Stage
       operationId: startProjectStageJob
-      summary: Queue specified isolated stage or full pipeline
-      x-required-scope: project_manage
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
+          title: Project Uid
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PipelineJobRequest'
+              $ref: '#/components/schemas/Stage'
       responses:
-        '202':
-          description: Job queued
+        '422':
+          description: Sanitized error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobAccepted'
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_FAIL_CLOSED_STAGE_GUARD
   /jobs:
     get:
+      summary: Jobs
       operationId: listJobs
-      summary: List jobs filtered by caller project ACL
-      x-required-scope: project_read
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Offset
       responses:
         '200':
-          description: Authorized job summaries
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobInfo'
+                title: Response Listjobs
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
   /projects/{project_uid}/items:
     get:
       operationId: listProjectItems
@@ -483,6 +793,7 @@ paths:
           description: Authentication required
         '403':
           description: Forbidden by scope/project ACL
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /items/{item_uid}:
     get:
       operationId: getItemDetail
@@ -501,6 +812,7 @@ paths:
           description: Authentication required
         '403':
           description: Forbidden by scope/project ACL
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /items/{item_uid}/revisions:
     get:
       operationId: getItemRevisions
@@ -519,6 +831,7 @@ paths:
           description: Authentication required
         '403':
           description: Forbidden by scope/project ACL
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /items/{item_uid}/chunks:
     get:
       operationId: getItemChunks
@@ -537,6 +850,7 @@ paths:
           description: Authentication required
         '403':
           description: Forbidden by scope/project ACL
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /projects/{project_uid}/integrity:
     post:
       operationId: startIntegrityReport
@@ -561,6 +875,7 @@ paths:
           description: Forbidden by scope/project ACL
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /projects/{project_uid}/evaluations:
     post:
       operationId: startRetrievalEvaluation
@@ -591,6 +906,7 @@ paths:
           description: Forbidden by scope/project ACL
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /projects/{project_uid}/export:
     post:
       operationId: exportProject
@@ -621,6 +937,7 @@ paths:
           description: Forbidden by scope/project ACL
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /projects/{project_uid}/import:
     post:
       operationId: importProject
@@ -651,6 +968,7 @@ paths:
           description: Forbidden by scope/project ACL
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /backups:
     post:
       operationId: createBackup
@@ -669,6 +987,7 @@ paths:
           description: Forbidden by scope/project ACL
         '409':
           description: 'Conflict: revision, stage, approval or idempotency check'
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
     get:
       operationId: listBackups
       summary: List backup manifests and restore compatibility
@@ -680,6 +999,7 @@ paths:
           description: Authentication required
         '403':
           description: Forbidden by scope/project ACL
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /backups/{backup_id}/restore:
     post:
       operationId: restoreBackup
@@ -710,59 +1030,206 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BackupRestoreRequest'
+      x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /audit-events:
     get:
+      summary: Audit
       operationId: listAuditEvents
-      summary: Review redacted administrative audit events
-      x-required-scope: system_admin
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
       responses:
         '200':
-          description: Paginated audit events
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+                title: Response Listauditevents
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      security:
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
   /jobs/{job_id}/events:
     get:
+      summary: Job Events
       operationId: listJobEvents
-      summary: Query redacted event/log trace for a job
-      x-required-scope: project_read
       parameters:
       - name: job_id
         in: path
         required: true
         schema:
           type: string
+          title: Job Id
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Offset
       responses:
         '200':
-          description: Redacted job events
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobEvent'
+                title: Response Listjobevents
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
   /healthz:
     get:
+      summary: Health
       operationId: healthz
-      summary: Liveness endpoint no sensitive status
-      x-required-scope: public
       responses:
         '200':
-          description: Alive
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: public
       security: []
+      x-implementation-status: M1_IMPLEMENTED
   /readyz:
     get:
+      summary: Ready
       operationId: readyz
-      summary: Readiness without secret leakage
-      x-required-scope: system_admin
       responses:
         '200':
-          description: Ready
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Health'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '503':
-          description: Dependency unavailable
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M1_IMPLEMENTED
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -773,7 +1240,8 @@ components:
       type: apiKey
       in: cookie
       name: almrag_session
-      description: HttpOnly Secure SameSite session; unsafe methods also require CSRF token.
+      description: Secure HttpOnly SameSite=strict; unsafe methods require Origin
+        and X-CSRF-Token.
   schemas:
     SearchRequest:
       type: object
@@ -790,7 +1258,8 @@ components:
           uniqueItems: true
           items:
             type: string
-          description: Required non-empty list; the API rejects absent, empty, unauthorized or cross-project scopes.
+          description: Required non-empty list; the API rejects absent, empty, unauthorized
+            or cross-project scopes.
         top_k:
           type: integer
           minimum: 1
@@ -847,7 +1316,8 @@ components:
                 format: uri
               score:
                 type: number
-                description: RRF rank fusion score, not a probability or calibrated confidence.
+                description: RRF rank fusion score, not a probability or calibrated
+                  confidence.
               matched_chunks:
                 type: array
                 items:
@@ -937,8 +1407,9 @@ components:
           type: array
           items:
             type: string
-      description: Validator must require >=1 source_scope_ids when selection_mode=SELECTED and enforce scope_kind
-        matching ALM source_type; cross-property constraints enforced server-side.
+      description: Validator must require >=1 source_scope_ids when selection_mode=SELECTED
+        and enforce scope_kind matching ALM source_type; cross-property constraints
+        enforced server-side.
     FailedItem:
       type: object
       properties:
@@ -1013,43 +1484,43 @@ components:
       - job_id
       - state
     ApiError:
-      type: object
+      properties:
+        code:
+          title: Code
+          type: string
+        message:
+          title: Message
+          type: string
+        trace_id:
+          title: Trace Id
+          type: string
       required:
       - code
       - message
       - trace_id
-      properties:
-        code:
-          type: string
-        message:
-          type: string
-        trace_id:
-          type: string
-        job_id:
-          type: string
-        retryable:
-          type: boolean
+      title: ApiError
+      type: object
     ProjectInfo:
+      properties:
+        project_uid:
+          type: string
+          title: Project Uid
+        alm_instance_uid:
+          type: string
+          title: Alm Instance Uid
+        source_project_id:
+          type: string
+          title: Source Project Id
+        name:
+          type: string
+          title: Name
       type: object
       required:
       - project_uid
       - alm_instance_uid
       - source_project_id
       - name
-      properties:
-        project_uid:
-          type: string
-        alm_instance_uid:
-          type: string
-        source_project_id:
-          type: string
-        name:
-          type: string
-        selection_mode:
-          type: string
-          enum:
-          - ALL
-          - SELECTED
+      title: ProjectInfo
     AdminLoginRequest:
       type: object
       required:
@@ -1155,7 +1626,8 @@ components:
             type: string
         dataset_ref:
           type: string
-          description: Local server side reference, not raw data or arbitrary external URL
+          description: Local server side reference, not raw data or arbitrary external
+            URL
         methods:
           type: array
           items:
@@ -1172,7 +1644,8 @@ components:
       properties:
         artifact_ref:
           type: string
-          description: Opaque reference to a previously validated local staging artifact; not a pathname or URL
+          description: Opaque reference to a previously validated local staging artifact;
+            not a pathname or URL
         import_mode:
           type: string
           enum:
@@ -1191,8 +1664,202 @@ components:
           type: string
         confirmation_nonce:
           type: string
-          description: One-use admin confirmation derived from server-side approval workflow, not arbitrary yes/no
-            string
+          description: One-use admin confirmation derived from server-side approval
+            workflow, not arbitrary yes/no string
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    Health:
+      properties:
+        status:
+          type: string
+          title: Status
+          default: ok
+          enum:
+          - ok
+      type: object
+      title: Health
+    JobEvent:
+      properties:
+        event_id:
+          type: integer
+          title: Event Id
+        job_id:
+          type: string
+          title: Job Id
+        occurred_at:
+          type: number
+          title: Occurred At
+        state:
+          type: string
+          title: State
+        error_code:
+          title: Error Code
+          nullable: true
+          type: string
+      type: object
+      required:
+      - event_id
+      - job_id
+      - occurred_at
+      - state
+      title: JobEvent
+    JobInfo:
+      properties:
+        job_id:
+          type: string
+          title: Job Id
+        project_uid:
+          type: string
+          title: Project Uid
+        stage:
+          type: string
+          title: Stage
+        state:
+          type: string
+          enum:
+          - QUEUED
+          - RUNNING
+          - SUCCEEDED
+          - COMPLETED_WITH_ERRORS
+          - RETRY_WAIT
+          - PAUSED
+          - BLOCKED
+          - FAILED
+          - CANCELLED
+          title: State
+        last_error_code:
+          title: Last Error Code
+          nullable: true
+          type: string
+      type: object
+      required:
+      - job_id
+      - project_uid
+      - stage
+      - state
+      title: JobInfo
+    KeyCreate:
+      properties:
+        name:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Name
+        project_uids:
+          items:
+            type: string
+          type: array
+          maxItems: 1000
+          minItems: 1
+          title: Project Uids
+        permissions:
+          items:
+            type: string
+            enum:
+            - search
+            - project_read
+            - project_manage
+            - system_admin
+          type: array
+          maxItems: 4
+          minItems: 1
+          title: Permissions
+      additionalProperties: false
+      type: object
+      required:
+      - name
+      - project_uids
+      - permissions
+      title: KeyCreate
+    KeyCreated:
+      properties:
+        key_id:
+          type: string
+          title: Key Id
+        key:
+          type: string
+          title: Key
+      type: object
+      required:
+      - key_id
+      - key
+      title: KeyCreated
+    Login:
+      properties:
+        username:
+          type: string
+          maxLength: 128
+          minLength: 1
+          title: Username
+        password:
+          type: string
+          maxLength: 1024
+          minLength: 1
+          title: Password
+      additionalProperties: false
+      type: object
+      required:
+      - username
+      - password
+      title: Login
+    Stage:
+      properties:
+        stage:
+          type: string
+          enum:
+          - SYNC
+          - COLLECT
+          - PROCESS
+          - EMBED
+          - INDEX
+          - REBUILD_INDEX
+          title: Stage
+        force:
+          type: boolean
+          title: Force
+          default: false
+        config_revision:
+          title: Config Revision
+          nullable: true
+          type: string
+      additionalProperties: false
+      type: object
+      required:
+      - stage
+      title: Stage
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+        input:
+          title: Input
+        ctx:
+          type: object
+          title: Context
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

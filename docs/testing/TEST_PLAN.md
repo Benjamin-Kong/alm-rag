@@ -12,6 +12,8 @@
 ## Test traceability
 `docs/testing/TEST_CASES.md` defines TEST-001~043 at specification level; TEST-044~059 scenarios appear below. `docs/requirements/TRACEABILITY.csv` maps each `SRS-xxx` to `TEST-xxx`; test IDs are reserved names, NOT implemented tests. Each test must produce observed PASS/FAIL/NOT VERIFIED; no fabricated results.
 
+M1 supplement: applicable foundation subcases are now implemented in tests/ and frontend/src/*.test.*; execution evidence and code/test mapping are in docs/milestones/M1/TEST_REPORT.md and M1_TRACEABILITY.csv. Product-level TEST IDs remain only partially verified where their primary behavior belongs to later milestones. CI definition covers the current foundation; remote CI has not run.
+
 ## Golden retrieval dataset
 Project UID + query + relevant item UID(s), ~20–50 manually verified queries initially. Record Precision@K/Recall@K/MRR. Compare Vector-only, Keyword-only and Hybrid with same filters and item-level metric denominator. Include `SOME/IP-SD`, `30490`, `0x...`, Korean semantic paraphrase and table row semantics.
 

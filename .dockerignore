@@ -14,3 +14,13 @@
 **/dist/
 **/.venv/
 **/test-results/
+.worktrees/
+.codex/
+.agents/
+.aws/
+credentials/
+logs/
+exports/
+backups/
+database/
+qdrant_storage/

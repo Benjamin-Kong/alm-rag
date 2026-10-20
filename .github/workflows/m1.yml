@@ -1,0 +1,30 @@
+name: M1 foundation gates
+on: [push, pull_request]
+jobs:
+  foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install uv==0.9.18
+      - run: uv sync --frozen
+      - run: uv run python tools/validate_baseline.py
+      - run: uv run pytest -q
+      - run: uv export --frozen --no-dev --no-emit-project --format requirements-txt --output-file /tmp/runtime-lock.txt --quiet
+      - run: uv tool run --from pip-audit==2.10.1 pip-audit --disable-pip --no-deps -r /tmp/runtime-lock.txt
+      - run: uv run python tools/export_openapi.py
+      - run: npm ci && npm run generate:api && npm test && npm run build
+        working-directory: frontend
+      - run: npm audit --audit-level=moderate
+        working-directory: frontend
+      - run: git diff --exit-code -- docs/api/m1-openapi.json docs/api/openapi.yaml frontend/src/generated-api.d.ts
+      - run: docker compose -p almrag-ci -f deploy/compose.yaml build
+      - run: docker compose -p almrag-ci -f deploy/compose.yaml up -d --wait --wait-timeout 90
+      - run: python -c "import urllib.request; assert b'ok' in urllib.request.urlopen('http://127.0.0.1:8080/api/v1/healthz').read()"
+      - if: always()
+        run: docker compose -p almrag-ci -f deploy/compose.yaml down -v

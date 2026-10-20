@@ -1,5 +1,5 @@
 [build-system]
-requires = ["hatchling>=1.27,<2"]
+requires = ["hatchling==1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
@@ -7,7 +7,14 @@ name = "alm-rag"
 version = "0.1.0"
 description = "Read-only ALM retrieval foundation"
 requires-python = ">=3.12,<3.13"
-dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "argon2-cffi>=23,<26", "cryptography>=44,<47", "httpx>=0.28,<1", "typer>=0.15,<1"]
+dependencies = [
+    "fastapi>=0.115,<1",
+    "uvicorn>=0.34,<1",
+    "argon2-cffi>=23,<26",
+    "cryptography>=50,<51",
+    "httpx>=0.28,<1",
+    "typer>=0.15,<1",
+]
 
 [project.scripts]
 almrag = "almrag.cli:app"

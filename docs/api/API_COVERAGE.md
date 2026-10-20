@@ -1,8 +1,10 @@
 # REST API coverage and open questions (v0.3)
 
-Every path is a **DRAFT CONTRACT** only. Endpoints and `x-required-scope` do not implement authorization.
+Future paths remain **DRAFT CONTRACTS**. The M1 executed subset is exported in `m1-openapi.json` and marked `x-implementation-status` in `openapi.yaml`. Its authentication/project ACL checks are exercised by `tests/test_api.py` and `tests/test_foundation_integration.py`; a marker alone never implements authorization.
 An API Key must carry project scope and operation permission; admin cookie authentication requires CSRF protection. Authentication and authorization must be enforced server-side for each route, including paths carrying only job_id or item_uid.
 Broad 200/202 responses are placeholders, NOT full request/response schemas; M1 and M5 must finalize OpenAPI models through TDD.
+
+M1 implements login/logout, key creation/revocation, projects, jobs/job detail/events, audit, health/readiness. Public pipeline requests currently return 409 STAGE_UNAVAILABLE, not fake job success. List routes use bounded limit/offset on the M1 dataset; large-scale cursor stability remains a future gate. Global audit and logout require AdminSession; project-scoped system_admin API keys cannot expand their own grants or read global audit. Generated TS declarations and the same-origin M1 client live in `frontend/src/`.
 
 | Method | Path | Operation ID | Required scope |
 |---|---|---|---|

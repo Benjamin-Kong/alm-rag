@@ -1,60 +1,60 @@
-﻿srs_id,short_name,source_decisions,primary_milestone,support_milestones,verification_id,architecture_reference,api_reference,status,test_execution
-SRS-001,Source Connectivity,Q01;Q19;Q20,M2,M1,TEST-001,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-002,Project identity,Q08,M1,,TEST-002,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-003,Collection scope,Q01;Q09;Q20,M2,M5,TEST-003,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-004,Items and fields,Q01;Q03;Q33,M2,,TEST-004,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-005,Raw assets,Q02,M2,,TEST-005,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-006,Revision history,Q04,M2,,TEST-006,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-007,Delta synchronization,Q05,M2,,TEST-007,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-008,Deletion semantics,Q10,M2,M4,TEST-008,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-009,Partial field selection,Q03,M3,,TEST-009,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-010,HTML-first,Q14,M2,M3,TEST-010,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-011,Structured tables,Q14,M3,,TEST-011,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-012,Table-aware embedding,Q14,M3,,TEST-012,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-013,Field-aware chunks,Q06;Q14,M3,,TEST-013,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-014,Chunk identity,Q06,M3,,TEST-014,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-015,Selective embeddings,Q05;Q06,M3,,TEST-015,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-016,Fallback validation,Q32,M3,,TEST-016,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-017,Embedding service,Q18,M1,M3,TEST-017,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-018,Hybrid search,Q07,M4,,TEST-018,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-019,Project scoping,Q08;Q27,M4,M1,TEST-019,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-020,Item grouping,Q06;Q12,M4,,TEST-020,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-021,Variable response,Q11,M4,,TEST-021,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-022,Relations scope,Q33;Q34,M2,M4,TEST-022,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-023,Item publication,Q22,M1,M4,TEST-023,docs/architecture/DATA_MODEL.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-024,Index generations,Q24;Q25,M4,,TEST-024,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-025,Independent stages,Q23,M5,M1,TEST-025,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-026,Job queue,Q21;Q26,M1,M5,TEST-026,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-027,Authentication,Q19;Q27,M1,M5,TEST-027,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-028,Secrets and audit,Q19;Q36,M1,M5,TEST-028,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-029,Admin UI,Q15;Q20;Q31;Q36,M5,,TEST-029,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-030,Backup restore,Q28,M5,,TEST-030,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-031,Export import,Q29,M5,,TEST-031,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-032,Import merge,Q30,M5,,TEST-032,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-033,Integrity assurance,Q35,M6,,TEST-033,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-034,Retrieval evaluation,Q13,M6,,TEST-034,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-035,Scale target,Q37,M6,,TEST-035,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-036,Search latency,Q38,M6,,TEST-036,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-037,Embedding benchmark,Q39,M6,,TEST-037,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-038,Execution portability,Q16;Q17;Q18,M1,M6,TEST-038,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-039,Testing,Q40;Q46,M6,M1;M2;M3;M4;M5,TEST-039,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-040,Delivery architecture,Q15;Q41,M1,M5,TEST-040,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-041,Milestone governance,Q42;Q43;Q44;Q45;Q46;Q47,M6,M1;M2;M3;M4;M5,TEST-041,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-042,Docs and repositories,Q45;Q48;Q49,M5,M1,TEST-042,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-043,Approval-before-build,Q50,M6,M1,TEST-043,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-044,ALM-aware wizard,USER-POST-Q50,M5,M1;M2,TEST-044,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-045,Server discovery,USER-POST-Q50,M2,M5,TEST-045,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-046,Product-specific scope,USER-POST-Q50,M2,M5,TEST-046,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-047,Collection preflight,USER-POST-Q50,M2,M5,TEST-047,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-048,Token-bounded chunks,USER-POST-Q50,M3,,TEST-048,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-049,Full item retention,USER-POST-Q50,M3,M2;M4,TEST-049,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-050,Table atomic semantics,USER-POST-Q50,M3,,TEST-050,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-051,Container build,USER-POST-Q50,M1,M6,TEST-051,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-052,Reproducible install,USER-POST-Q50,M1,M6,TEST-052,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-053,Adaptive throttling,USER-POST-Q50,M2,M5,TEST-053,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-054,Backoff semantics,USER-POST-Q50,M2,,TEST-054,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-055,Failed item isolation,USER-POST-Q50,M2,M3;M4,TEST-055,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-056,Item replay,USER-POST-Q50,M4,M1;M5,TEST-056,docs/architecture/DATA_MODEL.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-057,Diagnostics,USER-POST-Q50,M1,M5,TEST-057,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-058,TDD requirement,USER-POST-Q50,M6,M1;M2;M3;M4;M5,TEST-058,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
-SRS-059,Gate tests,USER-POST-Q50,M6,M1;M2;M3;M4;M5,TEST-059,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED
+﻿srs_id,short_name,source_decisions,primary_milestone,support_milestones,verification_id,architecture_reference,api_reference,status,test_execution,m1_implementation_reference,m1_test_reference,m1_gate_status
+SRS-001,Source Connectivity,Q01;Q19;Q20,M2,M1,TEST-001,docs/architecture/SAD.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/config.py;src/almrag/security.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-002,Project identity,Q08,M1,,TEST-002,docs/architecture/DATA_MODEL.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/storage.py;src/almrag/migrations/001_initial.sql,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-003,Collection scope,Q01;Q09;Q20,M2,M5,TEST-003,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-004,Items and fields,Q01;Q03;Q33,M2,,TEST-004,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-005,Raw assets,Q02,M2,,TEST-005,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-006,Revision history,Q04,M2,,TEST-006,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-007,Delta synchronization,Q05,M2,,TEST-007,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-008,Deletion semantics,Q10,M2,M4,TEST-008,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-009,Partial field selection,Q03,M3,,TEST-009,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-010,HTML-first,Q14,M2,M3,TEST-010,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-011,Structured tables,Q14,M3,,TEST-011,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-012,Table-aware embedding,Q14,M3,,TEST-012,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-013,Field-aware chunks,Q06;Q14,M3,,TEST-013,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-014,Chunk identity,Q06,M3,,TEST-014,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-015,Selective embeddings,Q05;Q06,M3,,TEST-015,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-016,Fallback validation,Q32,M3,,TEST-016,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-017,Embedding service,Q18,M1,M3,TEST-017,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/config.py;src/almrag/services.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-018,Hybrid search,Q07,M4,,TEST-018,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-019,Project scoping,Q08;Q27,M4,M1,TEST-019,docs/architecture/SAD.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/api.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-020,Item grouping,Q06;Q12,M4,,TEST-020,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-021,Variable response,Q11,M4,,TEST-021,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-022,Relations scope,Q33;Q34,M2,M4,TEST-022,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-023,Item publication,Q22,M1,M4,TEST-023,docs/architecture/DATA_MODEL.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/migrations/001_initial.sql,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-024,Index generations,Q24;Q25,M4,,TEST-024,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-025,Independent stages,Q23,M5,M1,TEST-025,docs/architecture/SAD.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/cli.py;src/almrag/api.py;src/almrag/queue.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-026,Job queue,Q21;Q26,M1,M5,TEST-026,docs/architecture/SAD.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/queue.py;src/almrag/worker.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-027,Authentication,Q19;Q27,M1,M5,TEST-027,docs/architecture/SAD.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/security.py;src/almrag/api.py;src/almrag/cli.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-028,Secrets and audit,Q19;Q36,M1,M5,TEST-028,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/security.py;src/almrag/api.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-029,Admin UI,Q15;Q20;Q31;Q36,M5,,TEST-029,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-030,Backup restore,Q28,M5,,TEST-030,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-031,Export import,Q29,M5,,TEST-031,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-032,Import merge,Q30,M5,,TEST-032,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-033,Integrity assurance,Q35,M6,,TEST-033,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-034,Retrieval evaluation,Q13,M6,,TEST-034,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-035,Scale target,Q37,M6,,TEST-035,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-036,Search latency,Q38,M6,,TEST-036,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-037,Embedding benchmark,Q39,M6,,TEST-037,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-038,Execution portability,Q16;Q17;Q18,M1,M6,TEST-038,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,deploy/;src/almrag/config.py;src/almrag/cli.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-039,Testing,Q40;Q46,M6,M1;M2;M3;M4;M5,TEST-039,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,tests/;frontend/src/;docs/milestones/M1/,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-040,Delivery architecture,Q15;Q41,M1,M5,TEST-040,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/;frontend/;deploy/,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-041,Milestone governance,Q42;Q43;Q44;Q45;Q46;Q47,M6,M1;M2;M3;M4;M5,TEST-041,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,docs/milestones/M1/PLAN.md;QA_REPORT.md,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-042,Docs and repositories,Q45;Q48;Q49,M5,M1,TEST-042,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,README.md;docs/milestones/M1/;docs/requirements/TRACEABILITY.csv,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-043,Approval-before-build,Q50,M6,M1,TEST-043,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,docs/governance/BASELINE_APPROVAL.md;docs/milestones/M1/PLAN.md,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-044,ALM-aware wizard,USER-POST-Q50,M5,M1;M2,TEST-044,docs/architecture/SAD.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/config.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-045,Server discovery,USER-POST-Q50,M2,M5,TEST-045,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-046,Product-specific scope,USER-POST-Q50,M2,M5,TEST-046,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-047,Collection preflight,USER-POST-Q50,M2,M5,TEST-047,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-048,Token-bounded chunks,USER-POST-Q50,M3,,TEST-048,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-049,Full item retention,USER-POST-Q50,M3,M2;M4,TEST-049,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-050,Table atomic semantics,USER-POST-Q50,M3,,TEST-050,docs/architecture/SAD.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-051,Container build,USER-POST-Q50,M1,M6,TEST-051,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,deploy/Dockerfile.backend;deploy/Dockerfile.frontend;deploy/compose.yaml;deploy/nginx.conf,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-052,Reproducible install,USER-POST-Q50,M1,M6,TEST-052,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,pyproject.toml;uv.lock;frontend/package-lock.json;.github/workflows/m1.yml,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-053,Adaptive throttling,USER-POST-Q50,M2,M5,TEST-053,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-054,Backoff semantics,USER-POST-Q50,M2,,TEST-054,docs/architecture/SAD.md,docs/api/openapi.yaml,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-055,Failed item isolation,USER-POST-Q50,M2,M3;M4,TEST-055,docs/architecture/DATA_MODEL.md,N/A,SPECIFIED_NOT_IMPLEMENTED,NOT_VERIFIED,,,
+SRS-056,Item replay,USER-POST-Q50,M4,M1;M5,TEST-056,docs/architecture/DATA_MODEL.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/migrations/001_initial.sql;src/almrag/queue.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-057,Diagnostics,USER-POST-Q50,M1,M5,TEST-057,docs/architecture/SAD.md,docs/api/openapi.yaml,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,src/almrag/security.py;src/almrag/api.py;src/almrag/worker.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-058,TDD requirement,USER-POST-Q50,M6,M1;M2;M3;M4;M5,TEST-058,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,docs/milestones/M1/MAIN_TDD.md;STORAGE_TDD.md;FRONTEND_TDD.md,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL
+SRS-059,Gate tests,USER-POST-Q50,M6,M1;M2;M3;M4;M5,TEST-059,docs/architecture/SAD.md,N/A,M1_FOUNDATION_IMPLEMENTED_FULL_SCOPE_PARTIAL,M1_SUBSET_PASS_FULL_NOT_VERIFIED,.github/workflows/m1.yml;tools/validate_baseline.py,docs/milestones/M1/M1_TRACEABILITY.csv,M1_SUBSET_PASS_PENDING_HUMAN_APPROVAL

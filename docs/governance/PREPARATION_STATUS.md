@@ -1,5 +1,7 @@
 # Preparation status — 2026-10-19
 
+Historical preparation snapshot below. Superseding local results: CODEX_PREFLIGHT_REPORT.md and docs/milestones/M1/COMPLETION.md. M1 start was authorized; M1 completion approval is pending. The origin is locally configured, but this work did not verify remote access or Push.
+
 | Activity | Result | Evidence |
 |---|---|---|
 | v0.3 conditional user approval | CONFIRMED | User instruction + BASELINE_APPROVAL.md |

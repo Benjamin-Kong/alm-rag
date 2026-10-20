@@ -1,7 +1,7 @@
 # ALM RAG — Codex Development Package (Review Candidate v0.3)
 
 ## Status
-**CONDITIONAL DOCUMENT BASELINE APPROVED (2026-10-19).** All 50 decisions and SRS-044~059 retained; REQ clause-level traceability is an OPEN ISSUE. Local Git preparation is permitted. M1 application implementation, real ALM tests and remote GitHub operations are NOT yet authorized/performed. See `docs/governance/BASELINE_APPROVAL.md`.
+**M1 FOUNDATION — PENDING HUMAN APPROVAL (2026-10-20).** M1 was explicitly authorized and implemented locally. Python 38 tests, Frontend 6 tests, API/Worker/Frontend build and local container boot were verified; see `docs/milestones/M1/COMPLETION.md`. Real ALM and later milestone behavior remain unimplemented/unverified. M2, remote Push and deployment remain gated. All 50 decisions and SRS-044~059 are retained; legacy REQ clause-level traceability remains OPEN.
 
 ## Goal
 Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (fields, relationships, attachments), retain raw/HTML + immutable revisions in normalized SQLite schema, generate table-aware field-specific chunks, embed with Ollama EmbeddingGemma 2, and return authorized project-restricted distinct Item results from Vector+Keyword hybrid search via REST/CLI/Web UI.
@@ -16,10 +16,9 @@ Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (f
 7. `docs/testing/TEST_PLAN.md` — non-fabricated quality evidence requirements.
 
 ## What to do now
-- Read `docs/governance/BASELINE_APPROVAL.md` and `CODEX_PREFLIGHT.md` before starting.
-- This package includes the **local Git initial commit**. For Private GitHub creation, see `docs/governance/GITHUB_SETUP.md`; no remote Push has occurred.
-- Open this folder in Codex and use the **environment preflight** prompt in `PROMPTS.md`. Do not start M1 during preparation.
-- Begin M1 only after an explicit new M1 start instruction, then enforce a separate Human Gate for each following milestone.
+- Read `docs/milestones/M1/COMPLETION.md`, `TEST_REPORT.md` and `QA_REPORT.md` for the M1 approval candidate and explicit limitations.
+- Use `docs/milestones/M1/RUNBOOK.md` for Native/Compose verification. Pipeline requests fail closed until real stage handlers arrive in M2+.
+- Review and approve M1 before M2. GitHub Push and deployment require separate authorization; neither was performed in this work.
 
 ## Security
 Do not put customer ALM raw text, screenshots, database exports, attachment contents, passwords or tokens into GitHub or Notion. `.gitignore` is defense in depth only; manually inspect staged changes and run secret scanning before any remote Push.
@@ -33,7 +32,7 @@ Do not put customer ALM raw text, screenshots, database exports, attachment cont
 - https://developers.openai.com/cookbook/examples/codex/iterating-development-workflows-with-codex
 
 ## v0.2 상세 설계 검토 추가
-User-requested 6 gaps are documented in: `docs/design/ALM_ONBOARDING.md`, `CHUNKING_POLICY.md`, `API_THROTTLING_AND_RETRY.md`, `FAIL_SAFE_AND_REPLAY.md`, `TDD_POLICY.md`, and `docs/architecture/DEPLOYMENT_AND_DEPENDENCIES.md`. Added SRS-044..059 and Test traceability. `deploy/` contains **non-runnable design skeletons** until M1 source/lockfiles are created. GitHub and M1 remain unstarted and approval gated.
+User-requested 6 gaps are documented in: `docs/design/ALM_ONBOARDING.md`, `CHUNKING_POLICY.md`, `API_THROTTLING_AND_RETRY.md`, `FAIL_SAFE_AND_REPLAY.md`, `TDD_POLICY.md`, and `docs/architecture/DEPLOYMENT_AND_DEPENDENCIES.md`. Added SRS-044..059 and Test traceability. The historical Docker skeletons have been replaced by locally tested M1 foundation images and lockfiles; full collection/search/operations remain later milestones.
 
 ## v0.3 Baseline review amendments
 - All 50 Q decisions have decision-to-SRS rows in `docs/requirements/DECISION_COVERAGE.csv`. Legacy REQ-001~252 has a **best-effort** numeric mapping, with unresolved missing legacy text, in `docs/requirements/LEGACY_REQ_TRACEABILITY.csv`. This does not prove line-by-line equivalence to original legacy REQ clauses.

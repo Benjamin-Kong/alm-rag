@@ -62,3 +62,21 @@
 | OI-017 / OI-022 / OI-025 | 6개 역할 모두 실제 spawn 및 역할 지시 전달 확인 | 역할 smoke PASS; 동시 상한/Worktree 경합/포괄적 Sandbox 강제성 NOT VERIFIED |
 
 M1 착수 승인, 원격 Push 승인, Legacy 원문 및 외부 통합 관련 미결사항은 해소된 것으로 간주하지 않는다.
+
+## M1 착수 후 상태 — 2026-10-19 승인 / 2026-10-20 계속 진행
+
+- OI-009: 사용자의 “커밋반영하고 착수해”로 M1 시작 승인. M1 완료 승인과 M2 시작 승인은 아직 없음. BASELINE_APPROVAL.md와 M1/PLAN.md 참조.
+- OI-029: 실패 Item 목록 권한이 OpenAPI(project_read)와 FAIL_SAFE_AND_REPLAY(project_manage)에서 불일치. M1은 schema 기반만 구현하고 해당 route는 미구현 유지. 해당 route 구현 전 권한 정책 확정 필요; 정책을 자동 변경하지 않음.
+- OI-030: 실제 앱 Windows/macOS/Linux 전체 매트릭스, 외부 모델/Qdrant/ALM 검증은 개별 실행 증거 전 NOT VERIFIED. 환경 smoke PASS를 제품 검증으로 승격하지 않음.
+- OI-031: 초기 Frontend dev 의존성 npm audit: @vitest/mocker Moderate, tinypool/vitest Critical, 총 3 affected packages. AGENTS Critical stop에 따라 M1 BLOCKED, Human Review 필요. 제안: Vitest 5.0.5와 호환 tooling으로 명시적 갱신 후 lock/audit/Red-Green/build 재검증. QA_REPORT.md 참조. 아직 수정/위험 수용 승인 없음.
+- OI-032: Python runtime cryptography 46.0.7의 7 advisory entries는 50.0.2로 갱신, frozen runtime pip-audit 재실행 exit 0. RESOLVED for current scan; 미래 취약점 부재 보장 아님.
+
+### M1 최종 로컬 검증 상태 — 2026-10-20
+
+- OI-031 RESOLVED: 사용자 “진행해”로 보완 승인. Vitest5.0.5/새 lock, npm audit0, clean install/6테스트/build 및 Frontend 컨테이너/실브라우저 smoke PASS.
+- OI-014 PARTIAL: Python/Node lock과 언어 패키지 audit, macOS Native 및 Linux-arm64 API/Worker/Frontend Build/Boot PASS. Windows/native Linux/AMD64 및 이미지 OS계층 보안 스캔은 NOT VERIFIED.
+- OI-016 M1 FOUNDATION PASS: SQLite WAL/FK/transaction, 다중 프로세스 단일 claim, 강제종료 checkpoint/lease fencing 검증. 실제 SQLite/Qdrant 게시 정합성은 M4/M6 NOT VERIFIED.
+- OI-018 M1 FOUNDATION PASS: 실제 Red/Green 문서와 요구사항 연결, 로컬 CI 동등 검사 PASS. 원격 CI 실행 NOT VERIFIED.
+- OI-009: M1 시작/보완은 승인됨. M1 완료는 PENDING_APPROVAL, M2 미착수.
+- OI-019/OI-023 및 OI-029 권한 문서 충돌은 열린 상태 유지. M1에 미구현인 failed-item route의 정책을 임의 선택하지 않았음.
+- OI-033: 이 로컬 Python 배포에서 stdlib venv의 ensurepip가 SIGABRT로 중단됨(일반/elevated 동일). 표준 개발 경로인 uv venv + 오프라인 wheel 설치·migration은 PASS. stdlib ensurepip 원인 분석은 환경 backlog이며 uv 실행경로를 막지 않음.

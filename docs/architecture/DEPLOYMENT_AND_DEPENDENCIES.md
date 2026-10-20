@@ -1,5 +1,13 @@
 # Docker / Native 배포 및 종속성 명세 — v0.2 Draft
 
+## M1 implementation supplement — 2026-10-20 (supersedes skeleton claims below)
+
+API/Worker and Frontend images now build and boot locally; evidence is in `docs/milestones/M1/TEST_REPORT.md`. M1 uses Python 3.12, stdlib sqlite3 + transactional SQL migrations, FastAPI/Uvicorn, httpx, Argon2, cryptography and Typer. Actual resolved versions/hashes are in pyproject.toml/uv.lock. React/TypeScript/Vite, Vitest 5.0.5 and generated OpenAPI tooling are in frontend/package-lock.json. Unneeded candidate SQLAlchemy/Alembic/HTML/index libraries are not installed before their implementation milestones.
+
+Base images and uv build tool are digest pinned. API and worker run UID10001; frontend Nginx UID101. Healthchecks, shared local volume and loopback ports are exercised. Native install and independent CLI/Worker run on macOS; Linux containers run in Colima. Qdrant is an optional Compose `services` profile with a pinned image; Ollama/Qdrant remote settings are configured and mocked but real services are NOT VERIFIED. Windows/native Linux and remote CI are NOT VERIFIED.
+
+The legacy requirements.backend.in is a candidate inventory only and is no longer installed by Docker. Run instructions and HTTPS/session constraints are in M1/RUNBOOK.md. The historical sections below retain the original candidate rationale; they are not current execution claims.
+
 ## 1. 배포
 - **Backend API**: Python 3.12-slim, FastAPI, Uvicorn; React 정적 UI와 독립 배포 가능.
 - **Worker**: 동일 Python 이미지 재사용, 별도 `almrag.worker` Entry Point. UI/검색 응답 프로세스와 분리.
