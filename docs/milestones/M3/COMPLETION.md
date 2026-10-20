@@ -1,6 +1,6 @@
-# M3 completion candidate — pending Human Approval
+# M3 completion — approved with documented limitations
 
-2026-10-20; branch codex/m3-content, based on approved M2 commit0b38393. Status **PENDING_APPROVAL_WITH_DOCUMENTED_LIMITATIONS**. M4 has not started. User continuation after the OI-047 correction authorized finishing M3; it does not approve this completion candidate.
+2026-10-20; branch codex/m3-content, based on approved M2 commit0b38393. Status **APPROVED_WITH_DOCUMENTED_LIMITATIONS** by user “진행해” after delivery of4232f7a and its approval request. M4 separately authorized; original completion measurements and limitations below remain unchanged.
 
 M3 now prepares revision-owned text/table chunks, stores processing policy/input snapshots, and embeds only changed complete inputs into a project-scoped vector cache. Field selection inherits instance→project→Tracker/Type defaults with distinct normalized/source IDs. PROCESS/EMBED are available through existing authenticated API/CLI/worker; source raw data remains complete, and active revisions/indexes remain untouched. Current contract/type client/negative ACL tests and migration004 are included. No M5 wizard dependency.
 
@@ -18,4 +18,4 @@ All model evidence is synthetic **FIXTURE_ONLY**. No model weights/tokenizer art
 
 Detailed evidence: TEST_REPORT.md, QA_REPORT.md, GATE_MATRIX.md, M3_TRACEABILITY.csv, RUNBOOK.md and actual TDD records. AC-02/03/05/10/12 have M4 index/search/active-detail/replay portions; only their M3 source/chunk/cache subsets passed here. Legacy original REQ clauses remain NOT VERIFIED. Historical M2 initial-prototype TDD_NOT_EVIDENCED accepted exception remains recorded, never retroactive PASS.
 
-Test containers are stopped with volumes retained. No live ALM/model call, remote Push, Notion transmission, destructive DB operation or production deployment occurred. Local candidate commit is reported in Git/final response, outside the commit itself. Request user approval of M3 with these limitations, then STOP until instructed. No M4 implementation is part of this candidate.
+Test containers are stopped with volumes retained. No live ALM/model call, remote Push, Notion transmission, destructive DB operation or production deployment occurred. Local candidate commit is reported in Git/final response, outside the commit itself. M3 approval recorded in BASELINE_APPROVAL.md; no M4 implementation is part of this historical candidate.

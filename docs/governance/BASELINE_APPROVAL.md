@@ -43,3 +43,19 @@ After delivery of M2 commit0b38393 and its completion report, including the init
 ## M3 tokenizer remediation authorization — 2026-10-20
 
 The user instructed “수정안 적용하고 재검증해” after OI-047 and TOKENIZER_FIX_PROPOSAL.patch were reported. This explicitly authorizes applying that tokenizer truncation/padding/identity correction and focused/full regression plus independent QA. It does not accept the defect as a risk, waive the M3 completion gate, or authorize M4, live ALM/model access, remote Push or deployment.
+
+## M3 approval and M4 start — 2026-10-20
+
+After delivery of local M3 commit4232f7a and its completion report explicitly requesting M3 approval with documented limits, the user instructed “진행해”. Main records this continuation as approval of the reported M3 candidate, including FIXTURE_ONLY real-model/ALM/remote-CI limitations, and authorization to start M4. Actual model compatibility is still NOT VERIFIED; no live model/ALM, external Push/Notion, production deployment or dangerous data operation is authorized. M4 retains its own completion Human Gate. OI-029 public failed-list permission conflict still requires clarification before that route is exposed.
+
+## M4 failed-item list authorization clarification — 2026-10-20
+
+The user explicitly answered “목록 조회는 project_read 허용”. GET failed-items requires project_read; single/bulk retry and resume retain project_manage. This resolves OI-029 before exposing the M4 routes. Project ownership and scope checks remain mandatory. No remote action or other authorization change is inferred.
+
+## M4 OI-049 corrective authorization — 2026-10-20
+
+The user answered “승인” to the explicit request to apply M4/CORRECTION_PROPOSAL.md and revalidate. This authorizes its bounded exact-ID/metadata-filter correction, synchronized API/client/tests and resumption of M4 verification. OI-049 is not accepted as a risk or marked resolved until actual corrective tests and independent QA. M4 completion/M5, live ALM/model, remote Push/Notion and production deployment remain separate gates.
+
+## Sequential M4–M6 execution authorization — 2026-10-21
+
+The user instructed “계속진행하고 사람의 승인없이 끝까지 진행해”, then explicitly selected “M5·M6까지 추가 승인 없이 진행”. This authorizes completing M4 correction/testing and sequential M5/M6 implementation without additional milestone or corrective approval prompts. Keep test-first and independent quality gates, fix failures before advancing, and report actual PASS/FAIL/NOT VERIFIED. This supersedes the approval-wait portions of local milestone plans within that scope; it does not authorize actual ALM/model access, remote Push/Notion, production deployment, destructive customer-data operations or unapproved credential/ACL changes. External limitations must remain explicit.

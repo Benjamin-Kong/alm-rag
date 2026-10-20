@@ -48,3 +48,44 @@ test('M3 processing policy and preflight use encoded project and typed input', a
   await client.configureProcessingDefaults('i/id',{fields:[]});
   expect(fetcher.mock.calls[3][0]).toBe('/api/v1/alm-instances/i%2Fid/processing-defaults');
 });
+
+// SRS-018/019/020/021/024/056: M4 retrieval and failure recovery contract.
+test('M4 search, detail and index preflight preserve typed bodies and encoded paths', async () => {
+  const fetcher = vi.fn().mockResolvedValue({ok:true,status:200,json:async()=>({total:0,results:[]})});
+  const client = new ApiClient({csrf:'fixture'},fetcher);
+  const filters = {source_item_ids:['REQ-123'],fields:[{kind:'SOURCE' as const,key:'cf/custom-id',value:{approved:true,labels:['A','B']}}]};
+  await client.search({query:'요구 ID-123',project_uids:['p/id'],top_k:5,response:{include_full_item:true},filters});
+  expect(fetcher.mock.calls[0][0]).toBe('/api/v1/search');
+  expect(JSON.parse(fetcher.mock.calls[0][1].body).project_uids).toEqual(['p/id']);
+  expect(JSON.parse(fetcher.mock.calls[0][1].body).filters).toEqual(filters);
+  await client.itemDetail('item/id');
+  expect(fetcher.mock.calls[1][0]).toBe('/api/v1/items/item%2Fid');
+  expect(fetcher.mock.calls[1][1].headers['X-CSRF-Token']).toBeUndefined();
+  await client.indexPreflight('p/id','REBUILD_INDEX');
+  expect(fetcher.mock.calls[2][0]).toBe('/api/v1/projects/p%2Fid/index-preflight?stage=REBUILD_INDEX');
+  await client.indexPreflight('p/id');
+  expect(fetcher.mock.calls[3][0]).toBe('/api/v1/projects/p%2Fid/index-preflight?stage=INDEX');
+});
+
+test('M4 pipeline and recovery use safe same-origin methods and generated inputs', async () => {
+  const fetcher = vi.fn().mockResolvedValue({ok:true,status:202,json:async()=>({job_id:'queued'})});
+  const client = new ApiClient({csrf:'fixture'},fetcher);
+  await client.pipelinePreflight('p/id');
+  expect(fetcher.mock.calls[0][0]).toBe('/api/v1/projects/p%2Fid/pipeline-preflight');
+  const sync = await client.sync('p/id');
+  expect(sync.job_id).toBe('queued');
+  await client.failedItems('j/id',{limit:50,offset:100});
+  expect(fetcher.mock.calls[2][0]).toBe('/api/v1/jobs/j%2Fid/failed-items?limit=50&offset=100');
+  expect(fetcher.mock.calls[2][1].method).toBe('GET');
+  expect(fetcher.mock.calls[2][1].headers['X-CSRF-Token']).toBeUndefined();
+  const input = {from_stage:'EMBED' as const,force_recollect:false,expected_revision_uid:'revision'};
+  await client.retryItem('j/id','i/id',input);
+  expect(fetcher.mock.calls[3][0]).toBe('/api/v1/jobs/j%2Fid/failed-items/i%2Fid/retry');
+  expect(JSON.parse(fetcher.mock.calls[3][1].body)).toEqual(input);
+  expect(fetcher.mock.calls[3][1].headers['X-CSRF-Token']).toBe('fixture');
+  await client.retryFailedItems('j/id');
+  expect(fetcher.mock.calls[4][0]).toBe('/api/v1/jobs/j%2Fid/failed-items/retry');
+  expect(JSON.parse(fetcher.mock.calls[4][1].body)).toEqual({});
+  await client.resumeJob('j/id');
+  expect(fetcher.mock.calls[5][0]).toBe('/api/v1/jobs/j%2Fid/resume');
+});

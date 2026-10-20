@@ -2,7 +2,7 @@
 
 **Gate:** v0.3 documentation was conditionally approved on 2026-10-19 for repository/Codex setup. **M1 implementation is NOT part of this preparation authorization** and requires an explicit subsequent M1 start instruction. Each Milestone has its own Human Gate.
 
-**Current:** M1 approved at13e1f30; M2 approved with documented limitations/TDD exception at0b38393. M3 local/mock candidate on codex/m3-content is PENDING_APPROVAL_WITH_DOCUMENTED_LIMITATIONS:271Python/8Frontend tests, packaging/container/offline runtime and independent QA passed within scope. Real model/tokenizer/ALM and later-stage acceptance remain NOT VERIFIED. See docs/milestones/M3/COMPLETION.md. M4 not started.
+**Current:** M1/M2 approved with retained limits; M3commit4232f7a approved with documented FIXTURE_ONLY/live/runtime limitations by subsequent user “진행해”. M4 IN_PROGRESS on codex/m4-retrieval; see docs/milestones/M4/PLAN.md. No M5, external Push, live ALM/model or production deployment is authorized.
 
 ## Milestones
 | ID | Theme | Acceptance |
@@ -36,3 +36,7 @@ Run one Milestone at a time. Within each Milestone, parallelize independent task
 - **M5**: Server/Project Wizard, rate-limit adjustments, Failed Item Explorer/retry/resume, actual Web UI Playwright, Notion reports.
 - **M6**: Native/Docker cross-platform, TDD evidence audit, 429 load simulation, 15k-token Item, Item batch partial fail, worker-kill recovery, 100k Item benchmark.
 - Human Gate applies after each milestone; v0.3 is conditionally approved for preparation only. M1 requires a separate explicit start instruction.
+
+M4 latest checkpoint2026-10-20: HUMAN_REVIEW_REQUIRED, OI-049 Major exact Item ID retrieval gap. Implementation stopped pending approval of docs/milestones/M4/CORRECTION_PROPOSAL.md. M5 not authorized.
+
+Latest authorization2026-10-21: user explicitly approved sequential M4→M5→M6 without additional human approval prompts. Quality/test/independent QA gates remain; correct failures before advancing. Earlier HUMAN_REVIEW_REQUIRED entry is historical: OI-049 correction authorized and IN_PROGRESS. External restrictions remain. See BASELINE_APPROVAL.md.

@@ -104,7 +104,7 @@ def jobs():
 
 @app.command()
 def start_job(project_uid:str,stage:str):
-    """Request COLLECT, PROCESS or EMBED; indexing stages remain unavailable."""
+    """Request a supported collection, processing, indexing or SYNC stage."""
     request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':stage})
 
 
@@ -207,6 +207,80 @@ def process(project_uid:str,config_revision:str|None=typer.Option(None)):
 @app.command()
 def embed(project_uid:str,config_revision:str|None=typer.Option(None)):
     request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':'EMBED','config_revision':config_revision})
+
+
+@app.command()
+def search(query:str,project:list[str]=typer.Option(...,'--project'),top_k:int=typer.Option(10,min=1,max=100),full:bool=False,item_uid:list[str]|None=typer.Option(None,'--item-uid'),source_item_id:list[str]|None=typer.Option(None,'--source-item-id'),scope:list[str]|None=typer.Option(None,'--scope'),filters:str|None=typer.Option(None,'--filters')):
+    payload={'query':query,'project_uids':project,'top_k':top_k,'response':{'include_full_item':full}}
+    try:
+        def unique_object(pairs):
+            result={}
+            for key,value in pairs:
+                if key in result:raise ValueError('duplicate property')
+                result[key]=value
+            return result
+        def invalid_constant(value):raise ValueError('nonfinite JSON')
+        selected=json.loads(filters,object_pairs_hook=unique_object,parse_constant=invalid_constant) if filters is not None else {}
+        if not isinstance(selected,dict):raise ValueError('object required')
+        for key,value in [('item_uids',item_uid),('source_item_ids',source_item_id),('source_scope_ids',scope)]:
+            if value:
+                if key in selected:raise ValueError('conflicting predicate')
+                selected[key]=value
+        if filters is not None or selected:payload['filters']=selected
+    except (TypeError,ValueError,RecursionError):
+        typer.echo('Invalid search filters.',err=True)
+        raise typer.Exit(1)
+    request('POST','/search',payload)
+
+
+@app.command()
+def item(item_uid:str):
+    request('GET','/items/'+quote(item_uid,safe=''))
+
+
+@app.command()
+def index(project_uid:str,config_revision:str|None=typer.Option(None)):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':'INDEX','config_revision':config_revision})
+
+
+@app.command()
+def rebuild_index(project_uid:str,config_revision:str|None=typer.Option(None)):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':'REBUILD_INDEX','config_revision':config_revision})
+
+
+@app.command()
+def index_preflight(project_uid:str,stage:str='INDEX'):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/index-preflight?stage='+quote(stage,safe=''))
+
+
+@app.command()
+def pipeline_preflight(project_uid:str):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/pipeline-preflight')
+
+
+@app.command()
+def sync(project_uid:str,config_revision:str|None=typer.Option(None)):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/jobs',{'stage':'SYNC','config_revision':config_revision})
+
+
+@app.command()
+def failed_items(job_id:str,limit:int=typer.Option(100,min=1,max=1000),offset:int=typer.Option(0,min=0)):
+    request('GET','/jobs/'+quote(job_id,safe='')+'/failed-items?limit='+str(limit)+'&offset='+str(offset))
+
+
+@app.command()
+def retry_item(job_id:str,item_uid:str,from_stage:str='FAILED_STAGE',force_recollect:bool=False,expected_revision_uid:str|None=typer.Option(None)):
+    request('POST','/jobs/'+quote(job_id,safe='')+'/failed-items/'+quote(item_uid,safe='')+'/retry',{'from_stage':from_stage,'force_recollect':force_recollect,'expected_revision_uid':expected_revision_uid})
+
+
+@app.command()
+def retry_failed_items(job_id:str,from_stage:str='FAILED_STAGE',force_recollect:bool=False,expected_revision_uid:str|None=typer.Option(None)):
+    request('POST','/jobs/'+quote(job_id,safe='')+'/failed-items/retry',{'from_stage':from_stage,'force_recollect':force_recollect,'expected_revision_uid':expected_revision_uid})
+
+
+@app.command()
+def resume(job_id:str):
+    request('POST','/jobs/'+quote(job_id,safe='')+'/resume')
 
 
 if __name__=='__main__':

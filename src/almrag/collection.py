@@ -214,7 +214,11 @@ class CollectionService:
         if set(snapshot['source_scope_ids']) - {str(x['id']) for x in scopes}:
             raise CollectionError('SCOPE_NOT_DISCOVERED')
         if 'refs' in snapshot:
-            return snapshot['refs']
+            refs=self._validate_refs(snapshot['refs'],snapshot['source_scope_ids'])
+            with self.db.transaction() as c:
+                self._guard(c,job)
+                c.execute('UPDATE jobs SET progress_total=?,updated_at=? WHERE job_id=?',(len(refs),time.time(),job['job_id']))
+            return refs
         self._live(job, abort_check)
         iterator = iter(adapter.iter_refs(snapshot['source_project_id'], snapshot['source_scope_ids']))
         refs = []
@@ -232,7 +236,7 @@ class CollectionService:
             c.execute('UPDATE jobs SET progress_total=?,updated_at=? WHERE job_id=?', (len(refs), time.time(), job['job_id']))
         return refs
 
-    def run(self, job, abort_check=lambda: False):
+    def run(self, job, abort_check=lambda: False, *, finish=True):
         if job.get('stage') != 'COLLECT':
             raise CollectionError('STAGE_NOT_IMPLEMENTED')
         adapter = None
@@ -276,24 +280,24 @@ class CollectionService:
                     if getattr(error, 'global_error', False) or code in {'UNAUTHORIZED', 'AUTH_FAILED', 'HTTP_401', 'CIRCUIT_OPEN', 'INTEGRITY_ERROR', 'REVISION_CONFLICT'}:
                         raise CollectionError(code, stop_state=getattr(error, 'stop_state', 'BLOCKED')) from error
                     self._failure(job, snapshot, ref, code)
-            self._memberships(job, snapshot, refs)
+            if not snapshot.get('targeted_replay',False):self._memberships(job, snapshot, refs)
             with self.db.transaction() as c:
                 self._guard(c, job)
                 failed = c.execute("SELECT count(*) FROM collection_outcomes WHERE job_id=? AND state='FAILED'", (job['job_id'],)).fetchone()[0]
             state = 'COMPLETED_WITH_ERRORS' if failed else 'SUCCEEDED'
-            self.queue.finish(job['job_id'], job['fencing_token'], state)
-            return state
+            if finish:self.queue.finish(job['job_id'], job['fencing_token'], state)
+            return state if finish else {'state':state,'error_code':None}
         except LeaseLost:
             raise
         except sqlite3.Error:
-            self.queue.finish(job['job_id'], job['fencing_token'], 'BLOCKED', 'STORAGE_ERROR')
-            return 'BLOCKED'
+            if finish:self.queue.finish(job['job_id'], job['fencing_token'], 'BLOCKED', 'STORAGE_ERROR')
+            return 'BLOCKED' if finish else {'state':'BLOCKED','error_code':'STORAGE_ERROR'}
         except Exception as error:
             state = getattr(error, 'stop_state', 'BLOCKED')
             if state not in {'PAUSED', 'BLOCKED', 'FAILED', 'CANCELLED'}:
                 state = 'BLOCKED'
-            self.queue.finish(job['job_id'], job['fencing_token'], state, _error_code(error))
-            return state
+            if finish:self.queue.finish(job['job_id'], job['fencing_token'], state, _error_code(error))
+            return state if finish else {'state':state,'error_code':_error_code(error)}
         finally:
             if adapter is not None and hasattr(adapter, 'client'):
                 adapter.client.abort_check = previous_abort

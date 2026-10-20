@@ -31,7 +31,7 @@ def healthy(path, now=None):
 
 
 def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
-             health_path=None, lease_seconds=30, heartbeat_interval=5, processing_service=None):
+             health_path=None, lease_seconds=30, heartbeat_interval=5, processing_service=None, index_service=None, pipeline_service=None):
     """Claim one job; CollectionService alone owns normal terminal transitions.
 
     Heartbeats run independently while a connector performs network work or waits.
@@ -46,7 +46,7 @@ def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
     job = queue.claim(owner, lease_seconds=lease_seconds)
     if job is None:
         return False
-    service = collection_service if job['stage']=='COLLECT' else processing_service if job['stage'] in {'PROCESS','EMBED'} else None
+    service = collection_service if job['stage']=='COLLECT' else processing_service if job['stage'] in {'PROCESS','EMBED'} else index_service if job['stage'] in {'INDEX','REBUILD'} else pipeline_service if job['stage'] in {'SYNC','REPLAY'} else None
     if service is None:
         queue.finish(job['job_id'], job['fencing_token'], state='BLOCKED', error_code='STAGE_UNAVAILABLE')
         print(json.dumps(safe_event(action='job_blocked', outcome='blocked', job_uid=job['job_id'],
@@ -100,13 +100,35 @@ class _ConfiguredCollection:
         self.db = db
         self.settings = settings
 
+    def cleanup_pending(self):
+        """Retry derived-index cleanup only after job heartbeat ownership ends."""
+        if hasattr(self, 'indexing'):
+            try:
+                self.indexing.cleanup()
+            except Exception:
+                print(json.dumps(safe_event(action='index_cleanup', outcome='deferred',
+                                            error_code='CLEANUP_RETRY_PENDING')), flush=True)
+
     def run(self, job, abort_check):
-        if job.get('stage') in {'PROCESS','EMBED'}:
+        if job.get('stage') in {'PROCESS','EMBED','INDEX','REBUILD','SYNC','REPLAY'}:
             from almrag.processing import ProcessingService
             from almrag.model_runtime import ModelRuntimeRegistry
             if not hasattr(self,'processing'):
                 self.registry=ModelRuntimeRegistry(self.settings,self.db)
                 self.processing=ProcessingService(self.db,self.registry.get)
+            if job['stage'] in {'INDEX','REBUILD','SYNC','REPLAY'}:
+                from almrag.indexing import IndexService
+                from almrag.vector_runtime import VectorRuntimeRegistry
+                if not hasattr(self,'indexing'):self.indexing=IndexService(self.db,self.processing,VectorRuntimeRegistry(self.settings,self.db))
+                if job['stage'] in {'INDEX','REBUILD'}:return self.indexing.run(job,abort_check=abort_check)
+                from almrag.pipeline import PipelineService
+                from almrag.collection import CollectionService
+                from almrag.connection import Connections
+                if not hasattr(self,'pipeline'):
+                    connections=Connections(self.db,self.settings)
+                    collection=CollectionService(self.db,connections.connector,self.settings.attachment_directory)
+                    self.pipeline=PipelineService(self.db,collection,self.processing,self.indexing)
+                return self.pipeline.run(job,abort_check=abort_check)
             return self.processing.run(job,abort_check=abort_check)
         from almrag.collection import CollectionService
         from almrag.connection import Connections
@@ -141,9 +163,10 @@ def main():
     try:
         while not stopping:
             try:
-                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path,processing_service=collection_service)
+                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path,processing_service=collection_service,index_service=collection_service,pipeline_service=collection_service)
             except LeaseLost:
                 print(json.dumps(safe_event(action='lease_lost',outcome='aborted')),flush=True)
+            collection_service.cleanup_pending()
             write_health(path)
             if args.once:
                 break

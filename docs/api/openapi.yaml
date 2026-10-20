@@ -2,9 +2,9 @@ openapi: 3.0.3
 info:
   title: ALM Unified Retrieval API (DRAFT)
   version: 0.3.0-review-candidate
-  description: M3 executed subset is marked x-implementation-status; other endpoints
-    remain draft and unimplemented. See m3-openapi.json for the current executable
-    contract; m1-openapi.json and m2-openapi.json are historical.
+  description: M4 executed subset is marked x-implementation-status; other endpoints
+    remain draft and unimplemented. See m4-openapi.json for the current executable
+    contract; m1-openapi.json, m2-openapi.json and m3-openapi.json are historical.
 servers:
 - url: /api/v1
 security:
@@ -13,31 +13,62 @@ security:
 paths:
   /search:
     post:
+      summary: Search Items
       operationId: searchItems
-      summary: Project-scoped, item-grouped hybrid search
       requestBody:
-        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/SearchRequest'
+        required: true
       responses:
         '200':
-          description: Distinct matched Items
+          description: Successful Response
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponse'
-        '400':
-          description: Invalid request or missing project scope
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Invalid API key
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Unauthorized project scope
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: search
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M4_IMPLEMENTED
   /projects/{project_uid}/sync:
     post:
       summary: Sync
@@ -50,6 +81,12 @@ paths:
           type: string
           title: Project Uid
       responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobInfo'
         '422':
           description: Sanitized error
           content:
@@ -90,7 +127,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - AdminSession: []
-      x-implementation-status: M2_FAIL_CLOSED_SYNC_GUARD
+      x-implementation-status: M4_COLLECT_PROCESS_EMBED_INDEX_REBUILD_SYNC
   /jobs/{job_id}:
     get:
       summary: Job
@@ -550,102 +587,282 @@ paths:
       x-implementation-status: M2_IMPLEMENTED
   /jobs/{job_id}/failed-items:
     get:
+      summary: Failed Items
       operationId: listFailedItems
-      summary: Stage-coded failed items and retry eligibility
       parameters:
       - name: job_id
         in: path
         required: true
         schema:
           type: string
+          title: Job Id
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Offset
       responses:
         '200':
-          description: Failed items
+          description: Successful Response
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/FailedItem'
+                  $ref: '#/components/schemas/FailedItemInfo'
+                title: Response Listfaileditems
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: project_read
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M4_IMPLEMENTED
   /jobs/{job_id}/failed-items/{item_uid}/retry:
     post:
+      summary: Retry Item
       operationId: retryFailedItem
-      summary: Enqueue stage-aware idempotent retry for one Item
       parameters:
       - name: job_id
         in: path
         required: true
         schema:
           type: string
+          title: Job Id
       - name: item_uid
         in: path
         required: true
         schema:
           type: string
+          title: Item Uid
       requestBody:
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RetryItemRequest'
+              default:
+                from_stage: FAILED_STAGE
+                force_recollect: false
       responses:
         '202':
-          description: Replay queued
-        '409':
-          description: Item/stage no longer eligible
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: project_manage
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M4_IMPLEMENTED
   /jobs/{job_id}/failed-items/retry:
     post:
+      summary: Retry Items
       operationId: retryFailedItems
-      summary: Queue retry of eligible failures from a job
       parameters:
       - name: job_id
         in: path
         required: true
         schema:
           type: string
+          title: Job Id
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetryItemRequest'
+              default:
+                from_stage: FAILED_STAGE
+                force_recollect: false
       responses:
         '202':
-          description: Retry job queued
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/JobInfo'
+                title: Response Retryfaileditems
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: project_manage
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M4_IMPLEMENTED
   /jobs/{job_id}/resume:
     post:
+      summary: Resume Job
       operationId: resumeJob
-      summary: Resume a recoverable paused job with checkpoint
       parameters:
       - name: job_id
         in: path
         required: true
         schema:
           type: string
+          title: Job Id
       responses:
         '202':
-          description: Resume accepted
-        '409':
-          description: Blocked until issue resolved
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JobInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: project_manage
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M4_IMPLEMENTED
   /auth/login:
     post:
       summary: Login
@@ -1007,7 +1224,7 @@ paths:
       security:
       - ApiKeyAuth: []
       - AdminSession: []
-      x-implementation-status: M3_COLLECT_PROCESS_EMBED
+      x-implementation-status: M4_COLLECT_PROCESS_EMBED_INDEX_REBUILD_SYNC
   /jobs:
     get:
       summary: Jobs
@@ -1093,23 +1310,63 @@ paths:
       x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /items/{item_uid}:
     get:
-      operationId: getItemDetail
-      summary: View full Item raw/normalized fields, subject to project ACL
-      x-required-scope: project_read
+      summary: Active Item
+      operationId: getActiveItem
       parameters:
       - name: item_uid
         in: path
         required: true
         schema:
           type: string
+          title: Item Uid
       responses:
         '200':
-          description: Item detail; HTML must be sanitized by client
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ItemDetail'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M4_IMPLEMENTED
   /items/{item_uid}/revisions:
     get:
       operationId: getItemRevisions
@@ -1837,6 +2094,134 @@ paths:
       - ApiKeyAuth: []
       - AdminSession: []
       x-implementation-status: M3_IMPLEMENTED
+  /projects/{project_uid}/index-preflight:
+    post:
+      summary: Index Preflight
+      operationId: preflightIndex
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      - name: stage
+        in: query
+        required: false
+        schema:
+          enum:
+          - INDEX
+          - REBUILD_INDEX
+          type: string
+          default: INDEX
+          title: Stage
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/IndexPreflightInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M4_IMPLEMENTED
+  /projects/{project_uid}/pipeline-preflight:
+    post:
+      summary: Pipeline Preflight
+      operationId: preflightPipeline
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PipelinePreflightInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M4_IMPLEMENTED
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -1851,90 +2236,104 @@ components:
         and X-CSRF-Token.
   schemas:
     SearchRequest:
+      properties:
+        query:
+          type: string
+          maxLength: 65536
+          minLength: 1
+          title: Query
+        project_uids:
+          items:
+            type: string
+          type: array
+          maxItems: 1000
+          minItems: 1
+          title: Project Uids
+        top_k:
+          type: integer
+          maximum: 100.0
+          minimum: 1.0
+          title: Top K
+          default: 10
+        response:
+          $ref: '#/components/schemas/ResponseOptions'
+        filters:
+          nullable: true
+          $ref: '#/components/schemas/SearchFilters'
+      additionalProperties: false
       type: object
       required:
       - query
       - project_uids
-      properties:
-        query:
-          type: string
-          minLength: 1
-        project_uids:
-          type: array
-          minItems: 1
-          uniqueItems: true
-          items:
-            type: string
-          description: Required non-empty list; the API rejects absent, empty, unauthorized
-            or cross-project scopes.
-        top_k:
-          type: integer
-          minimum: 1
-          maximum: 100
-          default: 10
-        response:
-          $ref: '#/components/schemas/ResponseOptions'
+      title: SearchRequest
     ResponseOptions:
-      type: object
       properties:
         include_full_item:
           type: boolean
+          title: Include Full Item
           default: false
         include_matched_chunks:
           type: boolean
+          title: Include Matched Chunks
           default: true
         include_chunk_text:
           type: boolean
+          title: Include Chunk Text
           default: false
         max_chunks_per_item:
           type: integer
-          minimum: 0
-          maximum: 100
+          maximum: 100.0
+          minimum: 0.0
+          title: Max Chunks Per Item
           default: 2
         include_relations:
           type: boolean
+          title: Include Relations
           default: false
         include_attachments:
           type: boolean
+          title: Include Attachments
           default: false
-    SearchResponse:
+        include_scores:
+          type: boolean
+          title: Include Scores
+          default: true
+      additionalProperties: false
       type: object
+      title: ResponseOptions
+    SearchResponse:
       properties:
         total:
           type: integer
+          title: Total
         results:
-          type: array
           items:
-            type: object
-            required:
-            - item_uid
-            - project_uid
-            - title
-            - score
-            properties:
-              item_uid:
-                type: string
-              project_uid:
-                type: string
-              title:
-                type: string
-              source_url:
-                type: string
-                format: uri
-              score:
-                type: number
-                description: RRF rank fusion score, not a probability or calibrated
-                  confidence.
-              matched_chunks:
-                type: array
-                items:
-                  type: object
-                  additionalProperties: true
-              item:
-                type: object
-                additionalProperties: true
+            $ref: '#/components/schemas/SearchHit'
+          type: array
+          title: Results
+        exhausted:
+          type: boolean
+          title: Exhausted
+        backfill_limited:
+          type: boolean
+          title: Backfill Limited
+        rounds:
+          type: integer
+          title: Rounds
+        unindexed_project_uids:
+          items:
+            type: string
+          type: array
+          title: Unindexed Project Uids
+      type: object
       required:
+      - total
       - results
+      - exhausted
+      - backfill_limited
+      - rounds
+      - unindexed_project_uids
+      title: SearchResponse
     AlmInstanceCreate:
       type: object
       required:
@@ -2044,7 +2443,6 @@ components:
           type: string
           format: date-time
     RetryItemRequest:
-      type: object
       properties:
         from_stage:
           type: string
@@ -2054,12 +2452,19 @@ components:
           - PROCESS
           - EMBED
           - INDEX
+          title: From Stage
           default: FAILED_STAGE
         force_recollect:
           type: boolean
+          title: Force Recollect
           default: false
         expected_revision_uid:
+          title: Expected Revision Uid
+          nullable: true
           type: string
+      additionalProperties: false
+      type: object
+      title: RetryItemRequest
     JobStatus:
       type: object
       properties:
@@ -3047,6 +3452,309 @@ components:
       - estimated_items
       - diagnostics
       title: ProcessingPreflightInfo
+    FailedItemInfo:
+      properties:
+        failed_item_uid:
+          title: Failed Item Uid
+          nullable: true
+          type: string
+        job_id:
+          type: string
+          title: Job Id
+        project_uid:
+          type: string
+          title: Project Uid
+        item_uid:
+          title: Item Uid
+          nullable: true
+          type: string
+        source_item_id:
+          type: string
+          title: Source Item Id
+        revision_uid:
+          title: Revision Uid
+          nullable: true
+          type: string
+        failed_stage:
+          type: string
+          enum:
+          - COLLECT
+          - PROCESS
+          - EMBED
+          - INDEX
+          title: Failed Stage
+        error_code:
+          type: string
+          title: Error Code
+        retryable:
+          type: boolean
+          title: Retryable
+        replay_state:
+          type: string
+          title: Replay State
+      type: object
+      required:
+      - failed_item_uid
+      - job_id
+      - project_uid
+      - item_uid
+      - source_item_id
+      - revision_uid
+      - failed_stage
+      - error_code
+      - retryable
+      - replay_state
+      title: FailedItemInfo
+    FieldEquality:
+      properties:
+        kind:
+          type: string
+          enum:
+          - NORMALIZED
+          - SOURCE
+          title: Kind
+        key:
+          type: string
+          maxLength: 1024
+          minLength: 1
+          title: Key
+        value:
+          title: Value
+      additionalProperties: false
+      type: object
+      required:
+      - kind
+      - key
+      - value
+      title: FieldEquality
+    IndexPreflightInfo:
+      properties:
+        status:
+          type: string
+          enum:
+          - READY
+          - BLOCKED
+          title: Status
+        index_ready:
+          type: boolean
+          title: Index Ready
+        rebuild_ready:
+          type: boolean
+          title: Rebuild Ready
+        config_revision:
+          title: Config Revision
+          nullable: true
+          type: string
+        estimated_items:
+          title: Estimated Items
+          nullable: true
+          type: integer
+        diagnostics:
+          items:
+            type: string
+          type: array
+          title: Diagnostics
+      type: object
+      required:
+      - status
+      - index_ready
+      - rebuild_ready
+      - config_revision
+      - estimated_items
+      - diagnostics
+      title: IndexPreflightInfo
+    ItemDetail:
+      properties:
+        project_uid:
+          type: string
+          title: Project Uid
+        item_uid:
+          type: string
+          title: Item Uid
+        revision_uid:
+          type: string
+          title: Revision Uid
+        source_revision:
+          type: string
+          title: Source Revision
+        item:
+          additionalProperties: true
+          type: object
+          title: Item
+        content_blocks:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Content Blocks
+      type: object
+      required:
+      - project_uid
+      - item_uid
+      - revision_uid
+      - source_revision
+      - item
+      - content_blocks
+      title: ItemDetail
+    MatchedChunk:
+      properties:
+        chunk_uid:
+          type: string
+          title: Chunk Uid
+        revision_uid:
+          type: string
+          title: Revision Uid
+        field_def_uid:
+          title: Field Def Uid
+          nullable: true
+          type: string
+        block_uid:
+          title: Block Uid
+          nullable: true
+          type: string
+        source_span_offsets:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Source Span Offsets
+        row_ids:
+          items:
+            type: string
+          type: array
+          title: Row Ids
+        input_text:
+          title: Input Text
+          nullable: true
+          type: string
+        score:
+          title: Score
+          nullable: true
+          type: number
+      type: object
+      required:
+      - chunk_uid
+      - revision_uid
+      - source_span_offsets
+      - row_ids
+      title: MatchedChunk
+    PipelinePreflightInfo:
+      properties:
+        status:
+          type: string
+          enum:
+          - READY
+          - BLOCKED
+          title: Status
+        sync_ready:
+          type: boolean
+          title: Sync Ready
+        config_revision:
+          title: Config Revision
+          nullable: true
+          type: string
+        estimated_items:
+          title: Estimated Items
+          nullable: true
+          type: integer
+        diagnostics:
+          items:
+            type: string
+          type: array
+          title: Diagnostics
+      type: object
+      required:
+      - status
+      - sync_ready
+      - config_revision
+      - estimated_items
+      - diagnostics
+      title: PipelinePreflightInfo
+    SearchFilters:
+      properties:
+        item_uids:
+          title: Item Uids
+          nullable: true
+          items:
+            type: string
+          type: array
+          maxItems: 1000
+          minItems: 1
+        source_item_ids:
+          title: Source Item Ids
+          nullable: true
+          items:
+            type: string
+          type: array
+          maxItems: 1000
+          minItems: 1
+        source_scope_ids:
+          title: Source Scope Ids
+          nullable: true
+          items:
+            type: string
+          type: array
+          maxItems: 1000
+          minItems: 1
+        fields:
+          items:
+            $ref: '#/components/schemas/FieldEquality'
+          type: array
+          maxItems: 32
+          title: Fields
+      additionalProperties: false
+      type: object
+      title: SearchFilters
+    SearchHit:
+      properties:
+        item_uid:
+          type: string
+          title: Item Uid
+        project_uid:
+          type: string
+          title: Project Uid
+        revision_uid:
+          type: string
+          title: Revision Uid
+        title:
+          type: string
+          title: Title
+        score:
+          title: Score
+          nullable: true
+          type: number
+        item:
+          title: Item
+          nullable: true
+          additionalProperties: true
+          type: object
+        matched_chunks:
+          title: Matched Chunks
+          nullable: true
+          items:
+            $ref: '#/components/schemas/MatchedChunk'
+          type: array
+        relations:
+          title: Relations
+          nullable: true
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+        attachments:
+          title: Attachments
+          nullable: true
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+      type: object
+      required:
+      - item_uid
+      - project_uid
+      - revision_uid
+      - title
+      title: SearchHit
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

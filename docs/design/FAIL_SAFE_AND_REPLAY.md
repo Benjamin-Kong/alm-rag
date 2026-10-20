@@ -24,7 +24,7 @@ stateDiagram-v2
 영속 테이블 후보: `Job`, `JobStep`, `JobItemAttempt`, `FailedItem`, `RateLimitState`, `Checkpoint`. FailedItem: `project_uid, item_uid, revision_uid, stage, error_class, retryable, attempt_count, last_error_code, trace_id, first_seen_at, last_seen_at, replay_after, resolution`.
 
 ## 3. Replay 계약
-- API `GET /jobs/{job_id}/failed-items` 목록, `POST /jobs/{job_id}/failed-items/{item_uid}/retry` 단일 Item 단계 재실행, `POST /jobs/{job_id}/failed-items/retry` 조건에 맞는 실패 Item 일괄 재실행, `POST /jobs/{job_id}/resume` 영속 Job 재개. 모든 API는 프로젝트 관리 권한이 있어야 한다.
+- API `GET /jobs/{job_id}/failed-items` 목록, `POST /jobs/{job_id}/failed-items/{item_uid}/retry` 단일 Item 단계 재실행, `POST /jobs/{job_id}/failed-items/retry` 조건에 맞는 실패 Item 일괄 재실행, `POST /jobs/{job_id}/resume` 영속 Job 재개. 목록 조회(GET)는 `project_read`, 단일·일괄 재처리와 재개(POST)는 `project_manage` 권한이 있어야 한다. 사용자 2026-10-20 명시 결정(OI-029)을 따른다.
 - Retry input: `from_stage=FAILED_STAGE|COLLECT|PROCESS|EMBED|INDEX`, `force_recollect=false`, `expected_revision_uid`; 단계 의존성을 검증해 잔여 처리만 수행한다.
 - 멱등키: job_uid + item_uid + stage + revision_uid + config_fingerprint; 재시작/반복으로 중복 Revision/Vector 점이 생성되지 않아야 한다.
 - 개별 Replay는 범위에서 제외되거나 삭제된 Item을 무작정 복구하지 않는다. 현재 Scope/권한 재확인 및 audit 기록 필수.

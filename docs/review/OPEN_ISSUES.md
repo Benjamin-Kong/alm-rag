@@ -129,3 +129,18 @@ M1 착수 승인, 원격 Push 승인, Legacy 원문 및 외부 통합 관련 미
 - **OI-048 / Runtime verification / OPEN-NOT VERIFIED:** actual embeddinggemma-2 model/tokenizer artifacts and deployed context/digest/calibration/vector quality were not exercised. All runtime evidence FIXTURE_ONLY; no auto-download, live model disabled, unverified runtime BLOCKED. M3 acceptance must retain this limitation. It is not a claim of safe actual-model token accounting.
 - OI-019/023 original legacy clauses, OI-029 public replay ACL conflict, OI-030 platform/image-OS/remoteCI and actual ALM/renderer/deletion limits remain OPEN/NOT VERIFIED. M2 OI-045 accepted TDD exception retained. Full SYNC/active search/detail/Qdrant/public replay belongsM4 and notclaimed.
 - M3 PENDING_APPROVAL_WITH_DOCUMENTED_LIMITATIONS; M4 not started. No Push/Notion/liveALM/model/productiondeployment. User must approve the completion candidate before next milestone.
+
+## M4 permission clarification — 2026-10-20
+
+- OI-029: RESOLVED by explicit user decision “목록 조회는 project_read 허용”. GET failed-items uses project_read; retry/retry-all/resume use project_manage. FAIL_SAFE_AND_REPLAY.md is aligned with OpenAPI. Earlier OPEN entries above remain historical evidence; runtime negative ACL verification is recorded separately in M4 evidence.
+
+## M4 independent QA Human Review — latest, 2026-10-20
+
+- **OI-049 / Major / OPEN-HUMAN_REVIEW_REQUIRED:** SRS-018 exact Item ID retrieval is absent. Independent synthetic published source ID ALM-EXACT-987654 (not in title/body) returns no keyword hit; typed ID filter is rejected. Existing166PASS21.63s does not prove this missing feature. Main stopped implementation immediately. See M4/QA_REPORT.md and CORRECTION_PROPOSAL.md; user corrective approval required before resuming.
+- OI-029 remains RESOLVED by explicit list=project_read decision; retry/resume retain project_manage. API/CLI integration26PASS5.17s reached Main before STOP; isolated frontend10PASS but build FAIL awaiting new schemas. M4 API export/client synchronization and final acceptance remain NOT VERIFIED. No M4 completion or M5 authorization inferred.
+
+## M4 corrective revalidation — latest, 2026-10-21
+
+- **OI-049 / RESOLVED within local tested scope:** explicit approved correction implements exact source/internal IDs including metadata-only zero-Chunk publications, typed stored-field/scope filters, both-channel prelimit allowlists, generation lexical version/rebuild guard, API/client/CLI parity. Independent final417PASS64.63s includes5real syntheticQdrant tests; no confirmed remaining Critical/Major in bounded core/API review. Scope metadata and zeroChunk edge corrections each had actual Red before Green and independent recheck. Prior FAIL/HumanReview entries remain historical.
+- **OI-050 / Dependency advisory / corrective work:** actual pip-audit found certifi2026.10.18 GHSA-6q48-6c7w-9gw2, fixedversion2026.10.19. uv lock upgraded exactlycertifi, uv sync installedfix; audit/image revalidation evidence in M4/TEST_REPORT.md. Advisory https://github.com/advisories/GHSA-6q48-6c7w-9gw2 . No liveALM/model was contacted.
+- User explicitly authorized sequential M4→M5→M6 without further milestone/corrective approval prompts; quality gates and external restrictions remain. OI-048 realmodel/tokenizer and earlier actualALM/otherplatform/remoteCI limits remain OPEN-NOT VERIFIED.

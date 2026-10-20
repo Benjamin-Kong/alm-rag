@@ -210,6 +210,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_uid}/index-preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Index Preflight */
+        post: operations["preflightIndex"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{project_uid}/pipeline-preflight": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Pipeline Preflight */
+        post: operations["preflightPipeline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Search Items */
+        post: operations["searchItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/items/{item_uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Active Item */
+        get: operations["getActiveItem"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/healthz": {
         parameters: {
             query?: never;
@@ -363,6 +431,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/jobs/{job_id}/failed-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Failed Items */
+        get: operations["listFailedItems"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{job_id}/failed-items/{item_uid}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Item */
+        post: operations["retryFailedItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{job_id}/failed-items/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Retry Items */
+        post: operations["retryFailedItems"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/jobs/{job_id}/resume": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Resume Job */
+        post: operations["resumeJob"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/jobs/{job_id}/events": {
         parameters: {
             query?: never;
@@ -424,42 +560,42 @@ export interface components {
              * Target Chunk Tokens
              * @default 512
              */
-            target_chunk_tokens: number;
+            target_chunk_tokens?: number;
             /**
              * Max Chunk Tokens
              * @default 1024
              */
-            max_chunk_tokens: number;
+            max_chunk_tokens?: number;
             /**
              * Overlap Tokens
              * @default 64
              */
-            overlap_tokens: number;
+            overlap_tokens?: number;
             /**
              * Reserved Context Tokens
              * @default 128
              */
-            reserved_context_tokens: number;
+            reserved_context_tokens?: number;
             /**
              * Min Chunk Tokens
              * @default 64
              */
-            min_chunk_tokens: number;
+            min_chunk_tokens?: number;
             /**
              * Effective Max Input Tokens
              * @default 1024
              */
-            effective_max_input_tokens: number;
+            effective_max_input_tokens?: number;
             /**
              * Safety Margin
              * @default 0
              */
-            safety_margin: number;
+            safety_margin?: number;
             /**
              * Prefix
              * @default
              */
-            prefix: string;
+            prefix?: string;
         };
         /** CodebeamerProfile */
         CodebeamerProfile: {
@@ -482,13 +618,13 @@ export interface components {
              * @default cb-rest-v3
              * @constant
              */
-            api_profile: "cb-rest-v3";
+            api_profile?: "cb-rest-v3";
             /**
              * Auth Method
              * @default bearer
              * @enum {string}
              */
-            auth_method: "bearer" | "basic";
+            auth_method?: "bearer" | "basic";
             /** Username */
             username?: string | null;
         };
@@ -499,7 +635,7 @@ export interface components {
              * @default ALL
              * @enum {string}
              */
-            selection_mode: "ALL" | "SELECTED";
+            selection_mode?: "ALL" | "SELECTED";
             /**
              * Scope Kind
              * @enum {string}
@@ -523,6 +659,44 @@ export interface components {
                 [key: string]: unknown;
             };
         };
+        /** FailedItemInfo */
+        FailedItemInfo: {
+            /** Failed Item Uid */
+            failed_item_uid: string | null;
+            /** Job Id */
+            job_id: string;
+            /** Project Uid */
+            project_uid: string;
+            /** Item Uid */
+            item_uid: string | null;
+            /** Source Item Id */
+            source_item_id: string;
+            /** Revision Uid */
+            revision_uid: string | null;
+            /**
+             * Failed Stage
+             * @enum {string}
+             */
+            failed_stage: "COLLECT" | "PROCESS" | "EMBED" | "INDEX";
+            /** Error Code */
+            error_code: string;
+            /** Retryable */
+            retryable: boolean;
+            /** Replay State */
+            replay_state: string;
+        };
+        /** FieldEquality */
+        FieldEquality: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "NORMALIZED" | "SOURCE";
+            /** Key */
+            key: string;
+            /** Value */
+            value: unknown;
+        };
         /** FieldRef */
         FieldRef: {
             /**
@@ -545,7 +719,7 @@ export interface components {
              * @default ok
              * @constant
              */
-            status: "ok";
+            status?: "ok";
         };
         /** HttpPolicy */
         HttpPolicy: {
@@ -553,57 +727,75 @@ export interface components {
              * Requests Per Second
              * @default 2
              */
-            requests_per_second: number;
+            requests_per_second?: number;
             /**
              * Burst
              * @default 2
              */
-            burst: number;
+            burst?: number;
             /**
              * Max Inflight
              * @default 2
              */
-            max_inflight: number;
+            max_inflight?: number;
             /**
              * Min Interval Ms
              * @default 200
              */
-            min_interval_ms: number;
+            min_interval_ms?: number;
             /**
              * Timeout Seconds
              * @default 30
              */
-            timeout_seconds: number;
+            timeout_seconds?: number;
             /**
              * Max Attempts
              * @default 5
              */
-            max_attempts: number;
+            max_attempts?: number;
             /**
              * Backoff Base Seconds
              * @default 2
              */
-            backoff_base_seconds: number;
+            backoff_base_seconds?: number;
             /**
              * Backoff Max Seconds
              * @default 120
              */
-            backoff_max_seconds: number;
+            backoff_max_seconds?: number;
             /**
              * Total Budget Seconds
              * @default 180
              */
-            total_budget_seconds: number;
+            total_budget_seconds?: number;
             /**
              * Circuit Breaker Window
              * @default 20
              */
-            circuit_breaker_window: number;
+            circuit_breaker_window?: number;
             /**
              * Max Response Bytes
              * @default 16777216
              */
-            max_response_bytes: number;
+            max_response_bytes?: number;
+        };
+        /** IndexPreflightInfo */
+        IndexPreflightInfo: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "READY" | "BLOCKED";
+            /** Index Ready */
+            index_ready: boolean;
+            /** Rebuild Ready */
+            rebuild_ready: boolean;
+            /** Config Revision */
+            config_revision: string | null;
+            /** Estimated Items */
+            estimated_items: number | null;
+            /** Diagnostics */
+            diagnostics: string[];
         };
         /** InstanceInfo */
         InstanceInfo: {
@@ -622,6 +814,25 @@ export interface components {
             api_profile: string;
             /** Auth Configured */
             auth_configured: boolean;
+        };
+        /** ItemDetail */
+        ItemDetail: {
+            /** Project Uid */
+            project_uid: string;
+            /** Item Uid */
+            item_uid: string;
+            /** Revision Uid */
+            revision_uid: string;
+            /** Source Revision */
+            source_revision: string;
+            /** Item */
+            item: {
+                [key: string]: unknown;
+            };
+            /** Content Blocks */
+            content_blocks: {
+                [key: string]: unknown;
+            }[];
         };
         /** JobEvent */
         JobEvent: {
@@ -675,6 +886,43 @@ export interface components {
             /** Password */
             password: string;
         };
+        /** MatchedChunk */
+        MatchedChunk: {
+            /** Chunk Uid */
+            chunk_uid: string;
+            /** Revision Uid */
+            revision_uid: string;
+            /** Field Def Uid */
+            field_def_uid?: string | null;
+            /** Block Uid */
+            block_uid?: string | null;
+            /** Source Span Offsets */
+            source_span_offsets: {
+                [key: string]: unknown;
+            }[];
+            /** Row Ids */
+            row_ids: string[];
+            /** Input Text */
+            input_text?: string | null;
+            /** Score */
+            score?: number | null;
+        };
+        /** PipelinePreflightInfo */
+        PipelinePreflightInfo: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "READY" | "BLOCKED";
+            /** Sync Ready */
+            sync_ready: boolean;
+            /** Config Revision */
+            config_revision: string | null;
+            /** Estimated Items */
+            estimated_items: number | null;
+            /** Diagnostics */
+            diagnostics: string[];
+        };
         /** PolarionProfile */
         PolarionProfile: {
             /** Display Name */
@@ -696,13 +944,13 @@ export interface components {
              * @default polarion-rest-v1
              * @constant
              */
-            api_profile: "polarion-rest-v1";
+            api_profile?: "polarion-rest-v1";
             /**
              * Auth Method
              * @default bearer
              * @constant
              */
-            auth_method: "bearer";
+            auth_method?: "bearer";
         };
         /** PreflightInfo */
         PreflightInfo: {
@@ -734,7 +982,7 @@ export interface components {
              * @default UNKNOWN
              * @constant
              */
-            request_estimate_kind: "UNKNOWN";
+            request_estimate_kind?: "UNKNOWN";
             /** Request Count Lower Bound */
             request_count_lower_bound?: number | null;
             /** Config Revision */
@@ -786,7 +1034,7 @@ export interface components {
              * @default false
              * @constant
              */
-            sync_ready: false;
+            sync_ready?: false;
             /** Config Revision */
             config_revision: string | null;
             /** Estimated Items */
@@ -801,7 +1049,7 @@ export interface components {
              * @default ALL
              * @enum {string}
              */
-            selection_mode: "ALL" | "SELECTED";
+            selection_mode?: "ALL" | "SELECTED";
             /**
              * Scope Kind
              * @enum {string}
@@ -828,6 +1076,127 @@ export interface components {
             source_project_id: string;
             /** Name */
             name: string;
+        };
+        /** ResponseOptions */
+        ResponseOptions: {
+            /**
+             * Include Full Item
+             * @default false
+             */
+            include_full_item?: boolean;
+            /**
+             * Include Matched Chunks
+             * @default true
+             */
+            include_matched_chunks?: boolean;
+            /**
+             * Include Chunk Text
+             * @default false
+             */
+            include_chunk_text?: boolean;
+            /**
+             * Max Chunks Per Item
+             * @default 2
+             */
+            max_chunks_per_item?: number;
+            /**
+             * Include Relations
+             * @default false
+             */
+            include_relations?: boolean;
+            /**
+             * Include Attachments
+             * @default false
+             */
+            include_attachments?: boolean;
+            /**
+             * Include Scores
+             * @default true
+             */
+            include_scores?: boolean;
+        };
+        /** RetryItemRequest */
+        RetryItemRequest: {
+            /**
+             * From Stage
+             * @default FAILED_STAGE
+             * @enum {string}
+             */
+            from_stage?: "FAILED_STAGE" | "COLLECT" | "PROCESS" | "EMBED" | "INDEX";
+            /**
+             * Force Recollect
+             * @default false
+             */
+            force_recollect?: boolean;
+            /** Expected Revision Uid */
+            expected_revision_uid?: string | null;
+        };
+        /** SearchFilters */
+        SearchFilters: {
+            /** Item Uids */
+            item_uids?: string[] | null;
+            /** Source Item Ids */
+            source_item_ids?: string[] | null;
+            /** Source Scope Ids */
+            source_scope_ids?: string[] | null;
+            /** Fields */
+            fields?: components["schemas"]["FieldEquality"][];
+        };
+        /** SearchHit */
+        SearchHit: {
+            /** Item Uid */
+            item_uid: string;
+            /** Project Uid */
+            project_uid: string;
+            /** Revision Uid */
+            revision_uid: string;
+            /** Title */
+            title: string;
+            /** Score */
+            score?: number | null;
+            /** Item */
+            item?: {
+                [key: string]: unknown;
+            } | null;
+            /** Matched Chunks */
+            matched_chunks?: components["schemas"]["MatchedChunk"][] | null;
+            /** Relations */
+            relations?: {
+                [key: string]: unknown;
+            }[] | null;
+            /** Attachments */
+            attachments?: {
+                [key: string]: unknown;
+            }[] | null;
+        };
+        /** SearchRequest */
+        SearchRequest: {
+            /** Query */
+            query: string;
+            /** Project Uids */
+            project_uids: string[];
+            /**
+             * Top K
+             * @default 10
+             */
+            top_k?: number;
+            response?: components["schemas"]["ResponseOptions"];
+            filters?: components["schemas"]["SearchFilters"] | null;
+        };
+        /** SearchResponse */
+        SearchResponse: {
+            /** Total */
+            total: number;
+            /** Results */
+            results: components["schemas"]["SearchHit"][];
+            /** Exhausted */
+            exhausted: boolean;
+            /** Backfill Limited */
+            backfill_limited: boolean;
+            /** Rounds */
+            rounds: number;
+            /** Unindexed Project Uids */
+            unindexed_project_uids: string[];
         };
         /** SourceProject */
         SourceProject: {
@@ -861,7 +1230,7 @@ export interface components {
              * Force
              * @default false
              */
-            force: boolean;
+            force?: boolean;
             /** Config Revision */
             config_revision?: string | null;
         };
@@ -1897,6 +2266,314 @@ export interface operations {
             };
         };
     };
+    preflightIndex: {
+        parameters: {
+            query?: {
+                stage?: "INDEX" | "REBUILD_INDEX";
+            };
+            header?: never;
+            path: {
+                project_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IndexPreflightInfo"];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    preflightPipeline: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PipelinePreflightInfo"];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    searchItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchResponse"];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    getActiveItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDetail"];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     healthz: {
         parameters: {
             query?: never;
@@ -2470,6 +3147,322 @@ export interface operations {
             };
         };
     };
+    listFailedItems: {
+        parameters: {
+            query?: {
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FailedItemInfo"][];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    retryFailedItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+                item_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RetryItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobInfo"];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    retryFailedItems: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["RetryItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobInfo"][];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    resumeJob: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                job_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobInfo"];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
     listJobEvents: {
         parameters: {
             query?: {
@@ -2551,6 +3544,15 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobInfo"];
+                };
+            };
             /** @description Sanitized error */
             401: {
                 headers: {

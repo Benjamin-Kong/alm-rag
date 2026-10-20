@@ -1,0 +1,7 @@
+# ADR-M4-KEYWORD — SQLite FTS5 BM25 with versioned pretokenization
+
+Status: selected for local implementation, subject to executed tests and M6quality measurement. Scope Q07/OI-004 and SRS-018/019. Existing SQLite provides FTS5/BM25 without another server. Use a versioned tokenizer that retains normalized exact automotive identifiers and useful components (SOME/IP-SD,30490,0x...), plus Hangul terms and bounded Hangul n-grams. Parameterized quoted OR terms prevent FTS syntax execution. Metadata pair filtering is inside both channels before LIMIT, with stable ties; RRF combines ranks rather than incomparable raw scores.
+
+Considered: bare unicode61 BM25 (splits identifiers and weak Korean substring behavior); trigram-only (short identifiers/terms under3chars weak and term weights differ); extra external keyword server (new operation/security dependency without evidence it is needed). Chosen pretokenized FTS5 is small and testable on synthetic Korean/automotive fixtures. It does not claim morphological analysis, best Korean recall, semantic quality or P953s at100k Items. M6must measure retrieval metrics and tune.
+
+Official sources read2026-10-20: [SQLite FTS5](https://www.sqlite.org/fts5.html), [Qdrant points/write semantics](https://qdrant.tech/documentation/manage-data/points/), [Qdrant search](https://qdrant.tech/documentation/search/). Exact deployed Qdrant response contract still needs mocks and dedicated synthetic local-server tests. No actual customer/model query is part of this ADR.

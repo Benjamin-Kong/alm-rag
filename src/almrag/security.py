@@ -11,8 +11,8 @@ from argon2.exceptions import VerificationError
 from cryptography.fernet import Fernet, InvalidToken
 
 PERMISSIONS = {'search', 'project_read', 'project_manage', 'system_admin'}
-ERRORS = {'INVALID_AUTH', 'FORBIDDEN', 'INVALID_REQUEST', 'NOT_FOUND', 'STAGE_UNAVAILABLE', 'DATABASE_UNAVAILABLE', 'INTERNAL_ERROR', 'LEASE_LOST'}
-ACTIONS = {'login', 'logout', 'key_created', 'key_revoked', 'bootstrap', 'job_claim', 'job_blocked', 'request', 'worker_start', 'worker_stop'}
+ERRORS = {'CLEANUP_RETRY_PENDING', 'INVALID_AUTH', 'FORBIDDEN', 'INVALID_REQUEST', 'NOT_FOUND', 'STAGE_UNAVAILABLE', 'DATABASE_UNAVAILABLE', 'INTERNAL_ERROR', 'LEASE_LOST'}
+ACTIONS = {'index_cleanup', 'item_replay', 'failed_items_replay', 'job_resume', 'login', 'logout', 'key_created', 'key_revoked', 'bootstrap', 'job_claim', 'job_blocked', 'request', 'worker_start', 'worker_stop'}
 
 
 def digest(value: str) -> str:
@@ -24,7 +24,7 @@ def safe_event(**values):
     for key, value in values.items():
         if key == 'action' and value in ACTIONS:
             result[key] = value
-        elif key == 'outcome' and value in {'ok', 'denied', 'blocked'}:
+        elif key == 'outcome' and value in {'ok', 'denied', 'blocked', 'deferred'}:
             result[key] = value
         elif key == 'error_code' and value in ERRORS:
             result[key] = value

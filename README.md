@@ -1,7 +1,7 @@
 # ALM RAG — Codex Development Package (Review Candidate v0.3)
 
 ## Status
-**M1/M2 APPROVED; M3 LOCAL/MOCK CANDIDATE — PENDING HUMAN APPROVAL (2026-10-20).** M3 adds field-policy inheritance, loss-aware table normalization, exact-input chunks, revision-owned processing and selective vector caching through API/CLI/worker.271Python tests,8Frontend tests/build, isolated wheel migrations, local container/offline smoke and independent QA passed. See `docs/milestones/M3/COMPLETION.md` for actual-model/ALM and later-stage limits. M4 has not started; live source/model access, remote Push and production deployment remain separately gated.
+**M1–M3 APPROVED WITH DOCUMENTED LIMITATIONS; M4 IN PROGRESS (2026-10-20).** M4 adds scoped hybrid retrieval, staged publication/generations and replay after M3commit4232f7a. See `docs/milestones/M4/PLAN.md` and `DESIGN.md`; current implementation is not yet a completed M4 candidate. Real model/ALM remain NOT VERIFIED; external actions and M5 remain gated.
 
 ## Goal
 Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (fields, relationships, attachments), retain raw/HTML + immutable revisions in normalized SQLite schema, generate table-aware field-specific chunks, embed with Ollama EmbeddingGemma 2, and return authorized project-restricted distinct Item results from Vector+Keyword hybrid search via REST/CLI/Web UI.
@@ -18,7 +18,7 @@ Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (f
 ## What to do now
 - Read `docs/milestones/M3/COMPLETION.md`, `TEST_REPORT.md`, `QA_REPORT.md`, `GATE_MATRIX.md` and `M3_TRACEABILITY.csv` for current results and limits.
 - Use `docs/milestones/M3/RUNBOOK.md` for Native/Compose verification. COLLECT is implemented; PROCESS/EMBED require an explicitly calibrated model profile. SYNC/INDEX remain unavailable. UI remains the M1 foundation until M5.
-- Review the M3 completion candidate with documented limitations before authorizing M4. Remote Push and production deployment require separate authorization; neither was performed.
+- Follow the current M4 plan and wait for its separate completion Human Gate before M5. Remote Push and production deployment require separate authorization; neither was performed.
 
 ## Security
 Do not put customer ALM raw text, screenshots, database exports, attachment contents, passwords or tokens into GitHub or Notion. `.gitignore` is defense in depth only; manually inspect staged changes and run secret scanning before any remote Push.
@@ -39,3 +39,5 @@ User-requested 6 gaps are documented in: `docs/design/ALM_ONBOARDING.md`, `CHUNK
 - 59 SRS entries explicitly assigned to M1~M6 in `docs/requirements/TRACEABILITY.csv` and plans.
 - OpenAPI now includes a full draft endpoint inventory and security markers; per-endpoint schemas remain incomplete and must be locked in M1/M5.
 - See `docs/review/BASELINE_AUDIT.md` before approving any implementation.
+
+현재2026-10-21: M4 로컬 품질 검증 완료(417 Python 테스트,10 frontend 테스트,합성 실제Qdrant/패키지/컨테이너). [M4 보고서](docs/milestones/M4/COMPLETION.md). 사용자 명시 승인에 따라 M5→M6를 추가 승인 없이 순차 진행한다. 실ALM/모델·원격Push/Notion·운영배포 제한과 NOT VERIFIED 항목은 유지한다.

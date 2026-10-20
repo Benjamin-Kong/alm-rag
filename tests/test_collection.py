@@ -383,3 +383,22 @@ def test_scoped_field_fix_keeps_legacy_revision_and_field_records(setup):
         assert tuple(c.execute('SELECT raw_payload,hash FROM item_revisions WHERE revision_uid=?',('legacy-revision',)).fetchone())==('{"legacy":true}','legacy-hash')
         assert c.execute('SELECT active_revision_uid FROM items WHERE item_uid=?',('legacy-item',)).fetchone()[0]=='legacy-revision'
         assert c.execute('SELECT count(*) FROM field_definitions').fetchone()[0]==2
+
+
+def test_collection_stage_can_leave_terminal_transition_to_parent_pipeline(setup):
+    db,a,s,p=setup;s.enqueue(p);job=Queue(db).claim('parent',300)
+    assert s.run(job,finish=False)=={'state':'SUCCEEDED','error_code':None}
+    assert Queue(db).get_job(job['job_id'])['state']=='RUNNING'
+    Queue(db).finish(job['job_id'],job['fencing_token'],'SUCCEEDED')
+
+
+def test_targeted_replay_does_not_mark_unrequested_siblings_missing(setup):
+    db,a,s,p=setup;assert execute(s,db,p)[0]=='SUCCEEDED'
+    queued=s.enqueue(p)
+    with db.transaction() as c:
+        snapshot=json.loads(c.execute('SELECT snapshot FROM collection_snapshots WHERE job_id=?',(queued['job_id'],)).fetchone()[0])
+        snapshot.update(refs=a.refs[:1],targeted_replay=True)
+        c.execute('UPDATE collection_snapshots SET snapshot=? WHERE job_id=?',(json.dumps(snapshot),queued['job_id']))
+    assert s.run(Queue(db).claim('targeted',300))=='SUCCEEDED'
+    with db.connect() as c:
+        assert {r['state'] for r in c.execute('SELECT state FROM collection_memberships')}=={'IN_SCOPE'}

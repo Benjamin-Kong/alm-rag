@@ -84,4 +84,4 @@ def test_native_cli_and_separate_worker(tmp_path):
     worker=subprocess.run([sys.executable,'-m','almrag.worker','--once'],env=env,capture_output=True,text=True,timeout=10)
     assert worker.returncode==0
     assert Queue(db).get_job(job['job_id'])['state']=='BLOCKED'
-    assert 'STAGE_UNAVAILABLE' in worker.stdout
+    assert Queue(db).get_job(job['job_id'])['last_error_code']=='PIPELINE_SNAPSHOT_MISSING'

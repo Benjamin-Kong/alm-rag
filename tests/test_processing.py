@@ -44,6 +44,7 @@ def setup(tmp_path):
     db = Database(tmp_path/'db.sqlite'); db.migrate()
     instance = db.add_instance('codebeamer','https://source.invalid','Fixture','ENV:FIXTURE')
     project = db.add_project(instance,'source-p','Fixture')
+    with db.transaction() as c:c.execute("INSERT INTO project_selections(project_uid,selection_mode,scope_kind,scope_ids,config_revision) VALUES(?,'ALL','TRACKER','[]',1)",(project,))
     runtime = Runtime()
     service = ProcessingService(db,lambda p:runtime,allow_fixture=True)
     with db.transaction() as c:
@@ -53,6 +54,7 @@ def setup(tmp_path):
 
 def add_item(setup,item='1',revision='1',scope='t1',title='Title',description='Description',fields=None):
     db,instance,project,_,_ = setup
+    with db.transaction() as c:c.execute("INSERT OR IGNORE INTO project_selections(project_uid,selection_mode,scope_kind,scope_ids,config_revision) VALUES(?,'ALL','TRACKER','[]',1)",(project,))
     item_uid = canonical_uid('item',project,item)
     revision_uid = canonical_uid('revision',item_uid,revision)
     envelope = {'id':item,'project_id':'source-p','scope_id':scope,'revision':revision,'title':title,'description':{'format':'text/plain','raw':description},'fields':fields or [],'raw':{'complete':'unselected'},'attachments':[],'relations':[]}

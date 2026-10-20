@@ -78,6 +78,34 @@ export class ApiClient {
   configureProcessingDefaults(source: string, input: Schema['ProcessingPolicy']) {
     return this.request<Schema['ProcessingDefaultsInfo']>('PUT', '/alm-instances/' + encodeURIComponent(source) + '/processing-defaults', input);
   }
-  sync(project: string) { return this.request<never>('POST', '/projects/' + encodeURIComponent(project) + '/sync'); }
+  search(input: Schema['SearchRequest']) {
+    return this.request<Schema['SearchResponse']>('POST', '/search', input);
+  }
+  itemDetail(item: string) {
+    return this.request<Schema['ItemDetail']>('GET', '/items/' + encodeURIComponent(item));
+  }
+  indexPreflight(project: string, stage: 'INDEX' | 'REBUILD_INDEX' = 'INDEX') {
+    return this.request<Schema['IndexPreflightInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/index-preflight?stage=' + encodeURIComponent(stage));
+  }
+  pipelinePreflight(project: string) {
+    return this.request<Schema['PipelinePreflightInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/pipeline-preflight');
+  }
+  failedItems(job: string, pagination: { limit?: number; offset?: number } = {}) {
+    const query = new URLSearchParams();
+    if (pagination.limit !== undefined) query.set('limit', String(pagination.limit));
+    if (pagination.offset !== undefined) query.set('offset', String(pagination.offset));
+    const suffix = query.size ? '?' + query.toString() : '';
+    return this.request<Schema['FailedItemInfo'][]>('GET', '/jobs/' + encodeURIComponent(job) + '/failed-items' + suffix);
+  }
+  retryItem(job: string, item: string, input: Schema['RetryItemRequest'] = {}) {
+    return this.request<Schema['JobInfo']>('POST', '/jobs/' + encodeURIComponent(job) + '/failed-items/' + encodeURIComponent(item) + '/retry', input);
+  }
+  retryFailedItems(job: string, input: Schema['RetryItemRequest'] = {}) {
+    return this.request<Schema['JobInfo'][]>('POST', '/jobs/' + encodeURIComponent(job) + '/failed-items/retry', input);
+  }
+  resumeJob(job: string) {
+    return this.request<Schema['JobInfo']>('POST', '/jobs/' + encodeURIComponent(job) + '/resume');
+  }
+  sync(project: string) { return this.request<Schema['JobInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/sync'); }
   audit() { return this.request<Record<string, unknown>[]>('GET', '/audit-events'); }
 }

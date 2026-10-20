@@ -73,7 +73,8 @@ def test_key_scope_revocation_and_unavailable_stages(env):
     assert client.post('/api/v1/projects/p1/jobs',json={'stage':'SYNC'},headers=auth).status_code == 403
     assert client.get('/api/v1/readyz',headers=auth).status_code == 403
     admin_headers = login(client)
-    assert client.post('/api/v1/projects/p1/jobs',json={'stage':'SYNC'},headers=admin_headers).status_code == 409
+    result=client.post('/api/v1/projects/p1/jobs',json={'stage':'SYNC'},headers=admin_headers)
+    assert result.status_code == 503 and result.json()['code']=='DATABASE_UNAVAILABLE'  # Minimal fixture has no collection tables; never bypass preflight.
     assert client.delete('/api/v1/api-keys/'+key['key_id'],headers=admin_headers).status_code == 204
     client.cookies.clear()
     assert client.get('/api/v1/projects',headers=auth).status_code == 401
@@ -159,7 +160,7 @@ def test_exported_contract_matches_executed_api(env):
     import yaml
     app,_=env
     root=Path(__file__).resolve().parents[1]
-    exported=json.loads((root/'docs/api/m3-openapi.json').read_text())
+    exported=json.loads((root/'docs/api/m4-openapi.json').read_text())
     assert exported==app.openapi()
     draft=yaml.safe_load((root/'docs/api/openapi.yaml').read_text())
     for path,methods in exported['paths'].items():

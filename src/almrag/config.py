@@ -45,6 +45,7 @@ class Settings:
     attachment_root: str | None = None
     model_profile_path: str | None = None
     live_model_enabled: bool = False
+    live_vector_enabled: bool = False
 
     @property
     def attachment_directory(self):
@@ -74,7 +75,8 @@ class Settings:
                    allowed_alm_origins=tuple(x.strip().rstrip('/') for x in os.getenv('ALMRAG_ALLOWED_ALM_ORIGINS','').split(',') if x.strip()),
                    attachment_root=os.getenv('ALMRAG_ATTACHMENT_ROOT'),
                    model_profile_path=os.getenv('ALMRAG_MODEL_PROFILE_PATH'),
-                   live_model_enabled=os.getenv('ALMRAG_LIVE_MODEL_ENABLED','false').lower()=='true')
+                   live_model_enabled=os.getenv('ALMRAG_LIVE_MODEL_ENABLED','false').lower()=='true',
+                   live_vector_enabled=os.getenv('ALMRAG_LIVE_VECTOR_ENABLED','false').lower()=='true')
 
 
 class SourceProfile(BaseModel):

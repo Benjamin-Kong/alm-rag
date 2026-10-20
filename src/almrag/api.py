@@ -19,6 +19,13 @@ from almrag.connectors import ConnectorError
 from almrag.processing import FieldRef, ProcessingPolicy, ProcessingService, ProcessingError
 from almrag.embedding import ModelError
 from almrag.model_runtime import ModelRuntimeRegistry
+from almrag.vector_runtime import VectorRuntimeRegistry
+from almrag.vector_store import VectorError
+from almrag.lexical import LexicalError
+from almrag.readers import ReaderError
+from almrag.indexing import IndexService
+from almrag.pipeline import PipelineService, PipelineError
+from almrag.retrieval import SearchService,SearchRequest,SearchResponse,ItemDetail,SearchError
 
 
 class Input(BaseModel):
@@ -160,6 +167,42 @@ class ProcessingPreflightInfo(BaseModel):
     diagnostics: list[str]
 
 
+class IndexPreflightInfo(BaseModel):
+    status:Literal['READY','BLOCKED']
+    index_ready:bool
+    rebuild_ready:bool
+    config_revision:str|None
+    estimated_items:int|None
+    diagnostics:list[str]
+
+
+class PipelinePreflightInfo(BaseModel):
+    status:Literal['READY','BLOCKED']
+    sync_ready:bool
+    config_revision:str|None
+    estimated_items:int|None
+    diagnostics:list[str]
+
+
+class FailedItemInfo(BaseModel):
+    failed_item_uid:str|None
+    job_id:str
+    project_uid:str
+    item_uid:str|None
+    source_item_id:str
+    revision_uid:str|None
+    failed_stage:Literal['COLLECT','PROCESS','EMBED','INDEX']
+    error_code:str
+    retryable:bool
+    replay_state:str
+
+
+class RetryItemRequest(Input):
+    from_stage:Literal['FAILED_STAGE','COLLECT','PROCESS','EMBED','INDEX']='FAILED_STAGE'
+    force_recollect:bool=False
+    expected_revision_uid:str|None=None
+
+
 class ApiFailure(Exception):
     def __init__(self, status, code):
         self.status, self.code = status, code
@@ -169,7 +212,7 @@ def error(request, status, code):
     return JSONResponse(status_code=status, content={'code':code,'message':code.lower().replace('_',' '), 'trace_id':request.state.trace_id}, headers={'Cache-Control':'no-store'})
 
 
-def create_app(settings=None, db=None, *, connections=None, collection=None, processing=None):
+def create_app(settings=None, db=None, *, connections=None, collection=None, processing=None, search=None, indexing=None, pipeline=None):
     settings = settings or Settings.from_env()
     if db is None:
         from almrag.storage import Database
@@ -180,11 +223,38 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
     collection=collection or CollectionService(db,connections.connector,settings.attachment_directory)
     registry=ModelRuntimeRegistry(settings,db)
     processing=processing or ProcessingService(db,registry.get)
-    app = FastAPI(title='ALM RAG M3', version='0.3.0', docs_url=None, redoc_url=None, openapi_url=None)
+    indexing=indexing or IndexService(db,processing,VectorRuntimeRegistry(settings,db))
+    search=search or SearchService(db,registry.get,VectorRuntimeRegistry(settings,db))
+    app = FastAPI(title='ALM RAG M4', version='0.4.0', docs_url=None, redoc_url=None, openapi_url=None)
     app.state.security, app.state.db = auth, db
     app.state.connections,app.state.collection=connections,collection
 
     app.state.processing=processing
+    app.state.search=search
+    app.state.indexing=indexing
+    app.state.pipeline=pipeline or PipelineService(db,collection,processing,indexing)
+
+    @app.exception_handler(SearchError)
+    async def search_failure(request,exc):
+        return error(request,exc.status,exc.code)
+
+    @app.exception_handler(VectorError)
+    async def vector_failure(request,exc):
+        return error(request,503,exc.code)
+
+    @app.exception_handler(LexicalError)
+    async def lexical_failure(request,exc):
+        return error(request,422,exc.code)
+
+    @app.exception_handler(ReaderError)
+    async def reader_failure(request,exc):
+        return error(request,404 if exc.code=='PROJECT_NOT_FOUND' else 503,exc.code)
+
+
+    @app.exception_handler(PipelineError)
+    async def pipeline_failure(request,exc):
+        status=404 if exc.code in {'JOB_NOT_FOUND','FAILURE_NOT_FOUND'} else 422 if exc.code in {'FAILURE_PAGE_INVALID','REPLAY_STAGE_INVALID'} else 409
+        return error(request,status,exc.code)
 
     @app.exception_handler(ProcessingError)
     @app.exception_handler(ModelError)
@@ -335,6 +405,34 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         project_exists(project_uid)
         return app.state.processing.preflight(project_uid)
 
+    @app.post('/api/v1/projects/{project_uid}/index-preflight',response_model=IndexPreflightInfo,operation_id='preflightIndex',openapi_extra={'x-required-scope':'project_manage'})
+    def index_preflight(project_uid:str,request:Request,stage:Literal['INDEX','REBUILD_INDEX']='INDEX'):
+        require(request,'project_manage',project_uid)
+        project_exists(project_uid)
+        return app.state.indexing.preflight(project_uid,stage='REBUILD' if stage=='REBUILD_INDEX' else 'INDEX')
+
+    @app.post('/api/v1/projects/{project_uid}/pipeline-preflight',response_model=PipelinePreflightInfo,operation_id='preflightPipeline',openapi_extra={'x-required-scope':'project_manage'})
+    def pipeline_preflight(project_uid:str,request:Request):
+        require(request,'project_manage',project_uid)
+        project_exists(project_uid)
+        return app.state.pipeline.preflight(project_uid)
+
+    @app.post('/api/v1/search',response_model=SearchResponse,response_model_exclude_none=True,operation_id='searchItems',openapi_extra={'x-required-scope':'search'})
+    def search_items(payload:SearchRequest,request:Request):
+        principal=require(request,'search')
+        allowed=payload.project_uids if principal['admin_session'] else principal['project_uids']
+        if not set(payload.project_uids).issubset(set(allowed)):raise ApiFailure(403,'FORBIDDEN')
+        return app.state.search.search(payload,allowed_projects=allowed)
+
+    @app.get('/api/v1/items/{item_uid}',response_model=ItemDetail,operation_id='getActiveItem',openapi_extra={'x-required-scope':'project_read'})
+    def active_item(item_uid:str,request:Request):
+        principal=require(request,'project_read')
+        with db.connect() as c:row=c.execute('SELECT project_uid FROM items WHERE item_uid=?',(item_uid,)).fetchone()
+        if row is None:raise ApiFailure(404,'NOT_FOUND')
+        require(request,'project_read',row['project_uid'])
+        allowed=[row['project_uid']] if principal['admin_session'] else principal['project_uids']
+        return app.state.search.item_detail(row['project_uid'],item_uid,allowed_projects=allowed)
+
     @app.get('/api/v1/healthz',response_model=Health,operation_id='healthz',openapi_extra={'x-required-scope':'public'})
     def health():
         return Health()
@@ -433,7 +531,47 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         if payload.stage=='COLLECT':return collection.enqueue(project_uid,payload.config_revision)
         if payload.stage in {'PROCESS','EMBED'}:
             return app.state.processing.enqueue(project_uid,payload.stage,config_revision=payload.config_revision)
-        raise ApiFailure(409,'STAGE_UNAVAILABLE')
+        if payload.stage in {'INDEX','REBUILD_INDEX'}:
+            return app.state.indexing.enqueue(project_uid,'REBUILD' if payload.stage=='REBUILD_INDEX' else 'INDEX',config_revision=payload.config_revision)
+        return app.state.pipeline.enqueue(project_uid,'SYNC',config_revision=payload.config_revision)
+
+    def owned_job(job_id,request,permission):
+        principal=require(request,permission)
+        with db.connect() as c:row=c.execute('SELECT project_uid FROM jobs WHERE job_id=?',(job_id,)).fetchone()
+        if row is None:raise ApiFailure(404,'NOT_FOUND')
+        require(request,permission,row['project_uid'])
+        return principal,row['project_uid']
+
+    def operator_audit(request,principal,project_uid,job_id,action):
+        actor='admin:'+principal['username'] if principal['admin_session'] else 'api_key:'+principal['key_id']
+        auth.audit(action=action,outcome='ok',actor_ref=digest(actor),project_uid=project_uid,job_uid=job_id,trace_id=request.state.trace_id)
+
+    @app.get('/api/v1/jobs/{job_id}/failed-items',response_model=list[FailedItemInfo],operation_id='listFailedItems',openapi_extra={'x-required-scope':'project_read'})
+    def failed_items(job_id:str,request:Request,limit:int=100,offset:int=0):
+        owned_job(job_id,request,'project_read')
+        if not 1<=limit<=1000 or offset<0:raise ApiFailure(422,'INVALID_REQUEST')
+        return app.state.pipeline.list_failures(job_id,limit=limit,offset=offset)
+
+    @app.post('/api/v1/jobs/{job_id}/failed-items/{item_uid}/retry',status_code=202,response_model=JobInfo,operation_id='retryFailedItem',openapi_extra={'x-required-scope':'project_manage'})
+    def retry_item(job_id:str,item_uid:str,request:Request,payload:RetryItemRequest=RetryItemRequest()):
+        principal,project_uid=owned_job(job_id,request,'project_manage')
+        result=app.state.pipeline.retry(job_id,item_uid,**payload.model_dump())
+        operator_audit(request,principal,project_uid,job_id,'item_replay')
+        return result
+
+    @app.post('/api/v1/jobs/{job_id}/failed-items/retry',status_code=202,response_model=list[JobInfo],operation_id='retryFailedItems',openapi_extra={'x-required-scope':'project_manage'})
+    def retry_items(job_id:str,request:Request,payload:RetryItemRequest=RetryItemRequest()):
+        principal,project_uid=owned_job(job_id,request,'project_manage')
+        result=app.state.pipeline.retry_all(job_id,**payload.model_dump())
+        operator_audit(request,principal,project_uid,job_id,'failed_items_replay')
+        return result
+
+    @app.post('/api/v1/jobs/{job_id}/resume',status_code=202,response_model=JobInfo,operation_id='resumeJob',openapi_extra={'x-required-scope':'project_manage'})
+    def resume_job(job_id:str,request:Request):
+        principal,project_uid=owned_job(job_id,request,'project_manage')
+        result=app.state.pipeline.resume(job_id)
+        operator_audit(request,principal,project_uid,job_id,'job_resume')
+        return result
 
     @app.get('/api/v1/jobs/{job_id}/events',response_model=list[JobEvent],operation_id='listJobEvents',openapi_extra={'x-required-scope':'project_read'})
     def job_events(job_id:str,request:Request,limit:int=100,offset:int=0):
@@ -444,7 +582,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
             rows=c.execute('SELECT * FROM job_events WHERE job_id=? ORDER BY event_id LIMIT ? OFFSET ?',(job_id,limit,offset)).fetchall()
         return [JobEvent(**dict(row)) for row in rows]
 
-    @app.post('/api/v1/projects/{project_uid}/sync',status_code=202,operation_id='startSync',openapi_extra={'x-required-scope':'project_manage'})
+    @app.post('/api/v1/projects/{project_uid}/sync',status_code=202,response_model=JobInfo,operation_id='startSync',openapi_extra={'x-required-scope':'project_manage'})
     def sync(project_uid:str,request:Request):
         return stage(project_uid,Stage(stage='SYNC'),request)
 
@@ -481,12 +619,15 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
                     codes += [401,403]
                 if method=='post' and (path.endswith('/jobs') or path.endswith('/sync')):
                     codes += [409]
-                    if path.endswith('/sync'):
-                        op['responses'].pop('202',None)
-                        op['x-implementation-status']='M2_FAIL_CLOSED_SYNC_GUARD'
-                    else:op['x-implementation-status']='M3_COLLECT_PROCESS_EMBED'
+                    op['x-implementation-status']='M4_COLLECT_PROCESS_EMBED_INDEX_REBUILD_SYNC'
                 if 'processing-' in path:
                     op['x-implementation-status']='M3_IMPLEMENTED'
+                    codes += [409]
+                if any(part in path for part in ('index-preflight','pipeline-preflight','failed-items','/resume')):
+                    op['x-implementation-status']='M4_IMPLEMENTED'
+                    codes += [409]
+                if path=='/api/v1/search' or path.startswith('/api/v1/items/'):
+                    op['x-implementation-status']='M4_IMPLEMENTED'
                     codes += [409]
                 for code in codes:
                     op['responses'][str(code)]={'description':'Sanitized error','content':{'application/json':{'schema':{'$ref':'#/components/schemas/ApiError'}}}}

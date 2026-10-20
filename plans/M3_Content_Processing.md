@@ -1,6 +1,6 @@
 # M3 — Content Processing
 
-Status: PENDING_APPROVAL_WITH_DOCUMENTED_LIMITATIONS — local/mock acceptance and independent QA complete, real model/ALM and later-stage acceptance NOT VERIFIED. See docs/milestones/M3/COMPLETION.md. Original M3 start2026-10-20 on codex/m3-content; M4 not started.
+Status: APPROVED_WITH_DOCUMENTED_LIMITATIONS — user “진행해” after commit4232f7a delivery. M4 separately authorized; original M3 evidence and actual-model/ALM limitations retained.
 
 ## Goal
 HTML DOM·Table JSON·Fallback·Field-aware Chunk·Hash·선택적 임베딩
