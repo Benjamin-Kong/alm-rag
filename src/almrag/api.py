@@ -464,8 +464,8 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
             raise ApiFailure(401,'INVALID_AUTH')
         token,csrf=found
         response=Response(status_code=204)
-        response.set_cookie('almrag_session',token,max_age=settings.session_seconds,secure=True,httponly=True,samesite='strict',path='/api/v1')
-        response.set_cookie('almrag_csrf',csrf,max_age=settings.session_seconds,secure=True,httponly=False,samesite='strict',path='/')
+        response.set_cookie('almrag_session',token,max_age=settings.session_seconds,secure=settings.session_cookie_secure,httponly=True,samesite='strict',path='/api/v1')
+        response.set_cookie('almrag_csrf',csrf,max_age=settings.session_seconds,secure=settings.session_cookie_secure,httponly=False,samesite='strict',path='/')
         return response
 
     @app.post('/api/v1/auth/logout',status_code=204,operation_id='adminLogout',openapi_extra={'x-required-scope':'authenticated'})
@@ -473,8 +473,8 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         require(request,'system_admin',session_only=True)
         auth.logout(request.cookies.get('almrag_session',''),trace_id=request.state.trace_id)
         response=Response(status_code=204)
-        response.delete_cookie('almrag_session',path='/api/v1',secure=True,httponly=True,samesite='strict')
-        response.delete_cookie('almrag_csrf',path='/',secure=True,samesite='strict')
+        response.delete_cookie('almrag_session',path='/api/v1',secure=settings.session_cookie_secure,httponly=True,samesite='strict')
+        response.delete_cookie('almrag_csrf',path='/',secure=settings.session_cookie_secure,samesite='strict')
         return response
 
     @app.post('/api/v1/api-keys',status_code=201,response_model=KeyCreated,operation_id='createApiKey',openapi_extra={'x-required-scope':'system_admin'})
@@ -612,7 +612,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         schema=original_openapi()
         schema['components']['securitySchemes']={
             'ApiKeyAuth':{'type':'apiKey','in':'header','name':'X-API-Key'},
-            'AdminSession':{'type':'apiKey','in':'cookie','name':'almrag_session','description':'Secure HttpOnly SameSite=strict; unsafe methods require Origin and X-CSRF-Token.'},
+            'AdminSession':{'type':'apiKey','in':'cookie','name':'almrag_session','description':'HttpOnly SameSite=strict; Secure by default. Explicit intranet HTTP mode permits non-Secure cookies at the configured HTTP Origin; unsafe methods always require Origin and X-CSRF-Token.'},
         }
         schema['components']['schemas']['ApiError']=ApiError.model_json_schema()
         for path,methods in schema['paths'].items():

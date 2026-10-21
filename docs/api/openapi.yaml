@@ -3250,8 +3250,9 @@ components:
       type: apiKey
       in: cookie
       name: almrag_session
-      description: Secure HttpOnly SameSite=strict; unsafe methods require Origin
-        and X-CSRF-Token.
+      description: HttpOnly SameSite=strict; Secure by default. Explicit intranet
+        HTTP mode permits non-Secure cookies at the configured HTTP Origin; unsafe
+        methods always require Origin and X-CSRF-Token.
   schemas:
     SearchRequest:
       properties:

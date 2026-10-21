@@ -5,6 +5,8 @@ M1–M6 locally implemented and quality verified with documented limitations (20
 
 ## 실행 방법
 
+**사내 HTTP 업무 검증:** [Linux 설치·설정·실제 연동 안내](docs/INTRANET_LINUX.ko.md). 영속 실행과 임시 데모를 구분하며, 실제 ALM·모델 연동 결과는 대상 서버에서 확인해야 합니다.
+
 화면별 사용법은 [한국어 웹 UI 사용 설명서](docs/WEB_UI_GUIDE.ko.md)를 확인하세요. 로그인, Codebeamer Basic 비밀번호 설정, 서버 등록, 검색·재처리, 백업과 평가를 설명합니다.
 
 처음 실행할 때는 [한국어 실행 안내](docs/GETTING_STARTED.ko.md)를 참고하세요. 설치, 임시 HTTPS 데모, 데이터가 보존되는 Compose/Native 실행, 최초 관리자 생성과 HTTPS 조건을 설명합니다.

@@ -24,3 +24,6 @@ exports/
 backups/
 database/
 qdrant_storage/
+
+# Operator-supplied runtime profiles, tokenizer artifacts and local CA files
+config/

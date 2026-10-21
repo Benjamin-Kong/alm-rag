@@ -35,6 +35,7 @@ class Settings:
     embedding_model: str = 'embeddinggemma-2'
     master_key: str = field(default='', repr=False)
     allowed_origin: str = 'https://localhost:8443'
+    intranet_http_enabled: bool = False
     session_seconds: int = 3600
     tls_verify: bool = True
     ca_bundle: str | None = None
@@ -51,6 +52,10 @@ class Settings:
     notion_root_page: str = '3fe8be2f-eeee-81d4-ad48-cddc61ba0f5c'
 
     @property
+    def session_cookie_secure(self):
+        return not (self.intranet_http_enabled and urlsplit(self.allowed_origin).scheme == 'http')
+
+    @property
     def attachment_directory(self):
         return Path(self.attachment_root) if self.attachment_root else Path(self.database_path).parent/'attachments'
 
@@ -62,6 +67,8 @@ class Settings:
         endpoint(self.ollama_url)
         endpoint(self.qdrant_url)
         origin = urlsplit(endpoint(self.allowed_origin))
+        if origin.scheme == 'http' and not self.intranet_http_enabled:
+            raise ValueError('http_origin_requires_intranet_opt_in')
         if origin.path or self.session_seconds < 1:
             raise ValueError('invalid_security_settings')
         for value in self.allowed_alm_origins:
@@ -70,11 +77,15 @@ class Settings:
 
     @classmethod
     def from_env(cls):
+        intranet_http = os.getenv('ALMRAG_INTRANET_HTTP_ENABLED','false').lower()
+        if intranet_http not in {'true','false'}:
+            raise ValueError('invalid_intranet_http_flag')
         return cls(database_path=os.getenv('ALMRAG_DATABASE_PATH', 'data/alm.sqlite'),
                    ollama_url=os.getenv('ALMRAG_OLLAMA_BASE_URL', 'http://127.0.0.1:11434'),
                    qdrant_url=os.getenv('ALMRAG_QDRANT_URL', 'http://127.0.0.1:6333'),
                    master_key=os.getenv('ALMRAG_MASTER_KEY', ''),
                    allowed_origin=os.getenv('ALMRAG_ALLOWED_ORIGIN', 'https://localhost:8443'),
+                   intranet_http_enabled=intranet_http == 'true',
                    ca_bundle=os.getenv('ALMRAG_CA_BUNDLE'),
                    ollama_auth_ref=os.getenv('ALMRAG_OLLAMA_AUTH_REF'),
                    qdrant_auth_ref=os.getenv('ALMRAG_QDRANT_AUTH_REF'),

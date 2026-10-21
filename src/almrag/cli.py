@@ -38,7 +38,7 @@ def bootstrap_admin(username:str=typer.Option('admin')):
     except ValueError:
         typer.echo('Administrator creation rejected.',err=True)
         raise typer.Exit(1)
-    typer.echo('Administrator created. HTTPS is required for browser session cookies.')
+    typer.echo('Administrator created. Use the configured Origin and explicit intranet HTTP mode when applicable.')
 
 
 @app.command()
@@ -54,6 +54,14 @@ def store_secret(ref:str):
         typer.echo('Secret storage rejected.',err=True)
         raise typer.Exit(1)
     typer.echo('Secret stored.')
+
+
+def admin_transport_allowed(base):
+    if urlsplit(base).scheme=='https':return True
+    try:
+        settings=Settings.from_env()
+        return settings.intranet_http_enabled and base==settings.allowed_origin
+    except ValueError:return False
 
 
 def request(method,path,payload=None):
@@ -74,8 +82,8 @@ def request(method,path,payload=None):
                 typer.echo('Session unavailable or belongs to a different API URL.',err=True)
                 raise typer.Exit(1)
         if token:
-            if urlsplit(base).scheme!='https':
-                typer.echo('HTTPS is required for administrator sessions.',err=True)
+            if not admin_transport_allowed(base):
+                typer.echo('HTTPS or explicit intranet HTTP mode with matching ALMRAG_ALLOWED_ORIGIN is required for administrator sessions.',err=True)
                 raise typer.Exit(1)
             headers.update({'Cookie':'almrag_session='+token,'X-CSRF-Token':csrf,'Origin':base})
     try:
@@ -120,10 +128,10 @@ def _payload(path):
 
 @app.command()
 def login(username:str=typer.Option('admin')):
-    """Log in over HTTPS and save a private, API-bound session file."""
+    """Log in over HTTPS or explicitly configured intranet HTTP; save a private API-bound session file."""
     base=endpoint(os.getenv('ALMRAG_API_URL','https://localhost:8443'))
-    if urlsplit(base).scheme!='https':
-        typer.echo('HTTPS is required for administrator sessions.',err=True)
+    if not admin_transport_allowed(base):
+        typer.echo('HTTPS or explicit intranet HTTP mode with matching ALMRAG_ALLOWED_ORIGIN is required for administrator sessions.',err=True)
         raise typer.Exit(1)
     try:
         with httpx.Client(timeout=10,follow_redirects=False,trust_env=False) as client:

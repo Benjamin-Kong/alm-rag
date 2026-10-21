@@ -100,3 +100,7 @@ Requirement-to-component-to-API-to-tests matrix, data recovery tests, project le
 - `project_uid`는 서버 인스턴스 및 원본 Project ID 기반 불변 Canonical ID로 생성; Codebeamer Tracker ID와 Polarion Work Item Type은 별도 스코프 Kind로 구별한다.
 - 명시적 Project Scope가 없으면 검색 전 거부한다. Job UID/Item UID 경로로도 프로젝트 권한을 확인한다. 원본문서 HTML 렌더링은 sanitization 및 CSP를 통해 XSS 공격 방어를 설계·검증한다.
 - SQLite와 Qdrant, Keyword 검색/첨부 파일의 백업 정합성은 백업 Manifest에 기록하고 불일치 시 복원 성공을 주장하지 않는다.
+
+## 사내 HTTP 실행 보완
+
+사용자의 HTTPS 미적용 사내 사용 결정에 따라 명시적 HTTP 세션 모드·영속 same-origin 서버·전용 Compose 및 실제 서버 진단 도구를 추가했다. [ADR-003](adr/ADR-003-intranet-http-runtime.md)의 설정·인증 경계와 미검증 범위를 따른다. SQLite 원본 저장과 Qdrant 인덱스 분리는 유지한다.

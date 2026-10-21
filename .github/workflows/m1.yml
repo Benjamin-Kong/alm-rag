@@ -45,5 +45,17 @@ jobs:
       - run: docker run --rm -i --network none --entrypoint python almrag-api:m6 - < tools/smoke_m4.py
       - run: docker run --rm -i --network none --entrypoint python almrag-api:m6 - < tools/smoke_m5.py
       - run: docker run --rm -i --network none --entrypoint python almrag-api:m6 - < tools/smoke_m6.py
+      - name: Prepare isolated intranet HTTP acceptance
+        id: intranet_env
+        run: uv run python tools/smoke_intranet.py --write-env /tmp/almrag-intranet-ci.env
+      - run: docker compose --env-file /tmp/almrag-intranet-ci.env -p almrag-intranet-ci -f deploy/compose.intranet.yaml --profile services up -d --build --wait --wait-timeout 120
+      - name: Bootstrap synthetic intranet acceptance administrator
+        run: docker compose --env-file /tmp/almrag-intranet-ci.env -p almrag-intranet-ci -f deploy/compose.intranet.yaml exec -T api python -c "from almrag.cli import database; from almrag.security import Security; Security(database()).bootstrap('synthetic-intranet-admin','synthetic intranet password')"
+      - run: uv run python tools/smoke_intranet.py
+      - run: docker compose --env-file /tmp/almrag-intranet-ci.env -p almrag-intranet-ci -f deploy/compose.intranet.yaml restart api worker
+      - run: uv run python tools/smoke_intranet.py
+      - run: docker compose --env-file /tmp/almrag-intranet-ci.env -p almrag-intranet-ci -f deploy/compose.intranet.yaml exec -T api python -m almrag.doctor
+      - if: always() && steps.intranet_env.outcome == 'success'
+        run: docker compose --env-file /tmp/almrag-intranet-ci.env -p almrag-intranet-ci -f deploy/compose.intranet.yaml --profile services down -v
       - if: always()
         run: docker compose -p almrag-ci -f deploy/compose.yaml down -v

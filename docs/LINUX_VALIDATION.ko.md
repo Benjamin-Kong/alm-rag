@@ -1,5 +1,7 @@
 # Linux 다운로드·구동 검증
 
+실제 업무용 사내 HTTP 설치는 [사내 Linux 안내](INTRANET_LINUX.ko.md)를 사용하세요. 아래 절차의 임시 HTTPS 데모와 구분합니다.
+
 접속 후 화면 사용법은 [한국어 웹 UI 사용 설명서](WEB_UI_GUIDE.ko.md)를 참고하세요.
 
 사용자 지정 2순위: 실제 Linux에서 코드를 내려받아 실행하고 결과를 기록합니다. CI의 Ubuntu 검증과 사용자 Linux 서버 검증은 별도로 기록합니다. 실제 ALM·Ollama 접속은 해당 테스트 환경과 읽기 전용 범위를 정한 후 진행합니다.
@@ -51,7 +53,7 @@ npm run test:e2e
 cd ..
 ```
 
-예상 테스트 수는 10개(9개 mock API + 1개 실제 임시 HTTPS/API/worker)입니다. 테스트가 통과한 경우에만 PASS로 기록합니다. 실패 증거는 `frontend/test-results/`에 생성됩니다.
+현재 예상 테스트 수는 11개(9개 mock API + 1개 실제 임시 HTTPS/API/worker + 1개 명시적 HTTP/API/worker)입니다. 4173·19443·19444 포트가 비어 있어야 합니다. 테스트가 통과한 경우에만 PASS로 기록합니다. 실패 증거는 `frontend/test-results/`에 생성됩니다.
 
 ## 영속 컨테이너 구동
 

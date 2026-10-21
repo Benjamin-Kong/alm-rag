@@ -33,3 +33,6 @@ build/
 # Local browser test evidence (sanitized summaries are committed separately)
 frontend/test-results/
 frontend/playwright-report/
+
+# Operator-supplied runtime profiles, tokenizer artifacts and local CA files
+config/

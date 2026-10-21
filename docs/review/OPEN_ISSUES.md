@@ -181,3 +181,9 @@ See M5 TDD/QA/TEST reports for original FAILs and independent rechecks. OI-019/0
 - **OI-063 / RESOLVED within tested Ubuntu24.04 amd64 scope:** run39547347678 at531ff5d SUCCESS,506Python/28frontend/10Chromium, audits0, generatedcontracts unchanged,3healthyservices andM2..M6network-none smokesPASS. Initial remoteFAIL retained above. See M6/REMOTE_CI_REPORT.md.
 - OI-030 remoteCI/amd64 sub-scope now verified; user Linux host, Windows and image OS vulnerability scan remain NOT VERIFIED. Runner warned about action Node20 runtime deprecation and ubuntu-latest migration; maintenance remains pending, no failure of this run.
 - Priority2 actual user Linux host download/run remains NOT VERIFIED until performed. The prepared Linux guide was independently checked; fixed-project volume reuse clarified. Actual ALM/model testing follows that environment verification per user direction.
+
+## 사내 HTTP 실행 준비 보완
+
+- 사용자가 HTTPS미적용 사내 운영 및 잔여실행준비 구현을 승인했다. ADR003/INTRANET/PLAN에따라 explicitHTTP,영속sameorigin서버,공유envCompose,진단·모델교정 도구를추가했다. HTTP에서도Origin/CSRF/ACL을유지한다.
+- OI-064 / Ollama 응답형식호환 / RESOLVED in synthetic tests: 공식tags의 rawdigest/baredefaultname를기존엄격비교가거부했다. 실제Red후동등표현만정규화, 잘못된태그/해시/모호한중복은거부. MODEL_TDD와신규19identitycases참조. 실제모델검증은NOT VERIFIED유지.
+- 전체558Python/28frontend/11Chromium, 합성HTTPComposebuild/boot/재시작로그인, 독립QA52target+8assertionsPASS. 보고서 docs/milestones/INTRANET/TEST_REPORT.md. 실제사용자Linux/ALM/Ollama/업무100k/운영복구/OS스캔은별도실행전NOT VERIFIED.

@@ -49,3 +49,7 @@ M1에서 이미지 Build/Boot/Health와 임시 SQLite migration+Qdrant 연결을
 
 ## 5. v0.2 Runtime package installation scaffold
 `deploy/requirements.backend.in` lists candidate Python runtime packages and `deploy/Dockerfile.backend` **installs** them with pip. This is design scaffold only; packages are NOT version-locked and application modules are still missing, so it does not meet release reproducibility or runnability. M1 must generate/verify hash-locked dependency files and replace temporary installation strategy. Frontend Dockerfile awaits React/Vite package-lock and source.
+
+## 사내 HTTP 현재 실행 구성
+
+사용자의 사내 HTTP 결정 이후 현재 배포 진입점은 `deploy/compose.intranet.yaml` 또는 `python -m almrag.server`다. [사내 Linux 설치·실제 연동 검증 안내](../INTRANET_LINUX.ko.md)와 [ADR-003](adr/ADR-003-intranet-http-runtime.md)를 따른다. 이전 HTTPS 기본값 설명은 기본 모드에 해당한다. API·Worker의 동일 환경 파일/로컬 SQLite/첨부 볼륨, 읽기 전용 모델 설정 마운트와 restart 정책을 적용한다. 실제 고객 서비스 접속은 수행 전까지 NOT VERIFIED다.

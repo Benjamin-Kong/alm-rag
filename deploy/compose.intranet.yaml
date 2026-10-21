@@ -1,0 +1,62 @@
+# Standalone persistent intranet runtime, explicitly approved HTTP opt-in.
+# Run from repository root with --env-file .env.intranet.
+x-runtime: &runtime
+  image: almrag-api:intranet
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile.backend
+  env_file:
+    - ${ALMRAG_ENV_FILE:-../.env.intranet}
+  environment:
+    ALMRAG_DATABASE_PATH: /app/data/alm.sqlite
+    ALMRAG_ATTACHMENT_ROOT: /app/data/attachments
+  volumes:
+    - almrag_data:/app/data
+    - ${ALMRAG_CONFIG_DIR:-../config}:/app/config:ro
+  extra_hosts:
+    - host.docker.internal:host-gateway
+  restart: unless-stopped
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+  init: true
+services:
+  api:
+    <<: *runtime
+  worker:
+    <<: *runtime
+    command: [python, -m, almrag.worker]
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD, python, -m, almrag.worker, --health]
+      interval: 5s
+      timeout: 3s
+      start_period: 10s
+  frontend:
+    image: almrag-frontend:intranet
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.frontend
+    ports:
+      - ${ALMRAG_BIND_ADDRESS:-127.0.0.1}:${ALMRAG_HTTP_PORT:-8080}:8080
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    init: true
+  qdrant:
+    profiles: [services]
+    image: qdrant/qdrant@sha256:b7b0444c4c351c970b98e90a6f89c2ee4287c65b44e52b4cb503fa5b2aa927ad
+    environment:
+      QDRANT__SERVICE__API_KEY: ${ALMRAG_QDRANT_API_KEY:?Set ALMRAG_QDRANT_API_KEY in the private env file}
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+volumes:
+  almrag_data:
+  qdrant_data:

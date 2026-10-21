@@ -1,13 +1,14 @@
 # ALM RAG 웹 UI 사용 설명서
 
-현재 M6 웹 화면 기준 한국어 설명서입니다. 화면의 메뉴·버튼 이름을 그대로 사용합니다. 설치는 [한국어 실행 안내](GETTING_STARTED.ko.md), Linux 다운로드와 접속은 [Linux 검증 절차](LINUX_VALIDATION.ko.md)를 먼저 확인하세요.
+현재 M6 및 사내 HTTP 실행 보완 기준 한국어 설명서입니다. 실제 업무 검증 환경은 [사내 Linux 설치·연동 안내](INTRANET_LINUX.ko.md)를 사용하세요. 화면의 메뉴·버튼 이름을 그대로 사용합니다. 설치는 [한국어 실행 안내](GETTING_STARTED.ko.md), Linux 다운로드와 접속은 [Linux 검증 절차](LINUX_VALIDATION.ko.md)를 먼저 확인하세요.
 
 ## 1. 지금 실행한 환경부터 확인하기
 
 | 실행 환경 | 가능한 확인 | 제한 |
 |---|---|---|
 | `tools/native_e2e_server.py` | 임시 관리자 로그인, 합성 프로젝트 표시, 무결성 작업과 보고서, 로그아웃 | 임시 DB이며 종료 시 정리됩니다. 실제 ALM·모델·벡터 연결은 꺼져 있습니다. 실제 서버 등록·SYNC·검색 검증용이 아닙니다. |
-| 일반 API + Worker + HTTPS 웹 서버 | 설정된 ALM 등록·수집, 검색, 운영 기능 | 같은 DB와 필요한 환경설정을 API·Worker에 전달해야 합니다. 실제 ALM·모델은 별도 연결 검증이 필요합니다. |
+| 일반 API + Worker + 같은 Origin의 웹 서버 | 설정된 ALM 등록·수집, 검색, 운영 기능 | 같은 DB와 필요한 환경설정을 API·Worker에 전달해야 합니다. 실제 ALM·모델은 별도 연결 검증이 필요합니다. |
+| 사내 전용 Compose / `almrag.server` | 영속 DB 기반 HTTP 로그인·작업·검색 | 정확한 HTTP Origin과 `ALMRAG_INTRANET_HTTP_ENABLED=true`, 실제 서비스 설정이 필요합니다. |
 | 기본 Compose HTTP 8080 | 화면 및 health 확인 | Secure 관리자 로그인에는 별도 HTTPS 프록시와 일치하는 Origin이 필요합니다. |
 
 데모 서버의 `Settings`는 고정되어 있습니다. 환경변수만 export해도 실제 ALM 연결이 활성화되지 않습니다. 실제 연결은 일반 실행 환경에서 준비합니다.
@@ -47,7 +48,7 @@ Codebeamer 비밀번호를 첫 화면의 관리자 비밀번호나 API 키 칸�
 
 데모 전용 계정은 `synthetic-admin` / `synthetic browser password`입니다. 일반 실행 환경에는 이 기본 계정이 없습니다. 운영 담당자가 같은 DB에서 `uv run python -m almrag.cli bootstrap-admin`으로 최초 계정을 생성해야 합니다. 관리자 비밀번호는 16자 이상이어야 합니다.
 
-관리자 세션에는 HTTPS가 필요합니다. 브라우저 주소의 Origin과 API의 `ALMRAG_ALLOWED_ORIGIN`이 일치해야 합니다.
+기본 관리자 세션은 HTTPS를 사용합니다. 사용자가 명시적으로 선택한 사내 HTTP 환경은 `ALMRAG_INTRANET_HTTP_ENABLED=true`와 정확한 HTTP Origin을 함께 지정하면 사용할 수 있습니다. 이 모드에서도 CSRF·Origin·프로젝트 권한 검사는 유지됩니다. 브라우저 주소의 Origin과 API의 `ALMRAG_ALLOWED_ORIGIN`이 일치해야 합니다.
 
 ### API 키와 연결 해제
 

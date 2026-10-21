@@ -6,6 +6,7 @@ Fixture verification cannot be promoted to production VERIFIED evidence.
 import hashlib
 import json
 import math
+import re
 from pathlib import Path
 
 import httpx
@@ -17,6 +18,11 @@ from almrag.queue import LeaseLost
 
 def fingerprint(value):
     return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False).encode()).hexdigest()
+
+
+def _model_identity(value):
+    if not isinstance(value,str):return None
+    return value if ':' in value else value+':latest'
 
 
 class ModelError(ValueError):
@@ -105,13 +111,17 @@ class OllamaEmbedder:
 
     def _digest(self):
         payload=self._request('GET','/api/tags')
-        name=self.config.model_name if ':' in self.config.model_name else self.config.model_name+':latest'
+        name=_model_identity(self.config.model_name)
         models=payload.get('models')
         if not isinstance(models,list):raise ModelError('MODEL_RESPONSE_SCHEMA_MISMATCH')
-        found=[model for model in models if isinstance(model,dict) and model.get('name',model.get('model'))==name]
+        found=[model for model in models if isinstance(model,dict) and _model_identity(model.get('name',model.get('model')))==name]
         if len(found)!=1:raise ModelError('MODEL_UNAVAILABLE')
-        if found[0].get('digest')!=self.config.expected_digest:raise ModelError('MODEL_DIGEST_MISMATCH')
-        return found[0]['digest']
+        digest=found[0].get('digest')
+        # Ollama tags may return a bare SHA-256; persist canonical identity so
+        # existing pinned configurations and fingerprints do not change.
+        if isinstance(digest,str) and re.fullmatch(r'[0-9a-f]{64}',digest):digest='sha256:'+digest
+        if digest!=self.config.expected_digest:raise ModelError('MODEL_DIGEST_MISMATCH')
+        return digest
 
     def _count(self,text):
         count=self.tokenizer.count(text)
@@ -122,7 +132,7 @@ class OllamaEmbedder:
         body=self._request('POST','/api/embed',{'model':self.config.model_name,'input':text,'truncate':False,
             'dimensions':self.config.vector_dimension,'options':{'num_ctx':self.config.effective_max_input_tokens}})
         vectors=body.get('embeddings')
-        if body.get('model') not in {self.config.model_name,self.config.model_name+':latest'}:
+        if _model_identity(body.get('model'))!=_model_identity(self.config.model_name):
             raise ModelError('MODEL_RESPONSE_IDENTITY_MISMATCH')
         if not isinstance(vectors,list) or len(vectors)!=1 or not isinstance(vectors[0],list):
             raise ModelError('VECTOR_INTEGRITY_ERROR')
