@@ -1,0 +1,70 @@
+{
+  "milestones": [
+    {
+      "id": "M1",
+      "tdd": [
+        "docs/milestones/M1/FRONTEND_TDD.md",
+        "docs/milestones/M1/MAIN_TDD.md",
+        "docs/milestones/M1/STORAGE_TDD.md"
+      ],
+      "exception": null
+    },
+    {
+      "id": "M2",
+      "tdd": [
+        "docs/milestones/M2/COLLECTION_TDD.md",
+        "docs/milestones/M2/CONNECTOR_TDD.md",
+        "docs/milestones/M2/MAIN_TDD.md",
+        "docs/milestones/M2/TRANSPORT_TDD.md",
+        "docs/milestones/M2/WORKER_TDD.md"
+      ],
+      "exception": {
+        "issue": "OI-045",
+        "status": "TDD_NOT_EVIDENCED",
+        "disposition": "USER_ACCEPTED_CHRONOLOGY_EXCEPTION"
+      }
+    },
+    {
+      "id": "M3",
+      "tdd": [
+        "docs/milestones/M3/CHUNKING_TDD.md",
+        "docs/milestones/M3/MAIN_TDD.md",
+        "docs/milestones/M3/MOCK_E2E_TDD.md",
+        "docs/milestones/M3/NORMALIZATION_TDD.md",
+        "docs/milestones/M3/PROCESSING_TDD.md"
+      ],
+      "exception": null
+    },
+    {
+      "id": "M4",
+      "tdd": [
+        "docs/milestones/M4/API_TDD.md",
+        "docs/milestones/M4/ID_FILTER_TDD.md",
+        "docs/milestones/M4/INDEX_TDD.md",
+        "docs/milestones/M4/LEXICAL_TDD.md",
+        "docs/milestones/M4/MAIN_TDD.md",
+        "docs/milestones/M4/PIPELINE_TDD.md",
+        "docs/milestones/M4/VECTOR_TDD.md"
+      ],
+      "exception": null
+    },
+    {
+      "id": "M5",
+      "tdd": [
+        "docs/milestones/M5/FRONTEND_TDD.md",
+        "docs/milestones/M5/MAIN_TDD.md",
+        "docs/milestones/M5/OPERATIONS_TDD.md"
+      ],
+      "exception": null
+    },
+    {
+      "id": "M6",
+      "tdd": [
+        "docs/milestones/M6/MAIN_TDD.md",
+        "docs/milestones/M6/ENGINE_TDD.md",
+        "docs/milestones/M6/BENCHMARK_TDD.md"
+      ],
+      "exception": null
+    }
+  ]
+}

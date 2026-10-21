@@ -2,9 +2,10 @@ openapi: 3.0.3
 info:
   title: ALM Unified Retrieval API (DRAFT)
   version: 0.3.0-review-candidate
-  description: M5 executed subset is marked x-implementation-status; other endpoints
-    remain draft and unimplemented. See m5-openapi.json for the current executable
-    contract; m1-openapi.json, m2-openapi.json and m3-openapi.json and m4-openapi.json
+  description: All 55 current baseline/API operations have executable implementations;
+    x-implementation-status records their milestone. Runtime evidence and external
+    limitations remain separate. See m6-openapi.json for the current executable contract;
+    m1-openapi.json, m2-openapi.json and m3-openapi.json and m4-openapi.json and m5-openapi.json
     are historical.
 servers:
 - url: /api/v1
@@ -1652,40 +1653,69 @@ paths:
       x-implementation-status: M5_IMPLEMENTED
   /projects/{project_uid}/integrity:
     post:
+      summary: Integrity
       operationId: startIntegrityReport
-      summary: Run provenance/completeness/index consistency check
-      x-required-scope: project_manage
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
+          title: Project Uid
       responses:
         '202':
-          description: Integrity job queued
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobAccepted'
+                $ref: '#/components/schemas/JobInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      x-milestone: M6
+      x-implementation-status: M1_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
   /projects/{project_uid}/evaluations:
     post:
+      summary: Evaluate
       operationId: startRetrievalEvaluation
-      summary: Run retrieval gold-set comparison
-      x-required-scope: project_manage
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
+          title: Project Uid
       requestBody:
         required: true
         content:
@@ -1694,18 +1724,47 @@ paths:
               $ref: '#/components/schemas/EvaluationRequest'
       responses:
         '202':
-          description: Evaluation queued
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobAccepted'
+                $ref: '#/components/schemas/JobInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      x-milestone: M6
+      x-implementation-status: M1_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
   /projects/{project_uid}/export:
     post:
       summary: Export
@@ -3067,6 +3126,120 @@ paths:
       security:
       - AdminSession: []
       x-implementation-status: M5_IMPLEMENTED
+  /projects/{project_uid}/evaluation-datasets:
+    post:
+      summary: Stage Dataset
+      operationId: stageEvaluationDataset
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GoldenDataset'
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DatasetInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      x-milestone: M6
+      x-implementation-status: M1_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+  /jobs/{job_id}/quality-report:
+    get:
+      summary: Quality Report
+      operationId: getQualityReport
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QualityReport'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      x-milestone: M6
+      x-implementation-status: M1_IMPLEMENTED
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -3471,28 +3644,43 @@ components:
           items:
             type: object
     EvaluationRequest:
-      type: object
-      required:
-      - project_uids
-      - dataset_ref
       properties:
         project_uids:
-          type: array
-          minItems: 1
           items:
             type: string
+          type: array
+          maxItems: 1
+          minItems: 1
+          title: Project Uids
         dataset_ref:
           type: string
-          description: Local server side reference, not raw data or arbitrary external
-            URL
+          maxLength: 100
+          minLength: 1
+          pattern: ^[A-Za-z0-9_-]+$
+          title: Dataset Ref
         methods:
-          type: array
           items:
             type: string
             enum:
             - dense
             - keyword
             - hybrid
+          type: array
+          maxItems: 3
+          minItems: 1
+          title: Methods
+        top_k:
+          type: integer
+          maximum: 100.0
+          minimum: 1.0
+          title: Top K
+          default: 10
+      additionalProperties: false
+      type: object
+      required:
+      - project_uids
+      - dataset_ref
+      title: EvaluationRequest
     ProjectImportRequest:
       properties:
         artifact_ref:
@@ -4959,6 +5147,89 @@ components:
       required:
       - summary_uid
       title: SummaryQueued
+    DatasetInfo:
+      properties:
+        dataset_ref:
+          type: string
+          title: Dataset Ref
+        project_uid:
+          type: string
+          title: Project Uid
+        case_count:
+          type: integer
+          title: Case Count
+        sha256:
+          type: string
+          title: Sha256
+      additionalProperties: false
+      type: object
+      required:
+      - dataset_ref
+      - project_uid
+      - case_count
+      - sha256
+      title: DatasetInfo
+    GoldenCase:
+      properties:
+        query:
+          type: string
+          maxLength: 65536
+          minLength: 1
+          title: Query
+        relevant_item_uids:
+          items:
+            type: string
+          type: array
+          maxItems: 1000
+          minItems: 1
+          title: Relevant Item Uids
+      additionalProperties: false
+      type: object
+      required:
+      - query
+      - relevant_item_uids
+      title: GoldenCase
+    GoldenDataset:
+      properties:
+        cases:
+          items:
+            $ref: '#/components/schemas/GoldenCase'
+          type: array
+          maxItems: 1000
+          minItems: 1
+          title: Cases
+      additionalProperties: false
+      type: object
+      required:
+      - cases
+      title: GoldenDataset
+    QualityReport:
+      properties:
+        job_id:
+          type: string
+          title: Job Id
+        project_uid:
+          type: string
+          title: Project Uid
+        stage:
+          type: string
+          title: Stage
+        status:
+          type: string
+          title: Status
+        report:
+          additionalProperties: true
+          type: object
+          title: Report
+      additionalProperties: false
+      type: object
+      required:
+      - job_id
+      - project_uid
+      - stage
+      - status
+      - report
+      title: QualityReport
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

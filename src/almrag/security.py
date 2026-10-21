@@ -28,7 +28,7 @@ def safe_event(**values):
             result[key] = value
         elif key == 'error_code' and value in ERRORS:
             result[key] = value
-        elif key == 'stage' and value in {'SYNC', 'COLLECT', 'PROCESS', 'EMBED', 'INDEX', 'REBUILD_INDEX'}:
+        elif key == 'stage' and value in {'SYNC', 'COLLECT', 'PROCESS', 'EMBED', 'INDEX', 'REBUILD_INDEX', 'REBUILD', 'REPLAY', 'EXPORT', 'IMPORT', 'INTEGRITY', 'EVALUATE'}:
             result[key] = value
         elif key in {'attempt', 'http_status', 'elapsed_ms'} and isinstance(value, int) and 0 <= value <= 10**9:
             result[key] = value

@@ -217,7 +217,7 @@ def error(request, status, code):
     return JSONResponse(status_code=status, content={'code':code,'message':code.lower().replace('_',' '), 'trace_id':request.state.trace_id}, headers={'Cache-Control':'no-store'})
 
 
-def create_app(settings=None, db=None, *, connections=None, collection=None, processing=None, search=None, indexing=None, pipeline=None, operations=None):
+def create_app(settings=None, db=None, *, connections=None, collection=None, processing=None, search=None, indexing=None, pipeline=None, operations=None, quality=None):
     settings = settings or Settings.from_env()
     if db is None:
         from almrag.storage import Database
@@ -230,7 +230,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
     processing=processing or ProcessingService(db,registry.get)
     indexing=indexing or IndexService(db,processing,VectorRuntimeRegistry(settings,db))
     search=search or SearchService(db,registry.get,VectorRuntimeRegistry(settings,db))
-    app = FastAPI(title='ALM RAG M5', version='0.5.0', docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title='ALM RAG M6', version='0.6.0', docs_url=None, redoc_url=None, openapi_url=None)
     app.state.security, app.state.db = auth, db
     app.state.connections,app.state.collection=connections,collection
 
@@ -239,6 +239,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
     app.state.indexing=indexing
     app.state.pipeline=pipeline or PipelineService(db,collection,processing,indexing)
     app.state.operations=operations
+    app.state.quality=quality
 
     @app.exception_handler(SearchError)
     async def search_failure(request,exc):
@@ -339,6 +340,8 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
 
     from almrag.admin_api import register_admin_routes
     register_admin_routes(app,db,settings,auth,connections,require,project_exists,ApiFailure,InstanceInfo,JobInfo)
+    from almrag.quality_api import register_quality_routes
+    register_quality_routes(app,db,settings,require,project_exists,ApiFailure,JobInfo)
 
     @app.post('/api/v1/alm-instances',status_code=201,response_model=InstanceInfo,operation_id='registerAlmInstance',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
     def register_instance(payload:SourceProfileCreate,request:Request):

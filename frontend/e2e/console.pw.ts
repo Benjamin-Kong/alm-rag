@@ -126,3 +126,35 @@ test('backup restore uses server preparation nonce and clears it after use',asyn
  await expect(page.getByRole('button',{name:'격리 복구 자료 생성',exact:true})).toHaveCount(0);
  await expect(page.locator('body')).not.toContainText('b'.repeat(40));
 });
+
+test('M6 golden dataset submits bound project and displays server metrics only',async({page})=>{
+ const calls=await mock(page,true);
+ await page.route('**/api/v1/projects/p/evaluation-datasets',async route=>{
+  calls.push({path:new URL(route.request().url()).pathname,method:'POST',body:route.request().postDataJSON()});
+  await route.fulfill({status:201,json:{dataset_ref:'gold',project_uid:'p',case_count:1,sha256:'a'.repeat(64)}});
+ });
+ await page.route('**/api/v1/projects/p/evaluations',async route=>{
+  calls.push({path:new URL(route.request().url()).pathname,method:'POST',body:route.request().postDataJSON()});
+  await route.fulfill({status:202,json:{job_id:'quality-job',project_uid:'p',stage:'EVALUATE',state:'QUEUED'}});
+ });
+ await page.route('**/api/v1/jobs/quality-job/quality-report',route=>route.fulfill({status:200,json:{job_id:'quality-job',project_uid:'p',stage:'EVALUATE',status:'PASS',report:{methods:{hybrid:{precision_at_k:0.1,recall_at_k:1,mrr:1}}}}}));
+ await connect(page);await page.getByRole('button',{name:'검색 평가',exact:true}).click();
+ await expect(page.getByRole('button',{name:'세 검색 방식 평가',exact:true})).toBeDisabled();
+ await page.getByLabel('평가 검색어',{exact:true}).fill('SOME/IP-SD');
+ await page.getByLabel('정답 Item UID (한 줄에 하나)',{exact:true}).fill('canonical-item');
+ await page.getByRole('button',{name:'골든셋 저장',exact:true}).click();
+ await expect(page.getByText(/검증된 골든셋/)).toBeVisible();
+ await page.getByRole('button',{name:'세 검색 방식 평가',exact:true}).click();
+ await expect(page.getByLabel('보고서 작업 ID',{exact:true})).toHaveValue('quality-job');
+ await page.getByRole('button',{name:'보고서 조회',exact:true}).click();
+ await expect(page.getByText(/precision_at_k/)).toBeVisible();
+ expect(calls.find(c=>c.path.endsWith('/evaluations'))?.body).toEqual({project_uids:['p'],dataset_ref:'gold',methods:['dense','keyword','hybrid'],top_k:10});
+ await page.getByLabel('평가 검색어',{exact:true}).fill('changed');
+ await expect(page.getByRole('button',{name:'세 검색 방식 평가',exact:true})).toBeDisabled();
+});
+
+test('M6 read-only scope cannot create quality jobs',async({page})=>{
+ await mock(page);await connect(page);await page.getByRole('button',{name:'검색 평가',exact:true}).click();
+ await expect(page.getByRole('button',{name:'무결성 검사',exact:true})).toBeDisabled();
+ await expect(page.getByRole('button',{name:'골든셋 저장',exact:true})).toBeDisabled();
+});

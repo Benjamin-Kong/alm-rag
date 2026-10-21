@@ -93,7 +93,7 @@ def main():
             assert c.execute('SELECT state FROM processing_results').fetchone()[0]=='EMBED_READY'
             assert c.execute('SELECT active_revision_uid FROM items').fetchone()[0] is None
             assert c.execute('SELECT count(*) FROM index_generations').fetchone()[0]==0
-            assert [row[0] for row in c.execute('SELECT version FROM schema_migrations ORDER BY version')]==[1,2,3,4,5,6,7,8]
+            assert [row[0] for row in c.execute('SELECT version FROM schema_migrations ORDER BY version')]==[1,2,3,4,5,6,7,8,9]
         with db.transaction() as c:
             c.execute("INSERT INTO project_selections(project_uid,selection_mode,scope_kind,scope_ids,config_revision) VALUES(?,'ALL','TRACKER','[]',1)",(project,))
         vector=SyntheticVector();index=IndexService(db,service,vector)

@@ -1,7 +1,7 @@
 # ALM RAG — Codex Development Package (Review Candidate v0.3)
 
 ## Status
-**M1–M3 APPROVED WITH DOCUMENTED LIMITATIONS; M4 IN PROGRESS (2026-10-20).** M4 adds scoped hybrid retrieval, staged publication/generations and replay after M3commit4232f7a. See `docs/milestones/M4/PLAN.md` and `DESIGN.md`; current implementation is not yet a completed M4 candidate. Real model/ALM remain NOT VERIFIED; external actions and M5 remain gated.
+M1–M6 locally implemented and quality verified with documented limitations (2026-10-21). Independent **506 Python /28 frontend PASS**, root **10 Chromium PASS**, local Docker/isolated wheel/audits PASS. Synthetic100kItem/199999Chunk exact-ID search P95 **1.37495s**; this is not actual-Ollama/semantic-performance evidence. Actual ALM/model/production100k pipeline/other host modes/remote CI remain NOT VERIFIED. See [M6 completion](docs/milestones/M6/COMPLETION.md), [test report](docs/milestones/M6/TEST_REPORT.md), [benchmark interpretation](docs/milestones/M6/BENCHMARK_REPORT.md) and [runbook](docs/milestones/M6/RUNBOOK.md).
 
 ## Goal
 Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (fields, relationships, attachments), retain raw/HTML + immutable revisions in normalized SQLite schema, generate table-aware field-specific chunks, embed with Ollama EmbeddingGemma 2, and return authorized project-restricted distinct Item results from Vector+Keyword hybrid search via REST/CLI/Web UI.
@@ -16,9 +16,10 @@ Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (f
 7. `docs/testing/TEST_PLAN.md` — non-fabricated quality evidence requirements.
 
 ## What to do now
-- Read `docs/milestones/M3/COMPLETION.md`, `TEST_REPORT.md`, `QA_REPORT.md`, `GATE_MATRIX.md` and `M3_TRACEABILITY.csv` for current results and limits.
-- Use `docs/milestones/M3/RUNBOOK.md` for Native/Compose verification. COLLECT is implemented; PROCESS/EMBED require an explicitly calibrated model profile. SYNC/INDEX remain unavailable. UI remains the M1 foundation until M5.
-- Follow the current M4 plan and wait for its separate completion Human Gate before M5. Remote Push and production deployment require separate authorization; neither was performed.
+
+- Read the latest milestone TEST_REPORT/QA_REPORT/GATE_MATRIX and TRACEABILITY records; static baseline validation alone does not establish application success.
+- Use M6/RUNBOOK.md for current Native/Compose, quality APIs/CLI and frontend validation. Original/normalized SQLite, staged hybrid search, durable replay, source-specific admin wizard, ZIP operations and isolated raw-only recovery are implemented.
+- Supply actual model/tokenizer and authorized read-only ALM access only in a separate explicitly authorized integration exercise; default live flags stay false. No remote Push/Notion publication or production deployment was performed.
 
 ## Security
 Do not put customer ALM raw text, screenshots, database exports, attachment contents, passwords or tokens into GitHub or Notion. `.gitignore` is defense in depth only; manually inspect staged changes and run secret scanning before any remote Push.
@@ -44,3 +45,5 @@ User-requested 6 gaps are documented in: `docs/design/ALM_ONBOARDING.md`, `CHUNK
 
 
 M5 local quality candidate (2026-10-21): source-specific React wizard, jobs/diagnostics/search/original Explorer, durable ZIP Export/Import, raw-only isolated recovery, disabled-by-default summary publisher. Evidence: [M5 test report](docs/milestones/M5/TEST_REPORT.md), [runbook](docs/milestones/M5/RUNBOOK.md). Actual ALM/model/Notion/production deployment remain NOT VERIFIED. User has authorized M6 continuation without another milestone prompt.
+
+M6 latest evidence supersedes earlier appended checkpoint statuses. No further milestone implementation is pending in the authorized sequence; separately authorized real-environment validation remains necessary before production claims.

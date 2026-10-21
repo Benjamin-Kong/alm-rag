@@ -373,22 +373,30 @@ class _Chunker:
         return f"Row r{cell['row']} [{cell['cell_id']} rows={rows} cols={cols}]: {label}="
 
     def verify_coverage(self):
-        spans = {key: [] for key in self.units}
-        for chunk in self.results:
-            for span in chunk["source_span_offsets"]:
-                key = (span["block_id"], span.get("cell_id"))
-                if key not in spans:
-                    _fail("Chunk refers to a source unit outside the inventory", "SOURCE_COVERAGE_MISMATCH")
-                spans[key].append((span["char_start"], span["char_end"]))
-        for key, source in self.units.items():
-            end = 0
-            for start, stop in sorted(spans[key]):
-                if not 0 <= start <= stop <= len(source) or start > end:
-                    _fail("Chunk spans leave a source gap", "SOURCE_COVERAGE_MISMATCH")
-                end = max(end, stop)
-            if end != len(source) or (key[1] is not None and not spans[key]):
-                _fail("Chunk spans do not cover the complete source", "SOURCE_COVERAGE_MISMATCH")
+        _verify_coverage(self.units, self.results)
 
+
+def verify_source_coverage(document, chunks):
+    """Verify stored source spans against a freshly normalized source inventory."""
+    _verify_coverage(_units(document), chunks)
+
+
+def _verify_coverage(units, chunks):
+    spans = {key: [] for key in units}
+    for chunk in chunks:
+        for span in chunk["source_span_offsets"]:
+            key = (span["block_id"], span.get("cell_id"))
+            if key not in spans:
+                _fail("Chunk refers to a source unit outside the inventory", "SOURCE_COVERAGE_MISMATCH")
+            spans[key].append((span["char_start"], span["char_end"]))
+    for key, source in units.items():
+        end = 0
+        for start, stop in sorted(spans[key]):
+            if not 0 <= start <= stop <= len(source) or start > end:
+                _fail("Chunk spans leave a source gap", "SOURCE_COVERAGE_MISMATCH")
+            end = max(end, stop)
+        if end != len(source) or (key[1] is not None and not spans[key]):
+            _fail("Chunk spans do not cover the complete source", "SOURCE_COVERAGE_MISMATCH")
 
 def make_chunks(document, *, title, field_id, tokenizer, config, model_fingerprint):
     """Return exact-input chunks; all source/schema failures are Item-local.

@@ -1,8 +1,8 @@
-# Master Execution Plan — Draft for Approval
+# Master Execution Plan
 
-**Gate:** v0.3 documentation was conditionally approved on 2026-10-19 for repository/Codex setup. **M1 implementation is NOT part of this preparation authorization** and requires an explicit subsequent M1 start instruction. Each Milestone has its own Human Gate.
+**Gate history:** The v0.3 document approval originally authorized preparation only. Subsequent explicit user approvals authorized M1, later milestones and finally sequential M5/M6 execution without additional milestone/corrective prompts. BASELINE_APPROVAL.md records those decisions. External Push/ALM/model/production actions remain separately restricted.
 
-**Current:** M1..M4 locally completed with documented limits; M5 local implementation and quality evidence complete, preparing commit. User explicitly authorizes sequential M5→M6 without further milestone/corrective approval prompts. See BASELINE_APPROVAL.md; historical gates below do not revoke this authorization. External ALM/model/Push/Notion/production actions remain separately restricted.
+**Current:** M1..M6 locally implemented and quality verified with documented limitations,2026-10-21. M5commit3731374; M6 final report docs/milestones/M6/COMPLETION.md. Independent506Python/28frontend and root10Chromium; synthetic100kItem exact-IDP951.37495s. ActualALM/model/production100kpipeline/otherhostmodes/remoteCI remain NOT VERIFIED. User-authorized sequential execution is complete; no external Push/Notion/production deployment performed.
 
 ## Milestones
 | ID | Theme | Acceptance |

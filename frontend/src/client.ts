@@ -63,6 +63,10 @@ export class ApiClient {
     if(!response.ok) throw new ApiRequestError(response.status);
     return response.blob();
   }
+  stageEvaluation(project: string,input: Schema['GoldenDataset']) {return this.request<Schema['DatasetInfo']>('POST','/projects/'+encodeURIComponent(project)+'/evaluation-datasets',input);}
+  evaluate(project: string,dataset: string,topK=10) {return this.request<Schema['JobInfo']>('POST','/projects/'+encodeURIComponent(project)+'/evaluations',{project_uids:[project],dataset_ref:dataset,methods:['dense','keyword','hybrid'],top_k:topK});}
+  integrity(project: string) {return this.request<Schema['JobInfo']>('POST','/projects/'+encodeURIComponent(project)+'/integrity',{});}
+  qualityReport(job: string) {return this.request<Schema['QualityReport']>('GET','/jobs/'+encodeURIComponent(job)+'/quality-report');}
   health() { return this.request<Schema['Health']>('GET', '/healthz'); }
   readiness() { return this.request<Schema['Health']>('GET', '/readyz'); }
   projects() { return this.request<Schema['ProjectInfo'][]>('GET', '/projects'); }

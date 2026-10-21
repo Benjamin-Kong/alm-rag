@@ -1,6 +1,6 @@
 # M6 — Integration & Quality
 
-Status: PLANNED — NOT STARTED
+Status: QUALITY_VERIFIED_WITH_DOCUMENTED_LIMITATIONS — see docs/milestones/M6/COMPLETION.md; execution explicitly user-authorized
 
 ## Goal
 10만 Item 검증, 골든셋 평가, End-to-End, OS cross-platform, P95 Benchmark

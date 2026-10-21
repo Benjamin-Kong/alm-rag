@@ -1,5 +1,9 @@
 # Docker / Native 배포 및 종속성 명세 — v0.2 Draft
 
+## M6 current runtime supplement — 2026-10-21
+
+M1..M6 sources, frozen locks,55 executable API operations and React console are implemented locally. M6/RUNBOOK.md and PORTABILITY.md supersede historical stage/skeleton claims below. Local macOS arm64 Native and Linux arm64 API/worker/frontend images plus actual dedicated Qdrant are tested. Actual ALM/model/remote Notion, other host OS/amd64/remote CI and production deployment remain NOT VERIFIED. Default live ALM/model/vector/summary flags are false; raw-only recovery requires rebuilding search and re-registering authentication.
+
 ## M1 implementation supplement — 2026-10-20 (supersedes skeleton claims below)
 
 API/Worker and Frontend images now build and boot locally; evidence is in `docs/milestones/M1/TEST_REPORT.md`. M1 uses Python 3.12, stdlib sqlite3 + transactional SQL migrations, FastAPI/Uvicorn, httpx, Argon2, cryptography and Typer. Actual resolved versions/hashes are in pyproject.toml/uv.lock. React/TypeScript/Vite, Vitest 5.0.5 and generated OpenAPI tooling are in frontend/package-lock.json. Unneeded candidate SQLAlchemy/Alembic/HTML/index libraries are not installed before their implementation milestones.

@@ -1,7 +1,7 @@
-# M5 local runtime. Live ALM/model/vector are disabled by default; configured opt-in is required.
+# M6 local runtime. Live ALM/model/vector are disabled by default; configured opt-in is required.
 services:
   api:
-    image: almrag-api:m5
+    image: almrag-api:m6
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
@@ -16,7 +16,7 @@ services:
     cap_drop: [ALL]
     init: true
   worker:
-    image: almrag-api:m5
+    image: almrag-api:m6
     build:
       context: ..
       dockerfile: deploy/Dockerfile.backend
@@ -35,7 +35,7 @@ services:
     cap_drop: [ALL]
     init: true
   frontend:
-    image: almrag-frontend:m5
+    image: almrag-frontend:m6
     build:
       context: ..
       dockerfile: deploy/Dockerfile.frontend

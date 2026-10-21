@@ -316,5 +316,23 @@ def diagnostics(job_id:str,limit:int=typer.Option(100,min=1,max=1000),offset:int
     request('GET','/jobs/'+quote(job_id,safe='')+'/diagnostics?limit='+str(limit)+'&offset='+str(offset))
 
 
+@app.command()
+def integrity(project_uid:str):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/integrity')
+
+@app.command()
+def evaluate(project_uid:str,dataset_ref:str,top_k:int=typer.Option(10,min=1,max=100)):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/evaluations',{'project_uids':[project_uid],'dataset_ref':dataset_ref,'methods':['dense','keyword','hybrid'],'top_k':top_k})
+
+@app.command()
+def stage_evaluation(project_uid:str,dataset_file:Path):
+    payload=json.loads(dataset_file.read_text())
+    request('POST','/projects/'+quote(project_uid,safe='')+'/evaluation-datasets',payload)
+
+@app.command()
+def quality_report(job_id:str):
+    request('GET','/jobs/'+quote(job_id,safe='')+'/quality-report')
+
+
 if __name__=='__main__':
     app()

@@ -31,7 +31,7 @@ def healthy(path, now=None):
 
 
 def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
-             health_path=None, lease_seconds=30, heartbeat_interval=5, processing_service=None, index_service=None, pipeline_service=None, operations_service=None):
+             health_path=None, lease_seconds=30, heartbeat_interval=5, processing_service=None, index_service=None, pipeline_service=None, operations_service=None, quality_service=None):
     """Claim one job; CollectionService alone owns normal terminal transitions.
 
     Heartbeats run independently while a connector performs network work or waits.
@@ -46,7 +46,7 @@ def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
     job = queue.claim(owner, lease_seconds=lease_seconds)
     if job is None:
         return False
-    service = collection_service if job['stage']=='COLLECT' else processing_service if job['stage'] in {'PROCESS','EMBED'} else index_service if job['stage'] in {'INDEX','REBUILD'} else pipeline_service if job['stage'] in {'SYNC','REPLAY'} else operations_service if job['stage'] in {'EXPORT','IMPORT'} else None
+    service = collection_service if job['stage']=='COLLECT' else processing_service if job['stage'] in {'PROCESS','EMBED'} else index_service if job['stage'] in {'INDEX','REBUILD'} else pipeline_service if job['stage'] in {'SYNC','REPLAY'} else operations_service if job['stage'] in {'EXPORT','IMPORT'} else quality_service if job['stage'] in {'INTEGRITY','EVALUATE'} else None
     if service is None:
         queue.finish(job['job_id'], job['fencing_token'], state='BLOCKED', error_code='STAGE_UNAVAILABLE')
         print(json.dumps(safe_event(action='job_blocked', outcome='blocked', job_uid=job['job_id'],
@@ -137,6 +137,15 @@ class _ConfiguredCollection:
                 print(json.dumps(safe_event(action='docs_publish',outcome='deferred',error_code='PUBLISH_RETRY_PENDING')),flush=True)
 
     def run(self, job, abort_check):
+        if job.get('stage') in {'INTEGRITY','EVALUATE'}:
+            from almrag.quality import QualityService
+            from almrag.retrieval import SearchService
+            from almrag.model_runtime import ModelRuntimeRegistry
+            from almrag.vector_runtime import VectorRuntimeRegistry
+            registry=ModelRuntimeRegistry(self.settings,self.db)
+            vectors=VectorRuntimeRegistry(self.settings,self.db)
+            search=SearchService(self.db,registry.get,vectors)
+            return QualityService(self.db,search,vectors if self.settings.live_vector_enabled else None,attachment_root=self.settings.attachment_directory).run(job,abort_check=abort_check)
         if job.get('stage') in {'EXPORT','IMPORT'}:return self._operations().run(job,abort_check)
         if job.get('stage') in {'PROCESS','EMBED','INDEX','REBUILD','SYNC','REPLAY'}:
             from almrag.processing import ProcessingService
@@ -191,7 +200,7 @@ def main():
     try:
         while not stopping:
             try:
-                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path,processing_service=collection_service,index_service=collection_service,pipeline_service=collection_service,operations_service=collection_service)
+                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path,processing_service=collection_service,index_service=collection_service,pipeline_service=collection_service,operations_service=collection_service,quality_service=collection_service)
             except LeaseLost:
                 print(json.dumps(safe_event(action='lease_lost',outcome='aborted')),flush=True)
             collection_service.cleanup_pending()

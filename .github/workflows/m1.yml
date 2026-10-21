@@ -1,4 +1,4 @@
-name: Foundation, collection and M5 operations and browser gates
+name: Foundation, collection and M6 quality and browser gates
 on: [push, pull_request]
 jobs:
   foundation:
@@ -14,6 +14,7 @@ jobs:
       - run: python -m pip install uv==0.9.18
       - run: uv sync --frozen
       - run: uv run python tools/validate_baseline.py
+      - run: uv run python tools/validate_release.py
       - run: docker run -d --name almrag-m4-qdrant --tmpfs /qdrant/storage:rw --tmpfs /qdrant/snapshots:rw -p 127.0.0.1:16333:6333 -e QDRANT__SERVICE__API_KEY=synthetic-m4-only qdrant/qdrant@sha256:b7b0444c4c351c970b98e90a6f89c2ee4287c65b44e52b4cb503fa5b2aa927ad
       - run: uv run pytest -q
         env:
@@ -27,13 +28,14 @@ jobs:
         working-directory: frontend
       - run: npm audit --audit-level=moderate
         working-directory: frontend
-      - run: git diff --exit-code -- docs/api/m5-openapi.json docs/api/openapi.yaml frontend/src/generated-api.d.ts
+      - run: git diff --exit-code -- docs/api/m6-openapi.json docs/api/openapi.yaml frontend/src/generated-api.d.ts
       - run: docker compose -p almrag-ci -f deploy/compose.yaml build
       - run: docker compose -p almrag-ci -f deploy/compose.yaml up -d --wait --wait-timeout 90
       - run: python -c "import urllib.request; assert b'ok' in urllib.request.urlopen('http://127.0.0.1:8080/api/v1/healthz').read()"
-      - run: docker run --rm -i --network none --entrypoint python almrag-api:m5 - < tools/smoke_m2.py
-      - run: docker run --rm -i --network none --entrypoint python almrag-api:m5 - < tools/smoke_m3.py
-      - run: docker run --rm -i --network none --entrypoint python almrag-api:m5 - < tools/smoke_m4.py
-      - run: docker run --rm -i --network none --entrypoint python almrag-api:m5 - < tools/smoke_m5.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m6 - < tools/smoke_m2.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m6 - < tools/smoke_m3.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m6 - < tools/smoke_m4.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m6 - < tools/smoke_m5.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m6 - < tools/smoke_m6.py
       - if: always()
         run: docker compose -p almrag-ci -f deploy/compose.yaml down -v

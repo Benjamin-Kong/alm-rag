@@ -156,3 +156,17 @@ M1 착수 승인, 원격 Push 승인, Legacy 원문 및 외부 통합 관련 미
 - OI-057 / Browser corrective / RESOLVED locally: native fetch receiver binding and exact control accessible labels;24units/build and7actualChromiumE2E PASS.
 
 See M5 TDD/QA/TEST reports for original FAILs and independent rechecks. OI-019/023 legacy clauses, OI-030 platform/CI/image scanner, OI-048 actual model and actual ALM/provider integration remain NOT VERIFIED. Remote Notion provider implemented and mock tested but actual publication remains NOT VERIFIED and disabled. No Git remote Push or production deployment performed.
+
+## M6 independent review and corrections — 2026-10-21
+
+- OI-058 / Major / correction verified locally: strict original JSON integrity previously conflated bool/int and int/float including nested values. Four actual Reds→strict recursive JSON equality; independent original bool/int reproduction now reports FAIL as required.
+- OI-059 / Integrity evidence / correction verified locally: durable quality request now immutable and canonical snapshot_hash checked before execution; explicit simulated corruption detected. Stage logging now includes all implemented quality/operations/replay stages.
+- OI-060 / Major / RESOLVED within independently tested local scope: same-length normalized text/table-cell corruption and empty source spans were not detected. Three actual Reds→fresh normalization comparison, full source-inventory coverage and chunk content hash checks. Bounded affected Item/revision identifiers and explicit recovery/rebuild actions added; reports never silently repair live storage.
+- OI-061 / UI corrective / resolved locally: browser Unicode-v credential pattern escaped; delayed dataset/job responses guarded by form revision. Actual failing tests before corrections, frontend28PASS/build. Native HTTPS fixture static dispatch corrected without changing product auth/ACL.
+
+## M6 final local quality state — 2026-10-21
+
+- OI-058/059/060/061 RESOLVED within tested local scope. Independent61target/46performance-target,1actualQdrant and final506PythonPASS77.45s/noSKIP; frontend28/build and root10ChromiumPASS8.2s. No unresolved confirmed Critical/Major in bounded independent review.
+- OI-062 / Scale/performance / RESOLVED for synthetic exact-ID workload, real-model target NOT VERIFIED: first100k/199999Chunk P954.301s missed synthetic3second comparison. Actual SQL-work Red isolated fullgenerationpointscan; publication→membership→unique point lookup fixed it. Identical final100queryP951.37495s/alltop10/exactfirst100/100, rawinitialFAIL retained. See M6/BENCHMARK_REPORT. Generated1/2/3Chunk retrieval-shape fixture is not production-valid processing/integrity100k pipeline; actualOllama/Korean-semantic/modelCPU-GPU-remote benchmarks remain NV.
+- Local M1..M6 implementation sequence is quality verified under explicit user continuation approval. Actual ALM/model/calibration/remote provider/delivery, production100kpipeline, other host OS/amd64/remoteCI/OSscanner limitations remain OPEN-NOT VERIFIED. Original legacy clauses and historical M2 OI045 are not retrospectively passed.
+- Final local images/wheel/threehealthyservices/network-none M2/M3/M4/M6smokes and audits passed. TestCompose services and dedicatedsyntheticQdrant stopped; volumes retained. No customer ALM, remotePush/Notion, productiondeployment or destructive customer DB operation.

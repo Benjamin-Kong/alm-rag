@@ -1,0 +1,13 @@
+# M6 completion — local quality verified, 2026-10-21
+
+M5 local commit3731374 is followed by M6 integrity/evaluation/measurement implementation. User explicitly authorized sequential completion through M6 without further milestone/corrective prompts. Quality gates retained: actual test-first failures/corrections, independent QA, original evidence and Primary10/Shared3 traceability. No unresolved confirmed Critical/Major in reviewed local scope.
+
+Implemented project-owned strict golden datasets, durable INTEGRITY/EVALUATE FIFO jobs, immutable hashed requests/fenced atomic report storage, actual Dense/Keyword/Hybrid comparison with item-level P@K/Recall/MRR and drift guards, raw/type/field/attachment/normalization/table/Chunk/source-span/SQLite-keyword-Qdrant integrity checks, bounded affected Item/revision/action and existing failed-item replay references. REST/CLI/React console and all55API contracts/type client are synchronized. Read-only integrity never silently repairs customer storage.
+
+Independent506PythonPASS77.45s/noSKIP including actual dedicated local Qdrant; independent28FrontendPASS/build. Root10actualChromiumPASS8.2s includes disposable native HTTPS Secure-session/CSRF/worker/report/logout and9mockAPI scenarios. Local images/threehealthyservices/offlinewheel schema1..9/network-none smokes/audits passed. See TEST_REPORT, QA_REPORT, GATE_MATRIX and M6_TRACEABILITY.csv.
+
+Measured synthetic capacity100000Items/199999Chunks/199999points. Initial exact-ID P954.301s was preserved as FAIL, profiled and corrected via Item-bounded point lookup with deterministic work-budget Red/Green. Identical final100sample/5warmup benchmark P951.37495s, alltop10 and exactIDfirst100/100. This proves that generated retrieval-shape fixture, not actual model semantics, production ingestion/embedding throughput, real source average chunks or actual-Ollama latency. BENCHMARK_REPORT states these limits.
+
+NOT VERIFIED remains explicit: actual ALM/Ollama/calibrated tokenizer/human golden quality, production100k pipeline, CPU/GPU/remote embedding, Windows/nativeLinux/amd64/remote services/CI/OS scan/productionTLS, actual remote Notion publication. Legacy REQ text unavailable and M2 OI045 historical TDD exception remain. Actual customer data/credentials were not used. No Push, remote publication, production deployment or destructive customer DB restore was performed. Local test services are stopped after verification and volumes retained.
+
+This completes the authorized local M1..M6 implementation/quality sequence with documented environment-bound limitations. It does not assert production readiness or authorize additional external actions. Git is source of truth; execution/run instructions in RUNBOOK.md and PORTABILITY.md.

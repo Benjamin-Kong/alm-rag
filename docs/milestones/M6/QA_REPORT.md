@@ -1,0 +1,13 @@
+# M6 independent QA — local bounded review
+
+Read-only core QA role; no implementation edits. Initial strictJSON field corruption falsely passed (true vs1); same-length normalized block/table corruption and dropped source provenance were also detected as missing integrity coverage. Main wrote actual failing tests and corrected them. Independent original reproductions then fail the integrity check as required. Immutable hashed quality snapshots, strict project/Item ownership before backend, generation/revision/membership/config drift, exact channel isolation and bounded actionable findings reviewed.
+
+Independent post-correction **61 PASS /3.61s** across quality engine/corrections/chunking/M6API/workerCLI/mockE2E; actual dedicated Qdrant M6 evaluation/vector-corruption **1 PASS /0.80s**; frontend **28 PASS /1.35s**,TypeScript/build PASS715ms. Root10Chromium7.6s includes actual nativeHTTPSsession/CSRF/FIFOworker report/logout; QA reviewed fixture, but did not claim an independent browser run.
+
+Independent performance review: publication→membership→generation/Chunk point lookup preserves READY/generation/result set; removed redundant chunks JOIN is protected by FK and full final candidate checks. Bounded SQLite-work test and retrieval/filter/quality corrections **46 PASS /5.76s**. No new confirmed Major identified in this review. Benchmark review required explicit retrieval-shape fixture, generated1/2/3distribution,2Dconstant vectors/exact-ID workload and full pipeline/model NV; Main preserved those limitations.
+
+A temporary account usage limit interrupted further independent work; after reset the focused46test review resumed. Final full regression result will be appended only after actual completion. Root and independent packaging/browser results are separately attributed in TEST_REPORT. Production customer ALM/model/provider/remoteCI/OS scan and other host platforms remain NOT VERIFIED. Historical M2 missing test-first chronology remains OI045, not retrospectivePASS.
+
+## Final independent full regression — actual PASS
+
+`env ALMRAG_TEST_QDRANT_URL=http://127.0.0.1:16333 .venv/bin/pytest -q` **506 passed /77.45s**, exit0, noSKIP. No implementation/test changes during the run. Independent raw-artifact audit recomputed both nearest-rankP95 values from100samples:initial4.301128957886249s FAIL andfinal1.3749497500248253s PASS; both5warmups,alltop10,exactrankfirst100/100,100000Items/199999Chunks/pointcount. Artifact audit is not an independent100k rerun. No remaining confirmed Critical/Major in bounded engine/API/SQL/ACL/fencing review. Root's final10Chromium8.2s and packaging evidence remain separately attributed.

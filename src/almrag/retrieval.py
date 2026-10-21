@@ -196,7 +196,8 @@ class SearchService:
                 if filters is not None and len(result)>10000:raise SearchError('FILTER_TOO_BROAD',422)
         return result
 
-    def search(self,payload,*,allowed_projects):
+    def search(self,payload,*,allowed_projects,method="hybrid"):
+        if method not in {"dense","keyword","hybrid"}:raise ValueError("invalid search method")
         payload=SearchRequest.model_validate(payload)
         self._authorize(payload.project_uids,allowed_projects)
         with self.readers.snapshot(payload.project_uids) as (c,pairs):
@@ -208,8 +209,8 @@ class SearchService:
                 eligible=self._eligible(c,project,generation,payload.filters,payload.query)
                 if payload.filters is not None:allowlists[project]=[row['item_uid'] for row in eligible]
                 for item in eligible:
-                    if payload.query not in {item['source_item_id'],item['item_uid']}:continue
-                    point=c.execute("SELECT point_uuid FROM index_points p JOIN chunks c USING(chunk_uid) JOIN processing_membership m USING(chunk_uid) JOIN index_publications u ON u.result_uid=m.result_uid AND u.generation_uid=p.generation_uid WHERE u.item_uid=? AND p.generation_uid=? AND p.vector_status='READY' ORDER BY point_uuid LIMIT 1",(item['item_uid'],generation)).fetchone()
+                    if method!='hybrid' or payload.query not in {item['source_item_id'],item['item_uid']}:continue
+                    point=c.execute("SELECT p.point_uuid FROM index_publications u CROSS JOIN processing_membership m ON m.result_uid=u.result_uid CROSS JOIN index_points p ON p.generation_uid=u.generation_uid AND p.chunk_uid=m.chunk_uid WHERE u.item_uid=? AND u.generation_uid=? AND p.vector_status='READY' ORDER BY p.point_uuid LIMIT 1",(item['item_uid'],generation)).fetchone()
                     if point:
                         evidence=c.execute('SELECT dense_evidence FROM index_publications WHERE item_uid=? AND generation_uid=?',(item['item_uid'],generation)).fetchone()
                         prepared=next((p for p in json.loads(evidence[0]) if p['id']==point[0]),None)
@@ -223,13 +224,13 @@ class SearchService:
                         key='metadata:'+item['item_uid'];candidates[key]={**item,'metadata_only':True};scores[key]=1.0;exact.add(item['item_uid'])
                 if payload.filters is not None and not allowlists[project]:continue
                 profile=json.loads(config['model_profile'])
-                vectors[project]=self._query_vector(project,profile,payload.query)
+                if method!='keyword':vectors[project]=self._query_vector(project,profile,payload.query)
                 plans[project]=(generation,config['collection_name'])
             rounds=0
             for round_number in range(self.max_rounds):
                 rounds=round_number+1
                 for project,(generation,collection) in plans.items():
-                    for channel in ('dense','lexical'):
+                    for channel in ({'dense':('dense',),'keyword':('lexical',),'hybrid':('dense','lexical')}[method]):
                         key=(project,channel)
                         if exhausted.get(key):continue
                         offset=round_number*self.page_size

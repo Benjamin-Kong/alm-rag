@@ -1,6 +1,6 @@
 # M5 — Web UI & Operations
 
-Status: PLANNED — NOT STARTED
+Status: QUALITY_VERIFIED — local commit3731374; M6 continuation explicitly user-authorized
 
 ## Goal
 React 대시보드·Explorer·관리 API·로그/감사·백업/복구·Export/Import
