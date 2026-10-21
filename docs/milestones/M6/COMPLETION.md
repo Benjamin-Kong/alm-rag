@@ -11,3 +11,7 @@ Measured synthetic capacity100000Items/199999Chunks/199999points. Initial exact-
 NOT VERIFIED remains explicit: actual ALM/Ollama/calibrated tokenizer/human golden quality, production100k pipeline, CPU/GPU/remote embedding, Windows/nativeLinux/amd64/remote services/CI/OS scan/productionTLS, actual remote Notion publication. Legacy REQ text unavailable and M2 OI045 historical TDD exception remain. Actual customer data/credentials were not used. No Push, remote publication, production deployment or destructive customer DB restore was performed. Local test services are stopped after verification and volumes retained.
 
 This completes the authorized local M1..M6 implementation/quality sequence with documented environment-bound limitations. It does not assert production readiness or authorize additional external actions. Git is source of truth; execution/run instructions in RUNBOOK.md and PORTABILITY.md.
+
+## Later remote Linux CI evidence — 2026-10-21
+
+Commit531ff5d passed GitHub-hosted Ubuntu24.04 amd64 run39547347678:506Python/28frontend/10Chromium, audits0, contract diff,3healthyservices andM2..M6network-none smokes. This supersedes earlier remoteCI/amd64 NOT VERIFIED statements only for that tested scope; user Linux host/actualALM/model/OSimage scan remain NOT VERIFIED. See [REMOTE_CI_REPORT.md](REMOTE_CI_REPORT.md) for actual Red/Green and limits.

@@ -175,3 +175,9 @@ See M5 TDD/QA/TEST reports for original FAILs and independent rechecks. OI-019/0
 
 - **OI-063 / CI portability / correction locally verified, remote recheck pending:** Ubuntu amd64 run39545808983 actually failed 1/10 browser tests on screenshot ENOENT (/private/tmp); nine tests and preceding Python/frontend gates passed. Playwright-managed output path correction passed all10 locally (8.2s), independent bounded QA PASS. No test skipped/weakened. Downstream remote Docker gates remain NOT VERIFIED until corrected CI finishes. See M6/MAIN_TDD.md.
 - User explicitly prioritizes CI first, then downloading/running the code on an actual Linux environment before actual ALM/model verification. Linux host access and actual ALM/model targets have not been supplied. Linux procedure: docs/LINUX_VALIDATION.ko.md. Existing model, production-scale and deployment limits remain open.
+
+## Remote CI corrected Green — 2026-10-21
+
+- **OI-063 / RESOLVED within tested Ubuntu24.04 amd64 scope:** run39547347678 at531ff5d SUCCESS,506Python/28frontend/10Chromium, audits0, generatedcontracts unchanged,3healthyservices andM2..M6network-none smokesPASS. Initial remoteFAIL retained above. See M6/REMOTE_CI_REPORT.md.
+- OI-030 remoteCI/amd64 sub-scope now verified; user Linux host, Windows and image OS vulnerability scan remain NOT VERIFIED. Runner warned about action Node20 runtime deprecation and ubuntu-latest migration; maintenance remains pending, no failure of this run.
+- Priority2 actual user Linux host download/run remains NOT VERIFIED until performed. The prepared Linux guide was independently checked; fixed-project volume reuse clarified. Actual ALM/model testing follows that environment verification per user direction.

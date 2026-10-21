@@ -11,3 +11,7 @@ A temporary account usage limit interrupted further independent work; after rese
 ## Final independent full regression — actual PASS
 
 `env ALMRAG_TEST_QDRANT_URL=http://127.0.0.1:16333 .venv/bin/pytest -q` **506 passed /77.45s**, exit0, noSKIP. No implementation/test changes during the run. Independent raw-artifact audit recomputed both nearest-rankP95 values from100samples:initial4.301128957886249s FAIL andfinal1.3749497500248253s PASS; both5warmups,alltop10,exactrankfirst100/100,100000Items/199999Chunks/pointcount. Artifact audit is not an independent100k rerun. No remaining confirmed Critical/Major in bounded engine/API/SQL/ACL/fencing review. Root's final10Chromium8.2s and packaging evidence remain separately attributed.
+
+## Later remote Linux CI evidence — 2026-10-21
+
+Commit531ff5d passed GitHub-hosted Ubuntu24.04 amd64 run39547347678:506Python/28frontend/10Chromium, audits0, contract diff,3healthyservices andM2..M6network-none smokes. This supersedes earlier remoteCI/amd64 NOT VERIFIED statements only for that tested scope; user Linux host/actualALM/model/OSimage scan remain NOT VERIFIED. See [REMOTE_CI_REPORT.md](REMOTE_CI_REPORT.md) for actual Red/Green and limits.

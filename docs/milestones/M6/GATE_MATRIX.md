@@ -20,3 +20,7 @@
 |059|Python/unit/integration/mock E2E,28frontend units,10Chromium including actualHTTPSsession+worker, build/boot/lock/API/CI-presence gates; remote CI NV|
 
 Primary10 / Shared3 in M6_TRACEABILITY.csv. See TEST_REPORT and QA_REPORT for actual counts, timing and independent attribution. Original legacy REQ text is unavailable; decision mapping does not become clause-level proof.
+
+## Later remote Linux CI evidence — 2026-10-21
+
+Commit531ff5d passed GitHub-hosted Ubuntu24.04 amd64 run39547347678:506Python/28frontend/10Chromium, audits0, contract diff,3healthyservices andM2..M6network-none smokes. This supersedes earlier remoteCI/amd64 NOT VERIFIED statements only for that tested scope; user Linux host/actualALM/model/OSimage scan remain NOT VERIFIED. See [REMOTE_CI_REPORT.md](REMOTE_CI_REPORT.md) for actual Red/Green and limits.
