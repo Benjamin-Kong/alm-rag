@@ -26,6 +26,14 @@ jobs:
         working-directory: frontend
       - run: npx playwright install --with-deps chromium && npm run test:e2e
         working-directory: frontend
+      - name: Preserve synthetic browser test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthetic-browser-evidence
+          path: frontend/test-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - run: npm audit --audit-level=moderate
         working-directory: frontend
       - run: git diff --exit-code -- docs/api/m6-openapi.json docs/api/openapi.yaml frontend/src/generated-api.d.ts

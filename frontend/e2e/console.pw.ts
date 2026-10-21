@@ -22,14 +22,14 @@ async function connect(page:Page,projectName='테스트 프로젝트') {
   await expect(page.getByText(projectName,{exact:true}).first()).toBeVisible();
 }
 
-test('read-only scope disables source and stage changes and does not persist key',async({page})=>{
+test('read-only scope disables source and stage changes and does not persist key',async({page},testInfo)=>{
   await mock(page);await connect(page);
   await expect(page.getByRole('button',{name:'동기화 SYNC',exact:true})).toBeDisabled();
   await expect(page.getByRole('button',{name:'서버 등록',exact:true})).toBeDisabled();
   expect(await page.evaluate(()=>[localStorage.length,sessionStorage.length])).toEqual([0,0]);
   await expect(page.getByLabel('API 키',{exact:true})).toHaveCount(0);
   await expect(page.locator('body')).not.toContainText('synthetic-key');
-  await page.screenshot({path:'/private/tmp/almrag-m5-dashboard.png',fullPage:true});
+  await page.screenshot({path:testInfo.outputPath('dashboard.png'),fullPage:true});
 });
 
 test('explicit project search escapes source HTML and forwards only checked scope',async({page})=>{

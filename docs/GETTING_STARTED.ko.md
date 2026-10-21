@@ -1,6 +1,6 @@
 # ALM RAG 실행 안내
 
-현재 실행 기준은 M6입니다. 상세 운영 절차는 [M6 Runbook](milestones/M6/RUNBOOK.md), 검증 범위는 [검증 보고서](milestones/M6/TEST_REPORT.md), 플랫폼별 확인 결과는 [Portability](milestones/M6/PORTABILITY.md)를 참고하세요.
+현재 실행 기준은 M6입니다. 실제 Linux에서 다운로드·구동할 때는 [Linux 검증 절차](LINUX_VALIDATION.ko.md)를 사용하세요. 상세 운영 절차는 [M6 Runbook](milestones/M6/RUNBOOK.md), 검증 범위는 [검증 보고서](milestones/M6/TEST_REPORT.md), 플랫폼별 확인 결과는 [Portability](milestones/M6/PORTABILITY.md)를 참고하세요.
 
 ## 1. 준비
 
