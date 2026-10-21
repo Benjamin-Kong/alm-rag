@@ -2,7 +2,7 @@
 
 **Gate:** v0.3 documentation was conditionally approved on 2026-10-19 for repository/Codex setup. **M1 implementation is NOT part of this preparation authorization** and requires an explicit subsequent M1 start instruction. Each Milestone has its own Human Gate.
 
-**Current:** M1/M2 approved with retained limits; M3commit4232f7a approved with documented FIXTURE_ONLY/live/runtime limitations by subsequent user “진행해”. M4 IN_PROGRESS on codex/m4-retrieval; see docs/milestones/M4/PLAN.md. No M5, external Push, live ALM/model or production deployment is authorized.
+**Current:** M1..M4 locally completed with documented limits; M5 local implementation and quality evidence complete, preparing commit. User explicitly authorizes sequential M5→M6 without further milestone/corrective approval prompts. See BASELINE_APPROVAL.md; historical gates below do not revoke this authorization. External ALM/model/Push/Notion/production actions remain separately restricted.
 
 ## Milestones
 | ID | Theme | Acceptance |

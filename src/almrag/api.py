@@ -71,6 +71,11 @@ class JobInfo(BaseModel):
     stage: str
     state: Literal['QUEUED','RUNNING','SUCCEEDED','COMPLETED_WITH_ERRORS','RETRY_WAIT','PAUSED','BLOCKED','FAILED','CANCELLED']
     last_error_code: str | None = None
+    progress_total:int=0
+    succeeded_items:int=0
+    failed_items:int=0
+    skipped_items:int=0
+    retry_count:int=0
 
 
 class ApiError(BaseModel):
@@ -212,7 +217,7 @@ def error(request, status, code):
     return JSONResponse(status_code=status, content={'code':code,'message':code.lower().replace('_',' '), 'trace_id':request.state.trace_id}, headers={'Cache-Control':'no-store'})
 
 
-def create_app(settings=None, db=None, *, connections=None, collection=None, processing=None, search=None, indexing=None, pipeline=None):
+def create_app(settings=None, db=None, *, connections=None, collection=None, processing=None, search=None, indexing=None, pipeline=None, operations=None):
     settings = settings or Settings.from_env()
     if db is None:
         from almrag.storage import Database
@@ -225,7 +230,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
     processing=processing or ProcessingService(db,registry.get)
     indexing=indexing or IndexService(db,processing,VectorRuntimeRegistry(settings,db))
     search=search or SearchService(db,registry.get,VectorRuntimeRegistry(settings,db))
-    app = FastAPI(title='ALM RAG M4', version='0.4.0', docs_url=None, redoc_url=None, openapi_url=None)
+    app = FastAPI(title='ALM RAG M5', version='0.5.0', docs_url=None, redoc_url=None, openapi_url=None)
     app.state.security, app.state.db = auth, db
     app.state.connections,app.state.collection=connections,collection
 
@@ -233,6 +238,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
     app.state.search=search
     app.state.indexing=indexing
     app.state.pipeline=pipeline or PipelineService(db,collection,processing,indexing)
+    app.state.operations=operations
 
     @app.exception_handler(SearchError)
     async def search_failure(request,exc):
@@ -330,6 +336,9 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         with db.connect() as c:
             if not c.execute('SELECT 1 FROM projects WHERE project_uid=?',(project,)).fetchone():
                 raise ApiFailure(404,'NOT_FOUND')
+
+    from almrag.admin_api import register_admin_routes
+    register_admin_routes(app,db,settings,auth,connections,require,project_exists,ApiFailure,InstanceInfo,JobInfo)
 
     @app.post('/api/v1/alm-instances',status_code=201,response_model=InstanceInfo,operation_id='registerAlmInstance',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
     def register_instance(payload:SourceProfileCreate,request:Request):
@@ -631,6 +640,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
                     codes += [409]
                 for code in codes:
                     op['responses'][str(code)]={'description':'Sanitized error','content':{'application/json':{'schema':{'$ref':'#/components/schemas/ApiError'}}}}
+                if op.get('x-milestone')=='M5':op['x-implementation-status']='M5_IMPLEMENTED'
         return schema
     app.openapi=contract
     return app

@@ -144,3 +144,15 @@ M1 착수 승인, 원격 Push 승인, Legacy 원문 및 외부 통합 관련 미
 - **OI-049 / RESOLVED within local tested scope:** explicit approved correction implements exact source/internal IDs including metadata-only zero-Chunk publications, typed stored-field/scope filters, both-channel prelimit allowlists, generation lexical version/rebuild guard, API/client/CLI parity. Independent final417PASS64.63s includes5real syntheticQdrant tests; no confirmed remaining Critical/Major in bounded core/API review. Scope metadata and zeroChunk edge corrections each had actual Red before Green and independent recheck. Prior FAIL/HumanReview entries remain historical.
 - **OI-050 / Dependency advisory / corrective work:** actual pip-audit found certifi2026.10.18 GHSA-6q48-6c7w-9gw2, fixedversion2026.10.19. uv lock upgraded exactlycertifi, uv sync installedfix; audit/image revalidation evidence in M4/TEST_REPORT.md. Advisory https://github.com/advisories/GHSA-6q48-6c7w-9gw2 . No liveALM/model was contacted.
 - User explicitly authorized sequential M4→M5→M6 without further milestone/corrective approval prompts; quality gates and external restrictions remain. OI-048 realmodel/tokenizer and earlier actualALM/otherplatform/remoteCI limits remain OPEN-NOT VERIFIED.
+
+## M5 corrective review — 2026-10-21
+
+- OI-051 / Major / RESOLVED locally: reject cross-project field/relation namespace poisoning before any package publication/import write.
+- OI-052 / Major / RESOLVED locally: seed exact source_latest and collection inputs for offline imported/recovered PROCESS/EMBED/INDEX; preserve newer current target and active publication.
+- OI-053 / Major / RESOLVED locally: validate/read/capture outside long writer locks, fence short publication and renew atomic merge lease; slow-operation heartbeat adversarial tests pass.
+- OI-054 / Major / RESOLVED locally: writer ZIP entry/expanded-size budgets agree with reader; reject own unreadable artifacts before publication.
+- OI-055 / Major / RESOLVED locally: worker heartbeat ignores verified own-terminal state only at matching retry_count; replacement-finished stale owner still revoked.
+- OI-056 / UI corrective / RESOLVED locally: stale SOURCE fields reset, empty filters omitted, original fallback owner verified and forbidden/500 never bypassed, SVG/preview bounded.
+- OI-057 / Browser corrective / RESOLVED locally: native fetch receiver binding and exact control accessible labels;24units/build and7actualChromiumE2E PASS.
+
+See M5 TDD/QA/TEST reports for original FAILs and independent rechecks. OI-019/023 legacy clauses, OI-030 platform/CI/image scanner, OI-048 actual model and actual ALM/provider integration remain NOT VERIFIED. Remote Notion provider implemented and mock tested but actual publication remains NOT VERIFIED and disabled. No Git remote Push or production deployment performed.

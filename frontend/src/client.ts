@@ -10,6 +10,7 @@ export class ApiClient {
   constructor(
     private readonly credentials: { apiKey?: string; csrf?: string } = {},
     private readonly fetcher: typeof fetch = fetch,
+    private readonly signal?: AbortSignal,
   ) {}
 
   private async request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -18,8 +19,9 @@ export class ApiClient {
     if (this.credentials.apiKey) headers['X-API-Key'] = this.credentials.apiKey;
     if (this.credentials.csrf && method !== 'GET') headers['X-CSRF-Token'] = this.credentials.csrf;
     try {
-      const response = await this.fetcher('/api/v1' + path, {
-        method, headers, credentials: 'same-origin',
+      const fetcher=this.fetcher;
+      const response = await fetcher('/api/v1' + path, {
+        method, headers, credentials: 'same-origin', signal: this.signal,
         body: body === undefined ? undefined : JSON.stringify(body),
       });
       if (!response.ok) throw new ApiRequestError(response.status);
@@ -30,6 +32,37 @@ export class ApiClient {
     }
   }
 
+  me() { return this.request<Schema['PrincipalInfo']>('GET', '/auth/me'); }
+  sources() { return this.request<Schema['InstanceInfo'][]>('GET', '/alm-instances'); }
+  items(project: string) { return this.request<Schema['ItemMetadata'][]>('GET', '/projects/' + encodeURIComponent(project) + '/items'); }
+  revisions(item: string) { return this.request<Schema['RevisionInfo'][]>('GET', '/items/' + encodeURIComponent(item) + '/revisions'); }
+  chunks(item: string) { return this.request<Schema['ChunkInfo'][]>('GET', '/items/' + encodeURIComponent(item) + '/chunks'); }
+  diagnostics(job: string) { return this.request<Schema['DiagnosticInfo'][]>('GET', '/jobs/' + encodeURIComponent(job) + '/diagnostics'); }
+  exportProject(project: string) { return this.request<Schema['JobInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/export', {}); }
+  importProject(project: string, input: Schema['ProjectImportRequest']) { return this.request<Schema['JobInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/import', input); }
+  artifacts(project: string) { return this.request<Schema['ArtifactInfo'][]>('GET', '/projects/' + encodeURIComponent(project) + '/artifacts'); }
+  backups() { return this.request<Schema['ArtifactInfo'][]>('GET', '/backups'); }
+  backup() { return this.request<Schema['ArtifactInfo']>('POST', '/backups', {}); }
+  backupSchedule(input: Schema['BackupSchedule']) { return this.request<Schema['BackupSchedule']>('PUT', '/backups/schedule', input); }
+  prepareRestore(id: string) { return this.request<Schema['RestorePreparation']>('POST', '/backups/' + encodeURIComponent(id) + '/prepare-restore', {}); }
+  restore(id: string, input: Schema['BackupRestoreRequest']) { return this.request<Schema['RecoveryInfo']>('POST', '/backups/' + encodeURIComponent(id) + '/restore', input); }
+  async stageArtifact(project: string, file: File) {
+    const headers: Record<string,string> = {'Content-Type':'application/zip'};
+    if (this.credentials.apiKey) headers['X-API-Key']=this.credentials.apiKey;
+    if (this.credentials.csrf) headers['X-CSRF-Token']=this.credentials.csrf;
+    const fetcher=this.fetcher;
+    const response=await fetcher('/api/v1/projects/'+encodeURIComponent(project)+'/artifacts/stage',{method:'POST',headers,credentials:'same-origin',body:file,signal:this.signal});
+    if(!response.ok) throw new ApiRequestError(response.status);
+    return await response.json() as Schema['ArtifactInfo'];
+  }
+  async downloadArtifact(id: string) {
+    const headers: Record<string,string> = {};
+    if (this.credentials.apiKey) headers['X-API-Key']=this.credentials.apiKey;
+    const fetcher=this.fetcher;
+    const response=await fetcher('/api/v1/artifacts/'+encodeURIComponent(id)+'/download',{headers,credentials:'same-origin',signal:this.signal});
+    if(!response.ok) throw new ApiRequestError(response.status);
+    return response.blob();
+  }
   health() { return this.request<Schema['Health']>('GET', '/healthz'); }
   readiness() { return this.request<Schema['Health']>('GET', '/readyz'); }
   projects() { return this.request<Schema['ProjectInfo'][]>('GET', '/projects'); }
@@ -106,6 +139,6 @@ export class ApiClient {
   resumeJob(job: string) {
     return this.request<Schema['JobInfo']>('POST', '/jobs/' + encodeURIComponent(job) + '/resume');
   }
-  sync(project: string) { return this.request<Schema['JobInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/sync'); }
+  sync(project: string, configRevision?: string) { return configRevision ? this.startJob(project,{stage:'SYNC',config_revision:configRevision}) : this.request<Schema['JobInfo']>('POST', '/projects/' + encodeURIComponent(project) + '/sync'); }
   audit() { return this.request<Record<string, unknown>[]>('GET', '/audit-events'); }
 }

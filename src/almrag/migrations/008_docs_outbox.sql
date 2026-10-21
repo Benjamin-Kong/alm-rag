@@ -1,0 +1,1 @@
+CREATE TABLE doc_summary_outbox(summary_uid TEXT PRIMARY KEY,payload TEXT NOT NULL,state TEXT NOT NULL DEFAULT 'PENDING' CHECK(state IN ('PENDING','SENT')),attempts INTEGER NOT NULL DEFAULT 0,error_code TEXT,created_at REAL NOT NULL,sent_at REAL);

@@ -29,3 +29,7 @@ build/
 .DS_Store
 .worktrees/
 *.swp
+
+# Local browser test evidence (sanitized summaries are committed separately)
+frontend/test-results/
+frontend/playwright-report/

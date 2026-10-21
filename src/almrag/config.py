@@ -46,12 +46,19 @@ class Settings:
     model_profile_path: str | None = None
     live_model_enabled: bool = False
     live_vector_enabled: bool = False
+    notion_summary_enabled: bool = False
+    notion_auth_ref: str | None = None
+    notion_root_page: str = '3fe8be2f-eeee-81d4-ad48-cddc61ba0f5c'
 
     @property
     def attachment_directory(self):
         return Path(self.attachment_root) if self.attachment_root else Path(self.database_path).parent/'attachments'
 
     def __post_init__(self):
+        from uuid import UUID
+        import re
+        UUID(self.notion_root_page)
+        if self.notion_auth_ref is not None and not re.fullmatch(r'(env:[A-Z][A-Z0-9_]*|vault:[A-Za-z0-9_-]+)',self.notion_auth_ref):raise ValueError('invalid_notion_secret_reference')
         endpoint(self.ollama_url)
         endpoint(self.qdrant_url)
         origin = urlsplit(endpoint(self.allowed_origin))
@@ -76,7 +83,10 @@ class Settings:
                    attachment_root=os.getenv('ALMRAG_ATTACHMENT_ROOT'),
                    model_profile_path=os.getenv('ALMRAG_MODEL_PROFILE_PATH'),
                    live_model_enabled=os.getenv('ALMRAG_LIVE_MODEL_ENABLED','false').lower()=='true',
-                   live_vector_enabled=os.getenv('ALMRAG_LIVE_VECTOR_ENABLED','false').lower()=='true')
+                   live_vector_enabled=os.getenv('ALMRAG_LIVE_VECTOR_ENABLED','false').lower()=='true',
+                   notion_summary_enabled=os.getenv('ALMRAG_NOTION_SUMMARY_ENABLED','false').lower()=='true',
+                   notion_auth_ref=os.getenv('ALMRAG_NOTION_AUTH_REF'),
+                   notion_root_page=os.getenv('ALMRAG_NOTION_ROOT_PAGE','3fe8be2f-eeee-81d4-ad48-cddc61ba0f5c'))
 
 
 class SourceProfile(BaseModel):

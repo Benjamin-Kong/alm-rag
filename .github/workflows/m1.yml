@@ -1,4 +1,4 @@
-name: Foundation, collection and M4 hybrid retrieval gates
+name: Foundation, collection and M5 operations and browser gates
 on: [push, pull_request]
 jobs:
   foundation:
@@ -23,14 +23,17 @@ jobs:
       - run: uv run python tools/export_openapi.py
       - run: npm ci && npm run generate:api && npm test && npm run build
         working-directory: frontend
+      - run: npx playwright install --with-deps chromium && npm run test:e2e
+        working-directory: frontend
       - run: npm audit --audit-level=moderate
         working-directory: frontend
-      - run: git diff --exit-code -- docs/api/m4-openapi.json docs/api/openapi.yaml frontend/src/generated-api.d.ts
+      - run: git diff --exit-code -- docs/api/m5-openapi.json docs/api/openapi.yaml frontend/src/generated-api.d.ts
       - run: docker compose -p almrag-ci -f deploy/compose.yaml build
       - run: docker compose -p almrag-ci -f deploy/compose.yaml up -d --wait --wait-timeout 90
       - run: python -c "import urllib.request; assert b'ok' in urllib.request.urlopen('http://127.0.0.1:8080/api/v1/healthz').read()"
-      - run: docker run --rm -i --network none --entrypoint python almrag-api:m4 - < tools/smoke_m2.py
-      - run: docker run --rm -i --network none --entrypoint python almrag-api:m4 - < tools/smoke_m3.py
-      - run: docker run --rm -i --network none --entrypoint python almrag-api:m4 - < tools/smoke_m4.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m5 - < tools/smoke_m2.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m5 - < tools/smoke_m3.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m5 - < tools/smoke_m4.py
+      - run: docker run --rm -i --network none --entrypoint python almrag-api:m5 - < tools/smoke_m5.py
       - if: always()
         run: docker compose -p almrag-ci -f deploy/compose.yaml down -v

@@ -31,7 +31,7 @@ def healthy(path, now=None):
 
 
 def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
-             health_path=None, lease_seconds=30, heartbeat_interval=5, processing_service=None, index_service=None, pipeline_service=None):
+             health_path=None, lease_seconds=30, heartbeat_interval=5, processing_service=None, index_service=None, pipeline_service=None, operations_service=None):
     """Claim one job; CollectionService alone owns normal terminal transitions.
 
     Heartbeats run independently while a connector performs network work or waits.
@@ -46,7 +46,7 @@ def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
     job = queue.claim(owner, lease_seconds=lease_seconds)
     if job is None:
         return False
-    service = collection_service if job['stage']=='COLLECT' else processing_service if job['stage'] in {'PROCESS','EMBED'} else index_service if job['stage'] in {'INDEX','REBUILD'} else pipeline_service if job['stage'] in {'SYNC','REPLAY'} else None
+    service = collection_service if job['stage']=='COLLECT' else processing_service if job['stage'] in {'PROCESS','EMBED'} else index_service if job['stage'] in {'INDEX','REBUILD'} else pipeline_service if job['stage'] in {'SYNC','REPLAY'} else operations_service if job['stage'] in {'EXPORT','IMPORT'} else None
     if service is None:
         queue.finish(job['job_id'], job['fencing_token'], state='BLOCKED', error_code='STAGE_UNAVAILABLE')
         print(json.dumps(safe_event(action='job_blocked', outcome='blocked', job_uid=job['job_id'],
@@ -68,6 +68,12 @@ def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
                 if health_path is not None:
                     write_health(health_path)
             except Exception as error:
+                if isinstance(error,LeaseLost):
+                    try:current=queue.get_job(job['job_id'])
+                    except Exception:current=None
+                    if current and current.get('retry_count')==job.get('retry_count') and current['state'] in {'SUCCEEDED','COMPLETED_WITH_ERRORS','PAUSED','BLOCKED','FAILED','CANCELLED'}:
+                        finished.set()
+                        return
                 # Report no raw database/transport exception text to logs or API.
                 heartbeat_errors.append(error if isinstance(error, LeaseLost) else LeaseLost('heartbeat unavailable'))
                 return
@@ -100,6 +106,12 @@ class _ConfiguredCollection:
         self.db = db
         self.settings = settings
 
+    def _operations(self):
+        if not hasattr(self,'operations'):
+            from almrag.operations import OperationsService
+            self.operations=OperationsService(self.db,attachment_root=self.settings.attachment_directory)
+        return self.operations
+
     def cleanup_pending(self):
         """Retry derived-index cleanup only after job heartbeat ownership ends."""
         if hasattr(self, 'indexing'):
@@ -109,7 +121,23 @@ class _ConfiguredCollection:
                 print(json.dumps(safe_event(action='index_cleanup', outcome='deferred',
                                             error_code='CLEANUP_RETRY_PENDING')), flush=True)
 
+        if self.db is not None:
+            try:self._operations().maintenance()
+            except Exception:
+                print(json.dumps(safe_event(action='operations_maintenance',outcome='deferred',error_code='MAINTENANCE_RETRY_PENDING')),flush=True)
+
+        if self.db is not None and self.settings.notion_summary_enabled:
+            from almrag.docs_publish import SummaryOutbox,NotionSummarySender
+            from almrag.connection import Connections
+            try:
+                resolver=lambda:Connections(self.db,self.settings).secret(self.settings.notion_auth_ref or '')
+                sender=NotionSummarySender(self.settings.notion_root_page,resolver,allow_network=True)
+                SummaryOutbox(self.db,send=sender,enabled=True).flush()
+            except Exception:
+                print(json.dumps(safe_event(action='docs_publish',outcome='deferred',error_code='PUBLISH_RETRY_PENDING')),flush=True)
+
     def run(self, job, abort_check):
+        if job.get('stage') in {'EXPORT','IMPORT'}:return self._operations().run(job,abort_check)
         if job.get('stage') in {'PROCESS','EMBED','INDEX','REBUILD','SYNC','REPLAY'}:
             from almrag.processing import ProcessingService
             from almrag.model_runtime import ModelRuntimeRegistry
@@ -163,7 +191,7 @@ def main():
     try:
         while not stopping:
             try:
-                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path,processing_service=collection_service,index_service=collection_service,pipeline_service=collection_service)
+                run_once(queue,owner,collection_service,stop_check=lambda: stopping,health_path=path,processing_service=collection_service,index_service=collection_service,pipeline_service=collection_service,operations_service=collection_service)
             except LeaseLost:
                 print(json.dumps(safe_event(action='lease_lost',outcome='aborted')),flush=True)
             collection_service.cleanup_pending()

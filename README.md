@@ -41,3 +41,6 @@ User-requested 6 gaps are documented in: `docs/design/ALM_ONBOARDING.md`, `CHUNK
 - See `docs/review/BASELINE_AUDIT.md` before approving any implementation.
 
 현재2026-10-21: M4 로컬 품질 검증 완료(417 Python 테스트,10 frontend 테스트,합성 실제Qdrant/패키지/컨테이너). [M4 보고서](docs/milestones/M4/COMPLETION.md). 사용자 명시 승인에 따라 M5→M6를 추가 승인 없이 순차 진행한다. 실ALM/모델·원격Push/Notion·운영배포 제한과 NOT VERIFIED 항목은 유지한다.
+
+
+M5 local quality candidate (2026-10-21): source-specific React wizard, jobs/diagnostics/search/original Explorer, durable ZIP Export/Import, raw-only isolated recovery, disabled-by-default summary publisher. Evidence: [M5 test report](docs/milestones/M5/TEST_REPORT.md), [runbook](docs/milestones/M5/RUNBOOK.md). Actual ALM/model/Notion/production deployment remain NOT VERIFIED. User has authorized M6 continuation without another milestone prompt.

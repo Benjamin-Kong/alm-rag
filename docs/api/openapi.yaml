@@ -2,9 +2,10 @@ openapi: 3.0.3
 info:
   title: ALM Unified Retrieval API (DRAFT)
   version: 0.3.0-review-candidate
-  description: M4 executed subset is marked x-implementation-status; other endpoints
-    remain draft and unimplemented. See m4-openapi.json for the current executable
-    contract; m1-openapi.json, m2-openapi.json and m3-openapi.json are historical.
+  description: M5 executed subset is marked x-implementation-status; other endpoints
+    remain draft and unimplemented. See m5-openapi.json for the current executable
+    contract; m1-openapi.json, m2-openapi.json and m3-openapi.json and m4-openapi.json
+    are historical.
 servers:
 - url: /api/v1
 security:
@@ -186,19 +187,19 @@ paths:
       summary: Register Instance
       operationId: registerAlmInstance
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               oneOf:
               - $ref: '#/components/schemas/CodebeamerProfile'
               - $ref: '#/components/schemas/PolarionProfile'
-              title: Payload
               discriminator:
                 propertyName: source_type
                 mapping:
                   codebeamer: '#/components/schemas/CodebeamerProfile'
                   polarion: '#/components/schemas/PolarionProfile'
-        required: true
+              title: Payload
       responses:
         '201':
           description: Successful Response
@@ -241,6 +242,73 @@ paths:
       security:
       - AdminSession: []
       x-implementation-status: M2_IMPLEMENTED
+    get:
+      summary: Instances
+      operationId: listAlmInstances
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/InstanceInfo'
+                title: Response Listalminstances
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      x-milestone: M5
+      security:
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
   /alm-instances/{instance_uid}/probe:
     post:
       summary: Probe Instance
@@ -1291,23 +1359,78 @@ paths:
       x-implementation-status: M1_IMPLEMENTED
   /projects/{project_uid}/items:
     get:
+      summary: Items
       operationId: listProjectItems
-      summary: Browse Items metadata including revision and failure state
-      x-required-scope: project_read
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
+          title: Project Uid
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
       responses:
         '200':
-          description: Paginated project Item results
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ItemMetadata'
+                title: Response Listprojectitems
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
   /items/{item_uid}:
     get:
       summary: Active Item
@@ -1369,42 +1492,164 @@ paths:
       x-implementation-status: M4_IMPLEMENTED
   /items/{item_uid}/revisions:
     get:
+      summary: Revisions
       operationId: getItemRevisions
-      summary: View captured immutable revisions
-      x-required-scope: project_read
       parameters:
       - name: item_uid
         in: path
         required: true
         schema:
           type: string
+          title: Item Uid
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
       responses:
         '200':
-          description: Revision history
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RevisionInfo'
+                title: Response Getitemrevisions
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
   /items/{item_uid}/chunks:
     get:
+      summary: Chunks
       operationId: getItemChunks
-      summary: Inspect derived chunk text, hash, token count and publication status
-      x-required-scope: project_read
       parameters:
       - name: item_uid
         in: path
         required: true
         schema:
           type: string
+          title: Item Uid
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
       responses:
         '200':
-          description: Authorized chunk list
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChunkInfo'
+                title: Response Getitemchunks
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
   /projects/{project_uid}/integrity:
     post:
       operationId: startIntegrityReport
@@ -1463,46 +1708,69 @@ paths:
       x-implementation-status: DRAFT_NOT_IMPLEMENTED
   /projects/{project_uid}/export:
     post:
+      summary: Export
       operationId: exportProject
-      summary: Export raw and normalized Items; never include secrets or embeddings
-      x-required-scope: project_manage
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ArtifactJobRequest'
+          title: Project Uid
       responses:
         '202':
-          description: Export job queued
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobAccepted'
+                $ref: '#/components/schemas/JobInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
   /projects/{project_uid}/import:
     post:
+      summary: Import Project
       operationId: importProject
-      summary: Import staged package by server-side reference and conflict-safe merge
-      x-required-scope: project_manage
       parameters:
       - name: project_uid
         in: path
         required: true
         schema:
           type: string
+          title: Project Uid
       requestBody:
         required: true
         content:
@@ -1511,80 +1779,203 @@ paths:
               $ref: '#/components/schemas/ProjectImportRequest'
       responses:
         '202':
-          description: Import job queued
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobAccepted'
+                $ref: '#/components/schemas/JobInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
   /backups:
     post:
+      summary: Backup
       operationId: createBackup
-      summary: Create consistent SQLite/Qdrant/attachment backup
-      x-required-scope: system_admin
       responses:
-        '202':
-          description: Backup job queued
+        '201':
+          description: Successful Response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/JobAccepted'
+                $ref: '#/components/schemas/ArtifactInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
-    get:
-      operationId: listBackups
-      summary: List backup manifests and restore compatibility
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
       x-required-scope: system_admin
+      x-session-only: true
+      x-milestone: M5
+      security:
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
+    get:
+      summary: Backups
+      operationId: listBackups
       responses:
         '200':
-          description: Backup manifests
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/ArtifactInfo'
+                type: array
+                title: Response Listbackups
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '401':
-          description: Authentication required
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
         '403':
-          description: Forbidden by scope/project ACL
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      x-milestone: M5
+      security:
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
   /backups/{backup_id}/restore:
     post:
+      summary: Restore
       operationId: restoreBackup
-      summary: Restore only with explicit administrative confirmation and backup checks
-      x-required-scope: system_admin
       parameters:
       - name: backup_id
         in: path
         required: true
         schema:
           type: string
-      responses:
-        '202':
-          description: Restore job queued after separate confirmation
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/JobAccepted'
-        '401':
-          description: Authentication required
-        '403':
-          description: Forbidden by scope/project ACL
-        '409':
-          description: 'Conflict: revision, stage, approval or idempotency check'
+          title: Backup Id
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/BackupRestoreRequest'
-      x-implementation-status: DRAFT_NOT_IMPLEMENTED
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      x-milestone: M5
+      security:
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
   /audit-events:
     get:
       summary: Audit
@@ -2222,6 +2613,460 @@ paths:
       - ApiKeyAuth: []
       - AdminSession: []
       x-implementation-status: M4_IMPLEMENTED
+  /auth/me:
+    get:
+      summary: Me
+      operationId: getPrincipal
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrincipalInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: authenticated
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
+  /jobs/{job_id}/diagnostics:
+    get:
+      summary: Diagnostics
+      operationId: getJobDiagnostics
+      parameters:
+      - name: job_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Job Id
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 1
+          default: 100
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Offset
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiagnosticInfo'
+                title: Response Getjobdiagnostics
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
+  /projects/{project_uid}/artifacts:
+    get:
+      summary: Artifacts
+      operationId: listProjectArtifacts
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ArtifactInfo'
+                title: Response Listprojectartifacts
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
+  /projects/{project_uid}/artifacts/stage:
+    post:
+      summary: Stage
+      operationId: stageProjectArtifact
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      responses:
+        '201':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ArtifactInfo'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_manage
+      x-milestone: M5
+      requestBody:
+        required: true
+        content:
+          application/zip:
+            schema:
+              type: string
+              format: binary
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
+  /artifacts/{artifact_ref}/download:
+    get:
+      summary: Download
+      operationId: downloadArtifact
+      parameters:
+      - name: artifact_ref
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Artifact Ref
+      responses:
+        '200':
+          description: Authorized local artifact bytes
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: project_read
+      x-milestone: M5
+      security:
+      - ApiKeyAuth: []
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
+  /backups/schedule:
+    put:
+      summary: Schedule
+      operationId: configureBackupSchedule
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BackupSchedule'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BackupSchedule'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      x-milestone: M5
+      security:
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
+  /backups/{backup_id}/prepare-restore:
+    post:
+      summary: Prepare Restore
+      operationId: prepareRestore
+      parameters:
+      - name: backup_id
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Backup Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestorePreparation'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      x-milestone: M5
+      security:
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
+  /docs/summaries:
+    post:
+      summary: Summary
+      operationId: enqueueDocSummary
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Summary'
+        required: true
+      responses:
+        '202':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryQueued'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      x-milestone: M5
+      security:
+      - AdminSession: []
+      x-implementation-status: M5_IMPLEMENTED
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -2649,35 +3494,45 @@ components:
             - keyword
             - hybrid
     ProjectImportRequest:
-      type: object
-      required:
-      - artifact_ref
-      - import_mode
       properties:
         artifact_ref:
           type: string
-          description: Opaque reference to a previously validated local staging artifact;
-            not a pathname or URL
+          maxLength: 100
+          minLength: 1
+          title: Artifact Ref
         import_mode:
           type: string
+          title: Import Mode
+          default: MERGE_ONLY
           enum:
           - MERGE_ONLY
         expected_sha256:
+          title: Expected Sha256
+          nullable: true
           type: string
-          minLength: 64
-          maxLength: 64
+          pattern: ^[0-9a-f]{64}$
+      additionalProperties: false
+      type: object
+      required:
+      - artifact_ref
+      title: ProjectImportRequest
     BackupRestoreRequest:
+      properties:
+        manifest_hash:
+          type: string
+          pattern: ^[0-9a-f]{64}$
+          title: Manifest Hash
+        confirmation_nonce:
+          type: string
+          maxLength: 200
+          minLength: 16
+          title: Confirmation Nonce
+      additionalProperties: false
       type: object
       required:
       - manifest_hash
       - confirmation_nonce
-      properties:
-        manifest_hash:
-          type: string
-        confirmation_nonce:
-          type: string
-          description: One-use admin confirmation derived from server-side approval
-            workflow, not arbitrary yes/no string
+      title: BackupRestoreRequest
     HTTPValidationError:
       properties:
         detail:
@@ -2750,6 +3605,26 @@ components:
           title: Last Error Code
           nullable: true
           type: string
+        progress_total:
+          type: integer
+          title: Progress Total
+          default: 0
+        succeeded_items:
+          type: integer
+          title: Succeeded Items
+          default: 0
+        failed_items:
+          type: integer
+          title: Failed Items
+          default: 0
+        skipped_items:
+          type: integer
+          title: Skipped Items
+          default: 0
+        retry_count:
+          type: integer
+          title: Retry Count
+          default: 0
       type: object
       required:
       - job_id
@@ -3755,6 +4630,335 @@ components:
       - revision_uid
       - title
       title: SearchHit
+    ArtifactInfo:
+      properties:
+        artifact_ref:
+          type: string
+          title: Artifact Ref
+        project_uid:
+          title: Project Uid
+          nullable: true
+          type: string
+        kind:
+          type: string
+          title: Kind
+        sha256:
+          type: string
+          title: Sha256
+        size:
+          type: integer
+          title: Size
+        state:
+          type: string
+          title: State
+        created_at:
+          type: number
+          title: Created At
+      type: object
+      required:
+      - artifact_ref
+      - kind
+      - sha256
+      - size
+      - state
+      - created_at
+      title: ArtifactInfo
+    BackupSchedule:
+      properties:
+        interval_seconds:
+          type: integer
+          maximum: 31536000.0
+          minimum: 60.0
+          title: Interval Seconds
+        retention:
+          type: integer
+          maximum: 1000.0
+          minimum: 1.0
+          title: Retention
+      additionalProperties: false
+      type: object
+      required:
+      - interval_seconds
+      - retention
+      title: BackupSchedule
+    ChunkInfo:
+      properties:
+        chunk_uid:
+          type: string
+          title: Chunk Uid
+        revision_uid:
+          type: string
+          title: Revision Uid
+        input_text:
+          type: string
+          title: Input Text
+        input_tokens:
+          type: integer
+          title: Input Tokens
+        content_hash:
+          type: string
+          title: Content Hash
+        source_span_offsets:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Source Span Offsets
+        row_ids:
+          items:
+            type: string
+          type: array
+          title: Row Ids
+        vector_status:
+          title: Vector Status
+          nullable: true
+          type: string
+      type: object
+      required:
+      - chunk_uid
+      - revision_uid
+      - input_text
+      - input_tokens
+      - content_hash
+      - source_span_offsets
+      - row_ids
+      title: ChunkInfo
+    DiagnosticInfo:
+      properties:
+        job_id:
+          type: string
+          title: Job Id
+        project_uid:
+          type: string
+          title: Project Uid
+        alm_instance_uid:
+          type: string
+          title: Alm Instance Uid
+        item_uid:
+          title: Item Uid
+          nullable: true
+          type: string
+        source_item_id:
+          title: Source Item Id
+          nullable: true
+          type: string
+        stage:
+          type: string
+          title: Stage
+        state:
+          type: string
+          title: State
+        attempt:
+          type: integer
+          title: Attempt
+          default: 1
+        http_status:
+          title: Http Status
+          nullable: true
+          type: integer
+        error_code:
+          title: Error Code
+          nullable: true
+          type: string
+        trace_id:
+          title: Trace Id
+          nullable: true
+          type: string
+        trace_generated:
+          type: boolean
+          title: Trace Generated
+          default: false
+      type: object
+      required:
+      - job_id
+      - project_uid
+      - alm_instance_uid
+      - stage
+      - state
+      title: DiagnosticInfo
+    ItemMetadata:
+      properties:
+        item_uid:
+          type: string
+          title: Item Uid
+        source_item_id:
+          type: string
+          title: Source Item Id
+        active_revision_uid:
+          title: Active Revision Uid
+          nullable: true
+          type: string
+        latest_revision_uid:
+          title: Latest Revision Uid
+          nullable: true
+          type: string
+        deleted_state:
+          type: string
+          title: Deleted State
+      type: object
+      required:
+      - item_uid
+      - source_item_id
+      - deleted_state
+      title: ItemMetadata
+    PrincipalInfo:
+      properties:
+        admin_session:
+          type: boolean
+          title: Admin Session
+        project_uids:
+          items:
+            type: string
+          type: array
+          title: Project Uids
+        permissions:
+          items:
+            type: string
+          type: array
+          title: Permissions
+      type: object
+      required:
+      - admin_session
+      - project_uids
+      - permissions
+      title: PrincipalInfo
+    RecoveryInfo:
+      properties:
+        recovery_ref:
+          type: string
+          title: Recovery Ref
+        state:
+          type: string
+          title: State
+          enum:
+          - RAW_ONLY_REBUILD_REQUIRED
+        auth_state:
+          type: string
+          title: Auth State
+          enum:
+          - REREGISTRATION_REQUIRED
+      type: object
+      required:
+      - recovery_ref
+      - state
+      - auth_state
+      title: RecoveryInfo
+    RestorePreparation:
+      properties:
+        manifest_hash:
+          type: string
+          title: Manifest Hash
+        confirmation_nonce:
+          type: string
+          title: Confirmation Nonce
+        expires_at:
+          type: number
+          title: Expires At
+        state:
+          type: string
+          title: State
+      type: object
+      required:
+      - manifest_hash
+      - confirmation_nonce
+      - expires_at
+      - state
+      title: RestorePreparation
+    RevisionInfo:
+      properties:
+        revision_uid:
+          type: string
+          title: Revision Uid
+        source_revision:
+          type: string
+          title: Source Revision
+        hash:
+          type: string
+          title: Hash
+        item:
+          additionalProperties: true
+          type: object
+          title: Item
+      type: object
+      required:
+      - revision_uid
+      - source_revision
+      - hash
+      - item
+      title: RevisionInfo
+    Summary:
+      properties:
+        commit:
+          type: string
+          pattern: ^(?:[0-9a-f]{40}|[0-9a-f]{64})$
+          title: Commit
+        milestone:
+          type: string
+          enum:
+          - M1
+          - M2
+          - M3
+          - M4
+          - M5
+          - M6
+          title: Milestone
+        status:
+          type: string
+          enum:
+          - IN_PROGRESS
+          - QUALITY_REVIEW
+          - LOCAL_PASS_WITH_LIMITATIONS
+          - FAIL
+          - NOT_VERIFIED
+          title: Status
+        srs_ids:
+          items:
+            type: string
+          type: array
+          maxItems: 59
+          minItems: 1
+          title: Srs Ids
+        passed:
+          type: integer
+          maximum: 10000000.0
+          minimum: 0.0
+          title: Passed
+        failed:
+          type: integer
+          maximum: 10000000.0
+          minimum: 0.0
+          title: Failed
+        not_verified:
+          type: integer
+          maximum: 10000000.0
+          minimum: 0.0
+          title: Not Verified
+      additionalProperties: false
+      type: object
+      required:
+      - commit
+      - milestone
+      - status
+      - srs_ids
+      - passed
+      - failed
+      - not_verified
+      title: Summary
+    SummaryQueued:
+      properties:
+        summary_uid:
+          type: string
+          title: Summary Uid
+        state:
+          type: string
+          title: State
+          default: PENDING
+          enum:
+          - PENDING
+      type: object
+      required:
+      - summary_uid
+      title: SummaryQueued
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

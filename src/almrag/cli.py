@@ -283,5 +283,38 @@ def resume(job_id:str):
     request('POST','/jobs/'+quote(job_id,safe='')+'/resume')
 
 
+@app.command()
+def export_project(project_uid:str):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/export')
+
+@app.command()
+def import_project(project_uid:str,artifact_ref:str,expected_sha256:str|None=typer.Option(None)):
+    request('POST','/projects/'+quote(project_uid,safe='')+'/import',{'artifact_ref':artifact_ref,'import_mode':'MERGE_ONLY','expected_sha256':expected_sha256})
+
+@app.command()
+def artifacts(project_uid:str):
+    request('GET','/projects/'+quote(project_uid,safe='')+'/artifacts')
+
+@app.command()
+def backups():
+    request('GET','/backups')
+
+@app.command()
+def create_backup():
+    request('POST','/backups')
+
+@app.command()
+def prepare_restore(backup_id:str):
+    request('POST','/backups/'+quote(backup_id,safe='')+'/prepare-restore')
+
+@app.command()
+def restore_backup(backup_id:str,manifest_hash:str=typer.Option(...),confirmation_nonce:str=typer.Option(...)):
+    request('POST','/backups/'+quote(backup_id,safe='')+'/restore',{'manifest_hash':manifest_hash,'confirmation_nonce':confirmation_nonce})
+
+@app.command()
+def diagnostics(job_id:str,limit:int=typer.Option(100,min=1,max=1000),offset:int=typer.Option(0,min=0)):
+    request('GET','/jobs/'+quote(job_id,safe='')+'/diagnostics?limit='+str(limit)+'&offset='+str(offset))
+
+
 if __name__=='__main__':
     app()

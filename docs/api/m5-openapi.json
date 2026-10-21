@@ -1,0 +1,7321 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ALM RAG M5",
+    "version": "0.5.0"
+  },
+  "paths": {
+    "/api/v1/auth/me": {
+      "get": {
+        "summary": "Me",
+        "operationId": "getPrincipal",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrincipalInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "authenticated",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/alm-instances": {
+      "get": {
+        "summary": "Instances",
+        "operationId": "listAlmInstances",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InstanceInfo"
+                  },
+                  "title": "Response Listalminstances"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "x-milestone": "M5",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      },
+      "post": {
+        "summary": "Register Instance",
+        "operationId": "registerAlmInstance",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/CodebeamerProfile"
+                  },
+                  {
+                    "$ref": "#/components/schemas/PolarionProfile"
+                  }
+                ],
+                "discriminator": {
+                  "propertyName": "source_type",
+                  "mapping": {
+                    "codebeamer": "#/components/schemas/CodebeamerProfile",
+                    "polarion": "#/components/schemas/PolarionProfile"
+                  }
+                },
+                "title": "Payload"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstanceInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/items": {
+      "get": {
+        "summary": "Items",
+        "operationId": "listProjectItems",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ItemMetadata"
+                  },
+                  "title": "Response Listprojectitems"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/items/{item_uid}/revisions": {
+      "get": {
+        "summary": "Revisions",
+        "operationId": "getItemRevisions",
+        "parameters": [
+          {
+            "name": "item_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Uid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RevisionInfo"
+                  },
+                  "title": "Response Getitemrevisions"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/items/{item_uid}/chunks": {
+      "get": {
+        "summary": "Chunks",
+        "operationId": "getItemChunks",
+        "parameters": [
+          {
+            "name": "item_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Uid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChunkInfo"
+                  },
+                  "title": "Response Getitemchunks"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/jobs/{job_id}/diagnostics": {
+      "get": {
+        "summary": "Diagnostics",
+        "operationId": "getJobDiagnostics",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DiagnosticInfo"
+                  },
+                  "title": "Response Getjobdiagnostics"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/export": {
+      "post": {
+        "summary": "Export",
+        "operationId": "exportProject",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/import": {
+      "post": {
+        "summary": "Import Project",
+        "operationId": "importProject",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectImportRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/artifacts": {
+      "get": {
+        "summary": "Artifacts",
+        "operationId": "listProjectArtifacts",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ArtifactInfo"
+                  },
+                  "title": "Response Listprojectartifacts"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/artifacts/stage": {
+      "post": {
+        "summary": "Stage",
+        "operationId": "stageProjectArtifact",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtifactInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "x-milestone": "M5",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/zip": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/artifacts/{artifact_ref}/download": {
+      "get": {
+        "summary": "Download",
+        "operationId": "downloadArtifact",
+        "parameters": [
+          {
+            "name": "artifact_ref",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Artifact Ref"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authorized local artifact bytes",
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "x-milestone": "M5",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/backups": {
+      "get": {
+        "summary": "Backups",
+        "operationId": "listBackups",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ArtifactInfo"
+                  },
+                  "type": "array",
+                  "title": "Response Listbackups"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "x-milestone": "M5",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      },
+      "post": {
+        "summary": "Backup",
+        "operationId": "createBackup",
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtifactInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "x-milestone": "M5",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/backups/schedule": {
+      "put": {
+        "summary": "Schedule",
+        "operationId": "configureBackupSchedule",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupSchedule"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackupSchedule"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "x-milestone": "M5",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/backups/{backup_id}/prepare-restore": {
+      "post": {
+        "summary": "Prepare Restore",
+        "operationId": "prepareRestore",
+        "parameters": [
+          {
+            "name": "backup_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Backup Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RestorePreparation"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "x-milestone": "M5",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/backups/{backup_id}/restore": {
+      "post": {
+        "summary": "Restore",
+        "operationId": "restoreBackup",
+        "parameters": [
+          {
+            "name": "backup_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Backup Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BackupRestoreRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "x-milestone": "M5",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/docs/summaries": {
+      "post": {
+        "summary": "Summary",
+        "operationId": "enqueueDocSummary",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Summary"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SummaryQueued"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "x-milestone": "M5",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M5_IMPLEMENTED"
+      }
+    },
+    "/api/v1/alm-instances/{instance_uid}/probe": {
+      "post": {
+        "summary": "Probe Instance",
+        "operationId": "probeAlmInstance",
+        "parameters": [
+          {
+            "name": "instance_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Instance Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Probealminstance"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      }
+    },
+    "/api/v1/alm-instances/{instance_uid}/projects": {
+      "get": {
+        "summary": "Discover Projects",
+        "operationId": "discoverAlmProjects",
+        "parameters": [
+          {
+            "name": "instance_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Instance Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SourceProject"
+                  },
+                  "title": "Response Discoveralmprojects"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      }
+    },
+    "/api/v1/alm-instances/{instance_uid}/projects/{source_project_id}/scopes": {
+      "get": {
+        "summary": "Discover Scopes",
+        "operationId": "discoverCollectionScopes",
+        "parameters": [
+          {
+            "name": "instance_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Instance Uid"
+            }
+          },
+          {
+            "name": "source_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SourceScope"
+                  },
+                  "title": "Response Discovercollectionscopes"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      }
+    },
+    "/api/v1/alm-instances/{instance_uid}/projects/{source_project_id}/fields": {
+      "get": {
+        "summary": "Discover Fields",
+        "operationId": "discoverCollectionFields",
+        "parameters": [
+          {
+            "name": "instance_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Instance Uid"
+            }
+          },
+          {
+            "name": "source_project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Source Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Discovercollectionfields"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      }
+    },
+    "/api/v1/alm-instances/{instance_uid}/rate-policy": {
+      "put": {
+        "summary": "Rate Policy",
+        "operationId": "setServerRateLimit",
+        "parameters": [
+          {
+            "name": "instance_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Instance Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HttpPolicy"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpPolicy"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects": {
+      "post": {
+        "summary": "Register Project",
+        "operationId": "registerProject",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      },
+      "get": {
+        "summary": "Projects",
+        "operationId": "listProjects",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectInfo"
+                  },
+                  "title": "Response Listprojects"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/collection-config": {
+      "put": {
+        "summary": "Collection Config",
+        "operationId": "configureCollectionScope",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CollectionConfig"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/preflight": {
+      "post": {
+        "summary": "Preflight Project",
+        "operationId": "preflightProject",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreflightInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M2_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/processing-config": {
+      "get": {
+        "summary": "Get Processing Config",
+        "operationId": "getProcessingConfig",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessingConfigInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M3_IMPLEMENTED"
+      },
+      "put": {
+        "summary": "Configure Processing",
+        "operationId": "configureProcessing",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessingPolicy"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessingConfigInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M3_IMPLEMENTED"
+      }
+    },
+    "/api/v1/alm-instances/{instance_uid}/processing-defaults": {
+      "put": {
+        "summary": "Processing Defaults",
+        "operationId": "configureProcessingDefaults",
+        "parameters": [
+          {
+            "name": "instance_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Instance Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProcessingPolicy"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessingDefaultsInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "x-session-only": true,
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M3_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/processing-preflight": {
+      "post": {
+        "summary": "Processing Preflight",
+        "operationId": "preflightProcessing",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProcessingPreflightInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M3_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/index-preflight": {
+      "post": {
+        "summary": "Index Preflight",
+        "operationId": "preflightIndex",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "INDEX",
+                "REBUILD_INDEX"
+              ],
+              "type": "string",
+              "default": "INDEX",
+              "title": "Stage"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IndexPreflightInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/pipeline-preflight": {
+      "post": {
+        "summary": "Pipeline Preflight",
+        "operationId": "preflightPipeline",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PipelinePreflightInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_IMPLEMENTED"
+      }
+    },
+    "/api/v1/search": {
+      "post": {
+        "summary": "Search Items",
+        "operationId": "searchItems",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "search",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_IMPLEMENTED"
+      }
+    },
+    "/api/v1/items/{item_uid}": {
+      "get": {
+        "summary": "Active Item",
+        "operationId": "getActiveItem",
+        "parameters": [
+          {
+            "name": "item_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Uid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDetail"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_IMPLEMENTED"
+      }
+    },
+    "/api/v1/healthz": {
+      "get": {
+        "summary": "Health",
+        "operationId": "healthz",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "public",
+        "security": [],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/readyz": {
+      "get": {
+        "summary": "Ready",
+        "operationId": "readyz",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "summary": "Login",
+        "operationId": "adminLogin",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Login"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "public",
+        "security": [],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "operationId": "adminLogout",
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "authenticated",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/api-keys": {
+      "post": {
+        "summary": "Create Key",
+        "operationId": "createApiKey",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/KeyCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KeyCreated"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/api-keys/{key_id}": {
+      "delete": {
+        "summary": "Revoke",
+        "operationId": "revokeApiKey",
+        "parameters": [
+          {
+            "name": "key_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Key Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/jobs": {
+      "get": {
+        "summary": "Jobs",
+        "operationId": "listJobs",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JobInfo"
+                  },
+                  "title": "Response Listjobs"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/jobs/{job_id}": {
+      "get": {
+        "summary": "Job",
+        "operationId": "getJob",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/jobs": {
+      "post": {
+        "summary": "Stage",
+        "operationId": "startProjectStageJob",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Stage"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_COLLECT_PROCESS_EMBED_INDEX_REBUILD_SYNC"
+      }
+    },
+    "/api/v1/jobs/{job_id}/failed-items": {
+      "get": {
+        "summary": "Failed Items",
+        "operationId": "listFailedItems",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FailedItemInfo"
+                  },
+                  "title": "Response Listfaileditems"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_IMPLEMENTED"
+      }
+    },
+    "/api/v1/jobs/{job_id}/failed-items/{item_uid}/retry": {
+      "post": {
+        "summary": "Retry Item",
+        "operationId": "retryFailedItem",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "item_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Item Uid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetryItemRequest",
+                "default": {
+                  "from_stage": "FAILED_STAGE",
+                  "force_recollect": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_IMPLEMENTED"
+      }
+    },
+    "/api/v1/jobs/{job_id}/failed-items/retry": {
+      "post": {
+        "summary": "Retry Items",
+        "operationId": "retryFailedItems",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RetryItemRequest",
+                "default": {
+                  "from_stage": "FAILED_STAGE",
+                  "force_recollect": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JobInfo"
+                  },
+                  "title": "Response Retryfaileditems"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_IMPLEMENTED"
+      }
+    },
+    "/api/v1/jobs/{job_id}/resume": {
+      "post": {
+        "summary": "Resume Job",
+        "operationId": "resumeJob",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_IMPLEMENTED"
+      }
+    },
+    "/api/v1/jobs/{job_id}/events": {
+      "get": {
+        "summary": "Job Events",
+        "operationId": "listJobEvents",
+        "parameters": [
+          {
+            "name": "job_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Job Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Offset"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/JobEvent"
+                  },
+                  "title": "Response Listjobevents"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_read",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    },
+    "/api/v1/projects/{project_uid}/sync": {
+      "post": {
+        "summary": "Sync",
+        "operationId": "startSync",
+        "parameters": [
+          {
+            "name": "project_uid",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Uid"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobInfo"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "project_manage",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          },
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M4_COLLECT_PROCESS_EMBED_INDEX_REBUILD_SYNC"
+      }
+    },
+    "/api/v1/audit-events": {
+      "get": {
+        "summary": "Audit",
+        "operationId": "listAuditEvents",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Listauditevents"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Sanitized error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          }
+        },
+        "x-required-scope": "system_admin",
+        "security": [
+          {
+            "AdminSession": []
+          }
+        ],
+        "x-implementation-status": "M1_IMPLEMENTED"
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ArtifactInfo": {
+        "properties": {
+          "artifact_ref": {
+            "type": "string",
+            "title": "Artifact Ref"
+          },
+          "project_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Uid"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "sha256": {
+            "type": "string",
+            "title": "Sha256"
+          },
+          "size": {
+            "type": "integer",
+            "title": "Size"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "created_at": {
+            "type": "number",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "artifact_ref",
+          "kind",
+          "sha256",
+          "size",
+          "state",
+          "created_at"
+        ],
+        "title": "ArtifactInfo"
+      },
+      "BackupRestoreRequest": {
+        "properties": {
+          "manifest_hash": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Manifest Hash"
+          },
+          "confirmation_nonce": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 16,
+            "title": "Confirmation Nonce"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "manifest_hash",
+          "confirmation_nonce"
+        ],
+        "title": "BackupRestoreRequest"
+      },
+      "BackupSchedule": {
+        "properties": {
+          "interval_seconds": {
+            "type": "integer",
+            "maximum": 31536000.0,
+            "minimum": 60.0,
+            "title": "Interval Seconds"
+          },
+          "retention": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Retention"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "interval_seconds",
+          "retention"
+        ],
+        "title": "BackupSchedule"
+      },
+      "ChunkConfig": {
+        "properties": {
+          "target_chunk_tokens": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Target Chunk Tokens",
+            "default": 512
+          },
+          "max_chunk_tokens": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Max Chunk Tokens",
+            "default": 1024
+          },
+          "overlap_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Overlap Tokens",
+            "default": 64
+          },
+          "reserved_context_tokens": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Reserved Context Tokens",
+            "default": 128
+          },
+          "min_chunk_tokens": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Min Chunk Tokens",
+            "default": 64
+          },
+          "effective_max_input_tokens": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Effective Max Input Tokens",
+            "default": 1024
+          },
+          "safety_margin": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Safety Margin",
+            "default": 0
+          },
+          "prefix": {
+            "type": "string",
+            "title": "Prefix",
+            "default": ""
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ChunkConfig"
+      },
+      "ChunkInfo": {
+        "properties": {
+          "chunk_uid": {
+            "type": "string",
+            "title": "Chunk Uid"
+          },
+          "revision_uid": {
+            "type": "string",
+            "title": "Revision Uid"
+          },
+          "input_text": {
+            "type": "string",
+            "title": "Input Text"
+          },
+          "input_tokens": {
+            "type": "integer",
+            "title": "Input Tokens"
+          },
+          "content_hash": {
+            "type": "string",
+            "title": "Content Hash"
+          },
+          "source_span_offsets": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Source Span Offsets"
+          },
+          "row_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Row Ids"
+          },
+          "vector_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vector Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_uid",
+          "revision_uid",
+          "input_text",
+          "input_tokens",
+          "content_hash",
+          "source_span_offsets",
+          "row_ids"
+        ],
+        "title": "ChunkInfo"
+      },
+      "CodebeamerProfile": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Display Name"
+          },
+          "base_url": {
+            "type": "string",
+            "title": "Base Url"
+          },
+          "auth_ref": {
+            "type": "string",
+            "pattern": "^(env:[A-Z][A-Z0-9_]*|vault:[A-Za-z0-9_-]+)$",
+            "title": "Auth Ref"
+          },
+          "http_policy": {
+            "$ref": "#/components/schemas/HttpPolicy"
+          },
+          "ca_bundle_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^env:[A-Z][A-Z0-9_]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ca Bundle Ref"
+          },
+          "source_type": {
+            "type": "string",
+            "const": "codebeamer",
+            "title": "Source Type"
+          },
+          "api_profile": {
+            "type": "string",
+            "const": "cb-rest-v3",
+            "title": "Api Profile",
+            "default": "cb-rest-v3"
+          },
+          "auth_method": {
+            "type": "string",
+            "enum": [
+              "bearer",
+              "basic"
+            ],
+            "title": "Auth Method",
+            "default": "bearer"
+          },
+          "username": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Username"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "display_name",
+          "base_url",
+          "auth_ref",
+          "source_type"
+        ],
+        "title": "CodebeamerProfile"
+      },
+      "CollectionConfig": {
+        "properties": {
+          "selection_mode": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "SELECTED"
+            ],
+            "title": "Selection Mode",
+            "default": "ALL"
+          },
+          "scope_kind": {
+            "type": "string",
+            "enum": [
+              "TRACKER",
+              "WORK_ITEM_TYPE"
+            ],
+            "title": "Scope Kind"
+          },
+          "source_scope_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10000,
+            "title": "Source Scope Ids"
+          },
+          "embedding_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Embedding Fields"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scope_kind"
+        ],
+        "title": "CollectionConfig"
+      },
+      "DiagnosticInfo": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "project_uid": {
+            "type": "string",
+            "title": "Project Uid"
+          },
+          "alm_instance_uid": {
+            "type": "string",
+            "title": "Alm Instance Uid"
+          },
+          "item_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Uid"
+          },
+          "source_item_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Item Id"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "attempt": {
+            "type": "integer",
+            "title": "Attempt",
+            "default": 1
+          },
+          "http_status": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          },
+          "trace_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trace Id"
+          },
+          "trace_generated": {
+            "type": "boolean",
+            "title": "Trace Generated",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "project_uid",
+          "alm_instance_uid",
+          "stage",
+          "state"
+        ],
+        "title": "DiagnosticInfo"
+      },
+      "EffectiveProcessingPolicy": {
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldRef"
+            },
+            "type": "array",
+            "title": "Fields"
+          },
+          "scope_fields": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/FieldRef"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Scope Fields"
+          },
+          "chunking": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Chunking"
+          }
+        },
+        "type": "object",
+        "required": [
+          "fields",
+          "chunking"
+        ],
+        "title": "EffectiveProcessingPolicy"
+      },
+      "FailedItemInfo": {
+        "properties": {
+          "failed_item_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Failed Item Uid"
+          },
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "project_uid": {
+            "type": "string",
+            "title": "Project Uid"
+          },
+          "item_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Uid"
+          },
+          "source_item_id": {
+            "type": "string",
+            "title": "Source Item Id"
+          },
+          "revision_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revision Uid"
+          },
+          "failed_stage": {
+            "type": "string",
+            "enum": [
+              "COLLECT",
+              "PROCESS",
+              "EMBED",
+              "INDEX"
+            ],
+            "title": "Failed Stage"
+          },
+          "error_code": {
+            "type": "string",
+            "title": "Error Code"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          },
+          "replay_state": {
+            "type": "string",
+            "title": "Replay State"
+          }
+        },
+        "type": "object",
+        "required": [
+          "failed_item_uid",
+          "job_id",
+          "project_uid",
+          "item_uid",
+          "source_item_id",
+          "revision_uid",
+          "failed_stage",
+          "error_code",
+          "retryable",
+          "replay_state"
+        ],
+        "title": "FailedItemInfo"
+      },
+      "FieldEquality": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "NORMALIZED",
+              "SOURCE"
+            ],
+            "title": "Kind"
+          },
+          "key": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Key"
+          },
+          "value": {
+            "title": "Value"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "key",
+          "value"
+        ],
+        "title": "FieldEquality"
+      },
+      "FieldRef": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "NORMALIZED",
+              "SOURCE"
+            ],
+            "title": "Kind"
+          },
+          "key": {
+            "type": "string",
+            "maxLength": 512,
+            "minLength": 1,
+            "title": "Key"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "kind",
+          "key"
+        ],
+        "title": "FieldRef"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "default": "ok"
+          }
+        },
+        "type": "object",
+        "title": "Health"
+      },
+      "HttpPolicy": {
+        "properties": {
+          "requests_per_second": {
+            "type": "number",
+            "maximum": 1000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Requests Per Second",
+            "default": 2
+          },
+          "burst": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Burst",
+            "default": 2
+          },
+          "max_inflight": {
+            "type": "integer",
+            "maximum": 32.0,
+            "minimum": 1.0,
+            "title": "Max Inflight",
+            "default": 2
+          },
+          "min_interval_ms": {
+            "type": "integer",
+            "maximum": 60000.0,
+            "minimum": 0.0,
+            "title": "Min Interval Ms",
+            "default": 200
+          },
+          "timeout_seconds": {
+            "type": "number",
+            "maximum": 300.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Timeout Seconds",
+            "default": 30
+          },
+          "max_attempts": {
+            "type": "integer",
+            "maximum": 10.0,
+            "minimum": 1.0,
+            "title": "Max Attempts",
+            "default": 5
+          },
+          "backoff_base_seconds": {
+            "type": "number",
+            "maximum": 120.0,
+            "minimum": 0.0,
+            "title": "Backoff Base Seconds",
+            "default": 2
+          },
+          "backoff_max_seconds": {
+            "type": "number",
+            "maximum": 600.0,
+            "minimum": 0.0,
+            "title": "Backoff Max Seconds",
+            "default": 120
+          },
+          "total_budget_seconds": {
+            "type": "number",
+            "maximum": 3600.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Total Budget Seconds",
+            "default": 180
+          },
+          "circuit_breaker_window": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Circuit Breaker Window",
+            "default": 20
+          },
+          "max_response_bytes": {
+            "type": "integer",
+            "maximum": 1073741824.0,
+            "minimum": 1.0,
+            "title": "Max Response Bytes",
+            "default": 16777216
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "HttpPolicy"
+      },
+      "IndexPreflightInfo": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "BLOCKED"
+            ],
+            "title": "Status"
+          },
+          "index_ready": {
+            "type": "boolean",
+            "title": "Index Ready"
+          },
+          "rebuild_ready": {
+            "type": "boolean",
+            "title": "Rebuild Ready"
+          },
+          "config_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Revision"
+          },
+          "estimated_items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Items"
+          },
+          "diagnostics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Diagnostics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "index_ready",
+          "rebuild_ready",
+          "config_revision",
+          "estimated_items",
+          "diagnostics"
+        ],
+        "title": "IndexPreflightInfo"
+      },
+      "InstanceInfo": {
+        "properties": {
+          "instance_uid": {
+            "type": "string",
+            "title": "Instance Uid"
+          },
+          "source_type": {
+            "type": "string",
+            "enum": [
+              "codebeamer",
+              "polarion"
+            ],
+            "title": "Source Type"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "base_url": {
+            "type": "string",
+            "title": "Base Url"
+          },
+          "api_profile": {
+            "type": "string",
+            "title": "Api Profile"
+          },
+          "auth_configured": {
+            "type": "boolean",
+            "title": "Auth Configured"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instance_uid",
+          "source_type",
+          "display_name",
+          "base_url",
+          "api_profile",
+          "auth_configured"
+        ],
+        "title": "InstanceInfo"
+      },
+      "ItemDetail": {
+        "properties": {
+          "project_uid": {
+            "type": "string",
+            "title": "Project Uid"
+          },
+          "item_uid": {
+            "type": "string",
+            "title": "Item Uid"
+          },
+          "revision_uid": {
+            "type": "string",
+            "title": "Revision Uid"
+          },
+          "source_revision": {
+            "type": "string",
+            "title": "Source Revision"
+          },
+          "item": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Item"
+          },
+          "content_blocks": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Content Blocks"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_uid",
+          "item_uid",
+          "revision_uid",
+          "source_revision",
+          "item",
+          "content_blocks"
+        ],
+        "title": "ItemDetail"
+      },
+      "ItemMetadata": {
+        "properties": {
+          "item_uid": {
+            "type": "string",
+            "title": "Item Uid"
+          },
+          "source_item_id": {
+            "type": "string",
+            "title": "Source Item Id"
+          },
+          "active_revision_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Revision Uid"
+          },
+          "latest_revision_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest Revision Uid"
+          },
+          "deleted_state": {
+            "type": "string",
+            "title": "Deleted State"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_uid",
+          "source_item_id",
+          "deleted_state"
+        ],
+        "title": "ItemMetadata"
+      },
+      "JobEvent": {
+        "properties": {
+          "event_id": {
+            "type": "integer",
+            "title": "Event Id"
+          },
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "occurred_at": {
+            "type": "number",
+            "title": "Occurred At"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          },
+          "error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "event_id",
+          "job_id",
+          "occurred_at",
+          "state"
+        ],
+        "title": "JobEvent"
+      },
+      "JobInfo": {
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "title": "Job Id"
+          },
+          "project_uid": {
+            "type": "string",
+            "title": "Project Uid"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "QUEUED",
+              "RUNNING",
+              "SUCCEEDED",
+              "COMPLETED_WITH_ERRORS",
+              "RETRY_WAIT",
+              "PAUSED",
+              "BLOCKED",
+              "FAILED",
+              "CANCELLED"
+            ],
+            "title": "State"
+          },
+          "last_error_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Error Code"
+          },
+          "progress_total": {
+            "type": "integer",
+            "title": "Progress Total",
+            "default": 0
+          },
+          "succeeded_items": {
+            "type": "integer",
+            "title": "Succeeded Items",
+            "default": 0
+          },
+          "failed_items": {
+            "type": "integer",
+            "title": "Failed Items",
+            "default": 0
+          },
+          "skipped_items": {
+            "type": "integer",
+            "title": "Skipped Items",
+            "default": 0
+          },
+          "retry_count": {
+            "type": "integer",
+            "title": "Retry Count",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "job_id",
+          "project_uid",
+          "stage",
+          "state"
+        ],
+        "title": "JobInfo"
+      },
+      "KeyCreate": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "project_uids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Project Uids"
+          },
+          "permissions": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "search",
+                "project_read",
+                "project_manage",
+                "system_admin"
+              ]
+            },
+            "type": "array",
+            "maxItems": 4,
+            "minItems": 1,
+            "title": "Permissions"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "name",
+          "project_uids",
+          "permissions"
+        ],
+        "title": "KeyCreate"
+      },
+      "KeyCreated": {
+        "properties": {
+          "key_id": {
+            "type": "string",
+            "title": "Key Id"
+          },
+          "key": {
+            "type": "string",
+            "title": "Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "key_id",
+          "key"
+        ],
+        "title": "KeyCreated"
+      },
+      "Login": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "maxLength": 128,
+            "minLength": 1,
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "maxLength": 1024,
+            "minLength": 1,
+            "title": "Password"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "Login"
+      },
+      "MatchedChunk": {
+        "properties": {
+          "chunk_uid": {
+            "type": "string",
+            "title": "Chunk Uid"
+          },
+          "revision_uid": {
+            "type": "string",
+            "title": "Revision Uid"
+          },
+          "field_def_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Def Uid"
+          },
+          "block_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Block Uid"
+          },
+          "source_span_offsets": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Source Span Offsets"
+          },
+          "row_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Row Ids"
+          },
+          "input_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Input Text"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          }
+        },
+        "type": "object",
+        "required": [
+          "chunk_uid",
+          "revision_uid",
+          "source_span_offsets",
+          "row_ids"
+        ],
+        "title": "MatchedChunk"
+      },
+      "PipelinePreflightInfo": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "BLOCKED"
+            ],
+            "title": "Status"
+          },
+          "sync_ready": {
+            "type": "boolean",
+            "title": "Sync Ready"
+          },
+          "config_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Revision"
+          },
+          "estimated_items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Items"
+          },
+          "diagnostics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Diagnostics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "sync_ready",
+          "config_revision",
+          "estimated_items",
+          "diagnostics"
+        ],
+        "title": "PipelinePreflightInfo"
+      },
+      "PolarionProfile": {
+        "properties": {
+          "display_name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Display Name"
+          },
+          "base_url": {
+            "type": "string",
+            "title": "Base Url"
+          },
+          "auth_ref": {
+            "type": "string",
+            "pattern": "^(env:[A-Z][A-Z0-9_]*|vault:[A-Za-z0-9_-]+)$",
+            "title": "Auth Ref"
+          },
+          "http_policy": {
+            "$ref": "#/components/schemas/HttpPolicy"
+          },
+          "ca_bundle_ref": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^env:[A-Z][A-Z0-9_]*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ca Bundle Ref"
+          },
+          "source_type": {
+            "type": "string",
+            "const": "polarion",
+            "title": "Source Type"
+          },
+          "api_profile": {
+            "type": "string",
+            "const": "polarion-rest-v1",
+            "title": "Api Profile",
+            "default": "polarion-rest-v1"
+          },
+          "auth_method": {
+            "type": "string",
+            "const": "bearer",
+            "title": "Auth Method",
+            "default": "bearer"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "display_name",
+          "base_url",
+          "auth_ref",
+          "source_type"
+        ],
+        "title": "PolarionProfile"
+      },
+      "PreflightInfo": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "BLOCKED"
+            ],
+            "title": "Status"
+          },
+          "collect_ready": {
+            "type": "boolean",
+            "title": "Collect Ready"
+          },
+          "sync_ready": {
+            "type": "boolean",
+            "title": "Sync Ready"
+          },
+          "scope_kind": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scope Kind"
+          },
+          "source_scope_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Source Scope Ids"
+          },
+          "readable_fields": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Readable Fields"
+          },
+          "normalized_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Normalized Fields"
+          },
+          "estimated_items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Items"
+          },
+          "estimated_requests": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Requests"
+          },
+          "request_estimate_kind": {
+            "type": "string",
+            "const": "UNKNOWN",
+            "title": "Request Estimate Kind",
+            "default": "UNKNOWN"
+          },
+          "request_count_lower_bound": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Count Lower Bound"
+          },
+          "config_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Revision"
+          },
+          "diagnostics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Diagnostics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "collect_ready",
+          "sync_ready",
+          "scope_kind",
+          "source_scope_ids",
+          "readable_fields",
+          "estimated_items",
+          "estimated_requests",
+          "config_revision",
+          "diagnostics"
+        ],
+        "title": "PreflightInfo"
+      },
+      "PrincipalInfo": {
+        "properties": {
+          "admin_session": {
+            "type": "boolean",
+            "title": "Admin Session"
+          },
+          "project_uids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Project Uids"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Permissions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "admin_session",
+          "project_uids",
+          "permissions"
+        ],
+        "title": "PrincipalInfo"
+      },
+      "ProcessingConfigInfo": {
+        "properties": {
+          "project_uid": {
+            "type": "string",
+            "title": "Project Uid"
+          },
+          "instance_uid": {
+            "type": "string",
+            "title": "Instance Uid"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/ProcessingPolicy"
+          },
+          "instance_policy": {
+            "$ref": "#/components/schemas/ProcessingPolicy"
+          },
+          "effective_policy": {
+            "$ref": "#/components/schemas/EffectiveProcessingPolicy"
+          },
+          "config_revision": {
+            "type": "string",
+            "title": "Config Revision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_uid",
+          "instance_uid",
+          "policy",
+          "instance_policy",
+          "effective_policy",
+          "config_revision"
+        ],
+        "title": "ProcessingConfigInfo"
+      },
+      "ProcessingDefaultsInfo": {
+        "properties": {
+          "instance_uid": {
+            "type": "string",
+            "title": "Instance Uid"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/ProcessingPolicy"
+          }
+        },
+        "type": "object",
+        "required": [
+          "instance_uid",
+          "policy"
+        ],
+        "title": "ProcessingDefaultsInfo"
+      },
+      "ProcessingPolicy": {
+        "properties": {
+          "fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/FieldRef"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fields"
+          },
+          "scope_fields": {
+            "additionalProperties": {
+              "items": {
+                "$ref": "#/components/schemas/FieldRef"
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Scope Fields"
+          },
+          "chunking": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ChunkConfig"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ProcessingPolicy"
+      },
+      "ProcessingPreflightInfo": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "READY",
+              "BLOCKED"
+            ],
+            "title": "Status"
+          },
+          "process_ready": {
+            "type": "boolean",
+            "title": "Process Ready"
+          },
+          "embed_ready": {
+            "type": "boolean",
+            "title": "Embed Ready"
+          },
+          "sync_ready": {
+            "type": "boolean",
+            "const": false,
+            "title": "Sync Ready",
+            "default": false
+          },
+          "config_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Revision"
+          },
+          "estimated_items": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Estimated Items"
+          },
+          "diagnostics": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Diagnostics"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "process_ready",
+          "embed_ready",
+          "config_revision",
+          "estimated_items",
+          "diagnostics"
+        ],
+        "title": "ProcessingPreflightInfo"
+      },
+      "ProjectCreate": {
+        "properties": {
+          "selection_mode": {
+            "type": "string",
+            "enum": [
+              "ALL",
+              "SELECTED"
+            ],
+            "title": "Selection Mode",
+            "default": "ALL"
+          },
+          "scope_kind": {
+            "type": "string",
+            "enum": [
+              "TRACKER",
+              "WORK_ITEM_TYPE"
+            ],
+            "title": "Scope Kind"
+          },
+          "source_scope_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 10000,
+            "title": "Source Scope Ids"
+          },
+          "embedding_fields": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Embedding Fields"
+          },
+          "alm_instance_uid": {
+            "type": "string",
+            "title": "Alm Instance Uid"
+          },
+          "source_project_id": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Source Project Id"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "scope_kind",
+          "alm_instance_uid",
+          "source_project_id",
+          "name"
+        ],
+        "title": "ProjectCreate"
+      },
+      "ProjectImportRequest": {
+        "properties": {
+          "artifact_ref": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Artifact Ref"
+          },
+          "import_mode": {
+            "type": "string",
+            "const": "MERGE_ONLY",
+            "title": "Import Mode",
+            "default": "MERGE_ONLY"
+          },
+          "expected_sha256": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Sha256"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "artifact_ref"
+        ],
+        "title": "ProjectImportRequest"
+      },
+      "ProjectInfo": {
+        "properties": {
+          "project_uid": {
+            "type": "string",
+            "title": "Project Uid"
+          },
+          "alm_instance_uid": {
+            "type": "string",
+            "title": "Alm Instance Uid"
+          },
+          "source_project_id": {
+            "type": "string",
+            "title": "Source Project Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_uid",
+          "alm_instance_uid",
+          "source_project_id",
+          "name"
+        ],
+        "title": "ProjectInfo"
+      },
+      "RecoveryInfo": {
+        "properties": {
+          "recovery_ref": {
+            "type": "string",
+            "title": "Recovery Ref"
+          },
+          "state": {
+            "type": "string",
+            "const": "RAW_ONLY_REBUILD_REQUIRED",
+            "title": "State"
+          },
+          "auth_state": {
+            "type": "string",
+            "const": "REREGISTRATION_REQUIRED",
+            "title": "Auth State"
+          }
+        },
+        "type": "object",
+        "required": [
+          "recovery_ref",
+          "state",
+          "auth_state"
+        ],
+        "title": "RecoveryInfo"
+      },
+      "ResponseOptions": {
+        "properties": {
+          "include_full_item": {
+            "type": "boolean",
+            "title": "Include Full Item",
+            "default": false
+          },
+          "include_matched_chunks": {
+            "type": "boolean",
+            "title": "Include Matched Chunks",
+            "default": true
+          },
+          "include_chunk_text": {
+            "type": "boolean",
+            "title": "Include Chunk Text",
+            "default": false
+          },
+          "max_chunks_per_item": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Max Chunks Per Item",
+            "default": 2
+          },
+          "include_relations": {
+            "type": "boolean",
+            "title": "Include Relations",
+            "default": false
+          },
+          "include_attachments": {
+            "type": "boolean",
+            "title": "Include Attachments",
+            "default": false
+          },
+          "include_scores": {
+            "type": "boolean",
+            "title": "Include Scores",
+            "default": true
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "ResponseOptions"
+      },
+      "RestorePreparation": {
+        "properties": {
+          "manifest_hash": {
+            "type": "string",
+            "title": "Manifest Hash"
+          },
+          "confirmation_nonce": {
+            "type": "string",
+            "title": "Confirmation Nonce"
+          },
+          "expires_at": {
+            "type": "number",
+            "title": "Expires At"
+          },
+          "state": {
+            "type": "string",
+            "title": "State"
+          }
+        },
+        "type": "object",
+        "required": [
+          "manifest_hash",
+          "confirmation_nonce",
+          "expires_at",
+          "state"
+        ],
+        "title": "RestorePreparation"
+      },
+      "RetryItemRequest": {
+        "properties": {
+          "from_stage": {
+            "type": "string",
+            "enum": [
+              "FAILED_STAGE",
+              "COLLECT",
+              "PROCESS",
+              "EMBED",
+              "INDEX"
+            ],
+            "title": "From Stage",
+            "default": "FAILED_STAGE"
+          },
+          "force_recollect": {
+            "type": "boolean",
+            "title": "Force Recollect",
+            "default": false
+          },
+          "expected_revision_uid": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision Uid"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RetryItemRequest"
+      },
+      "RevisionInfo": {
+        "properties": {
+          "revision_uid": {
+            "type": "string",
+            "title": "Revision Uid"
+          },
+          "source_revision": {
+            "type": "string",
+            "title": "Source Revision"
+          },
+          "hash": {
+            "type": "string",
+            "title": "Hash"
+          },
+          "item": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Item"
+          }
+        },
+        "type": "object",
+        "required": [
+          "revision_uid",
+          "source_revision",
+          "hash",
+          "item"
+        ],
+        "title": "RevisionInfo"
+      },
+      "SearchFilters": {
+        "properties": {
+          "item_uids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 1000,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item Uids"
+          },
+          "source_item_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 1000,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Item Ids"
+          },
+          "source_scope_ids": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array",
+                "maxItems": 1000,
+                "minItems": 1
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Scope Ids"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/FieldEquality"
+            },
+            "type": "array",
+            "maxItems": 32,
+            "title": "Fields"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "SearchFilters"
+      },
+      "SearchHit": {
+        "properties": {
+          "item_uid": {
+            "type": "string",
+            "title": "Item Uid"
+          },
+          "project_uid": {
+            "type": "string",
+            "title": "Project Uid"
+          },
+          "revision_uid": {
+            "type": "string",
+            "title": "Revision Uid"
+          },
+          "title": {
+            "type": "string",
+            "title": "Title"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "item": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Item"
+          },
+          "matched_chunks": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/MatchedChunk"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matched Chunks"
+          },
+          "relations": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Relations"
+          },
+          "attachments": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachments"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item_uid",
+          "project_uid",
+          "revision_uid",
+          "title"
+        ],
+        "title": "SearchHit"
+      },
+      "SearchRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "maxLength": 65536,
+            "minLength": 1,
+            "title": "Query"
+          },
+          "project_uids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Project Uids"
+          },
+          "top_k": {
+            "type": "integer",
+            "maximum": 100.0,
+            "minimum": 1.0,
+            "title": "Top K",
+            "default": 10
+          },
+          "response": {
+            "$ref": "#/components/schemas/ResponseOptions"
+          },
+          "filters": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SearchFilters"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "query",
+          "project_uids"
+        ],
+        "title": "SearchRequest"
+      },
+      "SearchResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/SearchHit"
+            },
+            "type": "array",
+            "title": "Results"
+          },
+          "exhausted": {
+            "type": "boolean",
+            "title": "Exhausted"
+          },
+          "backfill_limited": {
+            "type": "boolean",
+            "title": "Backfill Limited"
+          },
+          "rounds": {
+            "type": "integer",
+            "title": "Rounds"
+          },
+          "unindexed_project_uids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Unindexed Project Uids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "results",
+          "exhausted",
+          "backfill_limited",
+          "rounds",
+          "unindexed_project_uids"
+        ],
+        "title": "SearchResponse"
+      },
+      "SourceProject": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "url"
+        ],
+        "title": "SourceProject"
+      },
+      "SourceScope": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "TRACKER",
+              "WORK_ITEM_TYPE"
+            ],
+            "title": "Kind"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "kind"
+        ],
+        "title": "SourceScope"
+      },
+      "Stage": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "enum": [
+              "SYNC",
+              "COLLECT",
+              "PROCESS",
+              "EMBED",
+              "INDEX",
+              "REBUILD_INDEX"
+            ],
+            "title": "Stage"
+          },
+          "force": {
+            "type": "boolean",
+            "title": "Force",
+            "default": false
+          },
+          "config_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Config Revision"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "stage"
+        ],
+        "title": "Stage"
+      },
+      "Summary": {
+        "properties": {
+          "commit": {
+            "type": "string",
+            "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$",
+            "title": "Commit"
+          },
+          "milestone": {
+            "type": "string",
+            "enum": [
+              "M1",
+              "M2",
+              "M3",
+              "M4",
+              "M5",
+              "M6"
+            ],
+            "title": "Milestone"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "IN_PROGRESS",
+              "QUALITY_REVIEW",
+              "LOCAL_PASS_WITH_LIMITATIONS",
+              "FAIL",
+              "NOT_VERIFIED"
+            ],
+            "title": "Status"
+          },
+          "srs_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 59,
+            "minItems": 1,
+            "title": "Srs Ids"
+          },
+          "passed": {
+            "type": "integer",
+            "maximum": 10000000.0,
+            "minimum": 0.0,
+            "title": "Passed"
+          },
+          "failed": {
+            "type": "integer",
+            "maximum": 10000000.0,
+            "minimum": 0.0,
+            "title": "Failed"
+          },
+          "not_verified": {
+            "type": "integer",
+            "maximum": 10000000.0,
+            "minimum": 0.0,
+            "title": "Not Verified"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "commit",
+          "milestone",
+          "status",
+          "srs_ids",
+          "passed",
+          "failed",
+          "not_verified"
+        ],
+        "title": "Summary"
+      },
+      "SummaryQueued": {
+        "properties": {
+          "summary_uid": {
+            "type": "string",
+            "title": "Summary Uid"
+          },
+          "state": {
+            "type": "string",
+            "const": "PENDING",
+            "title": "State",
+            "default": "PENDING"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary_uid"
+        ],
+        "title": "SummaryQueued"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "ApiError": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "trace_id": {
+            "title": "Trace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "trace_id"
+        ],
+        "title": "ApiError",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      },
+      "AdminSession": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "almrag_session",
+        "description": "Secure HttpOnly SameSite=strict; unsafe methods require Origin and X-CSRF-Token."
+      }
+    }
+  }
+}

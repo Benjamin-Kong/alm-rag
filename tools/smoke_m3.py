@@ -78,7 +78,7 @@ def main():
             assert c.execute('SELECT state FROM processing_results').fetchone()[0]=='EMBED_READY'
             assert c.execute('SELECT active_revision_uid FROM items').fetchone()[0] is None
             assert c.execute('SELECT count(*) FROM index_generations').fetchone()[0]==0
-            assert [row[0] for row in c.execute('SELECT version FROM schema_migrations ORDER BY version')]==[1,2,3,4,5,6]
+            assert [row[0] for row in c.execute('SELECT version FROM schema_migrations ORDER BY version')]==[1,2,3,4,5,6,7,8]
         assert not Settings().live_alm_enabled and not Settings().live_model_enabled
         print('M3_OFFLINE_RUNTIME_PASS',len(chunks),'chunks',content_calls-2,'content embedding requests; repeat=0; FIXTURE_ONLY')
 
