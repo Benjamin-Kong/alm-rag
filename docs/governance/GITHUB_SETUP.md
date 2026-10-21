@@ -1,40 +1,31 @@
-# Private GitHub remote — setup runbook
+# GitHub remote / Push runbook
 
-**Current status:** Local Git initial commit and conditional-baseline tag created. No remote repository exists in this preparation environment; no remote push performed.
+## Verified target and authorization — 2026-10-21
 
-## Recommended GitHub settings
-- Repository: `alm-rag` or another user-selected name; **Private**, no public visibility.
-- Owner: user account or approved organization, confirmed by the user.
-- `main` default branch, require PR review/status checks for protected branch where plan supports it; forbid force push/deletion.
-- No customer ALM data/attachments/dumps, credentials or generated operational logs in GitHub/Notion. Check `git status`, staged diff, `git ls-files` and secret scan **before first Push**.
-- Do not use `--public`, `--push` during repository creation until explicit push confirmation.
+- Remote: `origin` → `https://github.com/Benjamin-Kong/alm-rag.git`
+- Repository: PRIVATE, default branch `main` (verified with authenticated GitHub CLI).
+- User explicitly instructed “원격 push가지 진행해”, authorizing Push of the completed current development branch `codex/m6-quality`.
+- This branch includes M1..M6 local commits through ancestry. No force Push or remote branch deletion is needed.
+- Source/data restrictions remain: no customer ALM records, attachments, credentials or production logs. This authorization does not enable actual ALM/model, remote Notion publishing or production deployment.
 
-## Existing local commit
-The archive contains `.git` and tag `baseline-v0.3-conditional`. Extract archive and open `alm-rag` folder. Confirm with:
+## Checks and commands
 
-```bash
-git status --short
-git log -1 --oneline
-git tag --list
-python tools/validate_baseline.py
+From the repository root:
+
+```sh
+git status --short --branch
+gh repo view Benjamin-Kong/alm-rag --json nameWithOwner,isPrivate,url,defaultBranchRef
+gitleaks git . --log-opts=HEAD --redact --no-banner
+git push -u origin HEAD:refs/heads/codex/m6-quality
+git ls-remote --heads origin refs/heads/codex/m6-quality
 ```
 
-## After GitHub access is established and user authorizes remote creation/Push
-In a machine with GitHub CLI (`gh`) and authenticated GitHub access, choose the appropriate OWNER; creating under the user's own account:
+Compare the remote branch SHA with `git rev-parse HEAD`. Preserve local changes; do not resolve a non-fast-forward rejection with force Push. Inspect remote history before deciding how to reconcile it. The document tag `baseline-v0.3-conditional` is not an application release and is not automatically published by the branch command above.
 
-```bash
-gh auth status
-gh repo create alm-rag --private --source=. --remote=origin
-gh repo view --json visibility,nameWithOwner,url
-# Check exactly PRIVATE before push; audit tracked files/secrets.
-git status --short
-git ls-files
-# Obtain explicit approval for the destination/initial Push before running:
-git push -u origin main
-git push origin baseline-v0.3-conditional
-```
+GitHub Actions runs on Push according to `.github/workflows/m1.yml`. A successful Git Push is not evidence that the remote CI run passed; inspect its actual status separately.
 
-Alternative: create a PRIVATE empty repository in GitHub UI, then use `git remote add origin <EXACT_USER_REPO_URL>` (never invent URL), verify visibility and Push only when authorized.
+## Recorded pre-Push evidence
 
-## GitHub access constraint
-This ChatGPT environment did not expose an authenticated GitHub repository tool or `gh`; it cannot create the remote or Push for the user. The repository ZIP/Git bundle allows continuation on the user's authenticated PC/Codex environment.
+At implementation commit0d8be0d the working tree was clean. gitleaks8.30.1 scanned10reachablecommits/~3.02MB with0leaks. The later documentation commit adds the Korean execution guide and this authorization record; the final reachable history is rescanned before Push. No scan output containing secrets is published.
+
+The v0.3 preparation-only gate and later implementation approvals are historical records in BASELINE_APPROVAL.md. Current M6 quality evidence and remaining NOT VERIFIED items are in docs/milestones/M6/.

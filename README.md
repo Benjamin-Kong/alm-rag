@@ -3,6 +3,10 @@
 ## Status
 M1–M6 locally implemented and quality verified with documented limitations (2026-10-21). Independent **506 Python /28 frontend PASS**, root **10 Chromium PASS**, local Docker/isolated wheel/audits PASS. Synthetic100kItem/199999Chunk exact-ID search P95 **1.37495s**; this is not actual-Ollama/semantic-performance evidence. Actual ALM/model/production100k pipeline/other host modes/remote CI remain NOT VERIFIED. See [M6 completion](docs/milestones/M6/COMPLETION.md), [test report](docs/milestones/M6/TEST_REPORT.md), [benchmark interpretation](docs/milestones/M6/BENCHMARK_REPORT.md) and [runbook](docs/milestones/M6/RUNBOOK.md).
 
+## 실행 방법
+
+처음 실행할 때는 [한국어 실행 안내](docs/GETTING_STARTED.ko.md)를 참고하세요. 설치, 임시 HTTPS 데모, 데이터가 보존되는 Compose/Native 실행, 최초 관리자 생성과 HTTPS 조건을 설명합니다.
+
 ## Goal
 Read-only fetch all selected Codebeamer Tracker Items and Polarion Work Items (fields, relationships, attachments), retain raw/HTML + immutable revisions in normalized SQLite schema, generate table-aware field-specific chunks, embed with Ollama EmbeddingGemma 2, and return authorized project-restricted distinct Item results from Vector+Keyword hybrid search via REST/CLI/Web UI.
 

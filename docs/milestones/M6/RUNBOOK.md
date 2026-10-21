@@ -1,5 +1,7 @@
 # M6 local runbook
 
+처음 실행하는 사용자를 위한 명령별 안내: [한국어 실행 안내](../../GETTING_STARTED.ko.md).
+
 Use Python3.12 from `uv sync --frozen` / `.venv/bin/python`, and Node22 with `npm --prefix frontend ci`. On this host bare python3 is3.9 and default Node25 is unusable; tested Node22 is `/opt/homebrew/opt/node@22/bin`. Processes do not auto-load .env.example. Export implemented Settings explicitly; field/chunk policy and shared source throttling are typed API configuration, not legacy draft env knobs.
 
 Native separate processes: `.venv/bin/python -m almrag.cli migrate`, `.venv/bin/python -m almrag.cli bootstrap-admin`, `.venv/bin/python -m almrag.api`, `.venv/bin/python -m almrag.worker`. Bootstrap has no default production credentials and prompts securely. Run API/worker against the same local SQLite filesystem/reader-lock directory; shared NFS/multi-host DB is not supported. Browser administrator sessions require HTTPS reverse proxy at ALMRAG_ALLOWED_ORIGIN; no weakening Secure/HttpOnly/SameSite/CSRF. Frontend is built with npm run build and served separately with same-origin /api/v1 proxy. API key mode remains browser-memory only.

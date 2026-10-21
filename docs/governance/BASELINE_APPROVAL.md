@@ -59,3 +59,7 @@ The user answered “승인” to the explicit request to apply M4/CORRECTION_PR
 ## Sequential M4–M6 execution authorization — 2026-10-21
 
 The user instructed “계속진행하고 사람의 승인없이 끝까지 진행해”, then explicitly selected “M5·M6까지 추가 승인 없이 진행”. This authorizes completing M4 correction/testing and sequential M5/M6 implementation without additional milestone or corrective approval prompts. Keep test-first and independent quality gates, fix failures before advancing, and report actual PASS/FAIL/NOT VERIFIED. This supersedes the approval-wait portions of local milestone plans within that scope; it does not authorize actual ALM/model access, remote Push/Notion, production deployment, destructive customer-data operations or unapproved credential/ACL changes. External limitations must remain explicit.
+
+## Remote development-branch Push authorization — 2026-10-21
+
+After delivery of M5commit3731374 and M6commit0d8be0d/local quality reports, the user instructed “원격 push가지 진행해. 그리고 실행 방법은 문서로 작성되었나?”. This explicitly authorizes pushing the completed current branch to the existing verified PRIVATE origin Benjamin-Kong/alm-rag and documenting execution steps. Publish codex/m6-quality with its implementation ancestry after secret/history checks; no force Push or main merge is inferred. Actual ALM/model access, Notion transmission, production deployment and destructive customer-data operations remain separately restricted. A Push success does not by itself establish remote CI success.
