@@ -1,5 +1,7 @@
 # M5 operations runbook
 
+화면별 한국어 사용법: [웹 UI 사용 설명서](../../WEB_UI_GUIDE.ko.md).
+
 Use an HTTPS reverse proxy matching ALMRAG_ALLOWED_ORIGIN for administrator Secure-cookie sessions. Default local Compose HTTP health is a development boot check. Do not weaken CSRF, origin, Secure-cookie or project ACL to make a local UI test pass. API keys stay in browser memory; project grants determine actions, while global backup/recovery requires an administrator session.
 
 Register source_type first, then discover Codebeamer Project/Tracker or Polarion Project/Work Item Type. Select scopes and fields, save rate policy, run preflight, and SYNC with its config_revision. Changing selection invalidates readiness. Independent COLLECT/PROCESS/EMBED/INDEX and EXPORT/IMPORT use durable FIFO stages. Diagnostics include success and failure; replay/retry/resume require project_manage, failed list requires project_read.

@@ -1,5 +1,7 @@
 # M6 local runbook
 
+화면별 한국어 사용법: [웹 UI 사용 설명서](../../WEB_UI_GUIDE.ko.md).
+
 처음 실행하는 사용자를 위한 명령별 안내: [한국어 실행 안내](../../GETTING_STARTED.ko.md).
 
 Use Python3.12 from `uv sync --frozen` / `.venv/bin/python`, and Node22 with `npm --prefix frontend ci`. On this host bare python3 is3.9 and default Node25 is unusable; tested Node22 is `/opt/homebrew/opt/node@22/bin`. Processes do not auto-load .env.example. Export implemented Settings explicitly; field/chunk policy and shared source throttling are typed API configuration, not legacy draft env knobs.
