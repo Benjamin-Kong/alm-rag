@@ -2451,6 +2451,26 @@
               "type": "string",
               "title": "Source Project Id"
             }
+          },
+          {
+            "name": "scope_ids",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "maxItems": 1000
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Scope Ids"
+            }
           }
         ],
         "responses": {

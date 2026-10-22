@@ -3591,7 +3591,9 @@ export interface operations {
     };
     discoverCollectionFields: {
         parameters: {
-            query?: never;
+            query?: {
+                scope_ids?: string[] | null;
+            };
             header?: never;
             path: {
                 instance_uid: string;

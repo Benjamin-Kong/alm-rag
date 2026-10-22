@@ -92,8 +92,9 @@ export class ApiClient {
   discoverScopes(source: string, project: string) {
     return this.request<Schema['SourceScope'][]>('GET', '/alm-instances/' + encodeURIComponent(source) + '/projects/' + encodeURIComponent(project) + '/scopes');
   }
-  discoverFields(source: string, project: string) {
-    return this.request<Record<string, unknown>[]>('GET', '/alm-instances/' + encodeURIComponent(source) + '/projects/' + encodeURIComponent(project) + '/fields');
+  discoverFields(source: string, project: string, scopeIds: string[]) {
+    const query = scopeIds.map((id) => 'scope_ids=' + encodeURIComponent(id)).join('&');
+    return this.request<Record<string, unknown>[]>('GET', '/alm-instances/' + encodeURIComponent(source) + '/projects/' + encodeURIComponent(project) + '/fields?' + query);
   }
   setRatePolicy(source: string, input: Schema['HttpPolicy']) {
     return this.request<Schema['HttpPolicy']>('PUT', '/alm-instances/' + encodeURIComponent(source) + '/rate-policy', input);

@@ -141,3 +141,26 @@ def test_invalid_url_port_is_validation_error_without_registration(env):
     assert result.json()['code']=='INVALID_REQUEST'
     assert not calls
     with db.connect() as sql:assert sql.execute('SELECT count(*) FROM instances').fetchone()[0]==0
+
+
+def test_fields_discovery_requests_only_selected_trackers(tmp_path):
+    """OI-067: fields for a project must not walk every tracker (gateway 504)."""
+    db=Database(tmp_path/'t.sqlite');db.migrate();paths=[]
+    def handler(request):
+        paths.append(request.url.path)
+        if request.url.path=='/v3/projects/1/trackers':return httpx.Response(200,json=[{'id':31,'name':'A'},{'id':32,'name':'B'}])
+        if request.url.path in {'/v3/trackers/31/fields','/v3/trackers/32/fields'}:
+            return httpx.Response(200,json=[{'id':request.url.path.split('/')[3],'name':'F'}])
+        raise AssertionError(request.url.path)
+    connections=Connections(db,Settings(),transport_factory=lambda _:httpx.MockTransport(handler),secret_resolver=lambda _:'synthetic-secret')
+    app=create_app(Settings(allowed_origin='https://testserver'),db=db,connections=connections,collection=CollectionService(db,connections.connector,tmp_path/'a'))
+    app.state.security.bootstrap('admin','long synthetic password')
+    with TestClient(app,base_url='https://testserver') as c:
+        assert c.post('/api/v1/auth/login',json={'username':'admin','password':'long synthetic password'},headers={'Origin':'https://testserver'}).status_code==204
+        h={'Origin':'https://testserver','X-CSRF-Token':c.cookies['almrag_csrf']}
+        uid=c.post('/api/v1/alm-instances',json=PROFILE,headers=h).json()['instance_uid']
+        base=f'/api/v1/alm-instances/{uid}/projects/1/fields'
+        r=c.get(base,params={'scope_ids':['31']})
+        assert r.status_code==200 and [f['scope_id'] for f in r.json()]==['31']
+        assert '/v3/trackers/32/fields' not in paths
+        assert c.get(base,params={'scope_ids':['999']}).status_code==422

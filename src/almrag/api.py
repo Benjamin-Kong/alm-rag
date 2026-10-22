@@ -5,7 +5,7 @@ import sqlite3
 from typing import Literal
 from uuid import uuid4
 
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Query, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
@@ -276,7 +276,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         code=exc.code
         if code in {'INSTANCE_NOT_FOUND','PROJECT_NOT_CONFIGURED'}:status=404
         elif code in {'STALE_PREFLIGHT'}:status=409
-        elif code in {'INVALID_SCOPE','INVALID_SCOPE_KIND','EMPTY_SCOPE','INVALID_FIELDS','PROJECT_NOT_DISCOVERED','SCOPE_NOT_DISCOVERED'}:status=422
+        elif code in {'INVALID_SCOPE','INVALID_SCOPE_KIND','INVALID_SCOPE_SELECTION','EMPTY_SCOPE','INVALID_FIELDS','PROJECT_NOT_DISCOVERED','SCOPE_NOT_DISCOVERED'}:status=422
         else:status=503
         return error(request,status,code)
 
@@ -364,9 +364,9 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         return connections.connector(instance_uid).list_scopes(source_project_id)
 
     @app.get('/api/v1/alm-instances/{instance_uid}/projects/{source_project_id}/fields',response_model=list[dict],operation_id='discoverCollectionFields',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
-    def discover_fields(instance_uid:str,source_project_id:str,request:Request):
+    def discover_fields(instance_uid:str,source_project_id:str,request:Request,scope_ids:list[str]|None=Query(default=None,max_length=1000)):
         require(request,'system_admin',session_only=True)
-        return connections.connector(instance_uid).list_fields(source_project_id)
+        return connections.connector(instance_uid).list_fields(source_project_id,scope_ids)
 
     @app.put('/api/v1/alm-instances/{instance_uid}/rate-policy',response_model=HttpPolicy,operation_id='setServerRateLimit',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
     def rate_policy(instance_uid:str,payload:HttpPolicy,request:Request):

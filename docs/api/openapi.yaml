@@ -2251,6 +2251,16 @@ paths:
         schema:
           type: string
           title: Source Project Id
+      - name: scope_ids
+        in: query
+        required: false
+        schema:
+          title: Scope Ids
+          nullable: true
+          type: array
+          items:
+            type: string
+          maxItems: 1000
       responses:
         '200':
           description: Successful Response
