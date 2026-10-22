@@ -150,7 +150,7 @@ UI Codebeamer 등록 예:
 | 필드 | 값 |
 |---|---|
 | 종류 | Codebeamer |
-| Base URL | `https://실제호스트/cb` 등 서버의 Codebeamer context root. `/v3`를 덧붙이지 않는다. |
+| Base URL | `/v3` 바로 앞까지의 REST API 기준 주소. 일반적으로 `http://실제호스트:포트/cb/api`(context root `/cb` + `/api`)이며 `/v3`는 덧붙이지 않는다. 커넥터가 `/v3/projects`를 조합하므로 `/cb`만 입력하면 `NOT_FOUND`가 날 수 있다. 실제 경로는 서버에서 확인한다. |
 | 인증 | Basic |
 | 사용자 이름 | 읽기 전용 Codebeamer 계정 ID |
 | 자격증명 참조 | `env:ALMRAG_CODEBEAMER_PASSWORD` |

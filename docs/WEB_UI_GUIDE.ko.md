@@ -118,7 +118,7 @@ Codebeamer에서 Bearer를 선택하면 사용자 이름 대신 토큰을 서버
 실제 ALM에 접근 가능한 일반 실행 환경에서 관리자 세션으로 진행합니다.
 
 1. **서버 등록**에서 **ALM 종류**를 선택합니다.
-2. 서버 표시명·기본 URL·자격증명 참조·인증 방식을 입력합니다. Codebeamer는 뒤에 `/v3/...`를 조합하므로 해당 경로 앞의 서버 기준 주소(예: `https://cb.example.invalid/cb`)를 사용합니다. Polarion은 뒤에 `/projects/...`를 조합하므로 REST API 기준 주소(예: `https://po.example.invalid/polarion/rest/v1`)를 사용합니다. 예시의 컨텍스트 경로는 실제 배포 설정에 맞춰야 하며 개별 프로젝트 자원 URL은 입력하지 않습니다.
+2. 서버 표시명·기본 URL·자격증명 참조·인증 방식을 입력합니다. Codebeamer는 뒤에 `/v3/...`를 조합하므로 해당 경로 앞의 서버 기준 주소(예: `https://cb.example.invalid/cb/api`; context root만 쓰면 `/cb/v3/...`가 되어 `NOT_FOUND`가 날 수 있습니다)를 사용합니다. Polarion은 뒤에 `/projects/...`를 조합하므로 REST API 기준 주소(예: `https://po.example.invalid/polarion/rest/v1`)를 사용합니다. 예시의 컨텍스트 경로는 실제 배포 설정에 맞춰야 하며 개별 프로젝트 자원 URL은 입력하지 않습니다.
 3. **서버 저장 · 연결 검증**을 누릅니다. 등록 후 연결 검사와 프로젝트 탐색을 수행합니다. **기존 서버 프로필 재사용 → 서버 목록 조회**로 저장된 프로필을 선택할 수도 있습니다.
 4. **원본 프로젝트**를 선택합니다. Codebeamer는 실제 **Tracker**, Polarion은 **Work Item Type** 목록을 탐색합니다. Codebeamer의 Tracker 종류 이름과 실제 Tracker ID는 다릅니다.
 5. 전체 수집이면 **모든 Tracker 수집** 또는 **모든 Work Item Type 수집**을 유지합니다. 일부만 수집하려면 해제하고 표시된 목록에서 선택합니다.

@@ -341,3 +341,11 @@ def test_permit_lock_is_released_when_sqlite_commit_fails(setup,monkeypatch):
     monkeypatch.setattr(db,'transaction',failing_commit)
     with pytest.raises(RuntimeError,match='synthetic commit failure'):c._acquire(clock()+10)
     assert c._permits=={}
+
+
+def test_gzip_response_is_decoded_once(setup):
+    """SRS-053: a Content-Encoding: gzip reply must not be decoded a second time."""
+    import gzip
+    payload=gzip.compress(b'[{"id":1}]')
+    c=client(setup,lambda _:httpx.Response(200,headers={'Content-Encoding':'gzip'},content=payload))
+    assert c.get_json('/v3/projects')==[{'id':1}]

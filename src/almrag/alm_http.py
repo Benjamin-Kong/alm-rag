@@ -239,7 +239,9 @@ class ALMHttpClient:
                                 if len(body)+len(chunk)>limit:raise AlmError('RESPONSE_TOO_LARGE',False)
                                 body.extend(chunk)
                             self._check_deadline(deadline)
-                            response=httpx.Response(status,headers=source.headers,content=bytes(body),request=source.request)
+                            # iter_bytes() already decoded the body; keeping these headers would make httpx decode it again.
+                            headers=[(k,v) for k,v in source.headers.multi_items() if k.lower() not in {'content-encoding','content-length'}]
+                            response=httpx.Response(status,headers=headers,content=bytes(body),request=source.request)
                 # Empty bodies and slow response close paths also have a bound.
                 self._check_deadline(deadline)
             except httpx.HTTPError:
