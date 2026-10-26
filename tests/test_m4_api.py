@@ -9,6 +9,25 @@ class Search:
         self.calls.append((p,item,allowed_projects));return {'project_uid':p,'item_uid':item,'revision_uid':'revision','source_revision':'1','item':{'title':'Synthetic'},'content_blocks':[]}
 
 
+def test_search_source_metadata_contract_preserves_acl(env):
+    """SRS-014/020/024: compact API retains ALM identity only in authorized results."""
+    app,c,h,db,calls=env;p=project(env,register(env));fake=Search();app.state.search=fake
+    def search(payload,*,allowed_projects):
+        fake.calls.append((payload,allowed_projects))
+        return {'total':1,'results':[{'item_uid':'i','project_uid':p,'revision_uid':'r','title':'Title','source_item_id':'123','source_url':'https://alm.example.invalid/issue/123'}], 'exhausted':True,'backfill_limited':False,'rounds':1,'unindexed_project_uids':[]}
+    fake.search=search
+    _,key=app.state.security.create_key('search',[p],['search'],actor='admin')
+    c.cookies.clear();headers={'X-API-Key':key}
+    response=c.post('/api/v1/search',headers=headers,json={'query':'Title','project_uids':[p]})
+    assert response.status_code==200
+    hit=response.json()['results'][0]
+    assert hit['source_item_id']=='123' and hit['source_url']=='https://alm.example.invalid/issue/123'
+    count=len(fake.calls)
+    denied=c.post('/api/v1/search',headers=headers,json={'query':'Title','project_uids':['foreign']})
+    assert denied.status_code==403 and len(fake.calls)==count
+    assert 'alm.example.invalid' not in denied.text and 'source_item_id' not in denied.text
+
+
 def test_search_key_acl_checks_precede_service_and_type_validation(env):
     app,c,h,db,calls=env;p=project(env,register(env));fake=Search();app.state.search=fake
     _,reader=app.state.security.create_key('reader',[p],['project_read'],actor='admin')

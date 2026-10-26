@@ -4908,6 +4908,13 @@ components:
         title:
           type: string
           title: Title
+        source_item_id:
+          type: string
+          title: Source Item Id
+        source_url:
+          title: Source Url
+          nullable: true
+          type: string
         score:
           title: Score
           nullable: true
@@ -4943,6 +4950,7 @@ components:
       - project_uid
       - revision_uid
       - title
+      - source_item_id
       title: SearchHit
     ArtifactInfo:
       properties:

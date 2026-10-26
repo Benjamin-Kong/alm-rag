@@ -51,6 +51,26 @@ def test_explicit_scope_denial_happens_before_any_backend_or_model_call(setup):
         with pytest.raises(ValueError):SearchRequest(query='x',project_uids=invalid)
 
 
+@pytest.mark.parametrize('method,query', [('hybrid','word'),('hybrid','1'),('dense','word'),('keyword','word')])
+@pytest.mark.parametrize('kind,base,expected', [
+    ('codebeamer','https://source.invalid/cb/api','https://source.invalid/cb/issue/1'),
+    ('polarion','https://source.invalid/polarion/rest/v1','https://source.invalid/polarion/redirect/project/source-p/workitem?id=1'),
+])
+def test_search_returns_alm_identity_and_browser_link_without_full_item(setup,method,query,kind,base,expected):
+    """SRS-014/020: dense/keyword and exact-ID paths share source metadata."""
+    db,instance,p,_,_=setup
+    add_item(setup,description='word '*3000)
+    with db.transaction() as c:
+        c.execute('UPDATE instances SET source_type=?,base_url=? WHERE instance_uid=?',(kind,base,instance))
+        c.execute('UPDATE project_selections SET scope_kind=? WHERE project_uid=?',('TRACKER' if kind=='codebeamer' else 'WORK_ITEM_TYPE',p))
+    execute(setup);execute(setup,'EMBED');s,d=service(setup);publish(setup,d)
+    hit=s.search(SearchRequest(query=query,project_uids=[p]),allowed_projects=[p],method=method)['results'][0]
+    assert hit['source_item_id']=='1'
+    assert hit['source_url']==expected
+    assert 'item' not in hit
+    assert hit['matched_chunks']
+
+
 def test_hybrid_unique_items_compact_full_and_raw_source_restoration(setup):
     db,_,p,r,_=setup
     revision=add_item(setup,description='word '*3000,fields=[{'source_field_id':'private','raw_value':'complete not embedded'}])

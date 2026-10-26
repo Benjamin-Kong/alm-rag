@@ -1760,6 +1760,10 @@ export interface components {
             revision_uid: string;
             /** Title */
             title: string;
+            /** Source Item Id */
+            source_item_id: string;
+            /** Source Url */
+            source_url?: string | null;
             /** Score */
             score?: number | null;
             /** Item */

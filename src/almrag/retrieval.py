@@ -6,6 +6,7 @@ from almrag.lexical import LexicalIndex,LEXICAL_VERSION
 from almrag.search_filters import SearchFilters,matches
 from almrag.readers import ReaderRegistry
 from almrag.source_scope import allows_scope
+from almrag.source_links import item_browser_url
 
 from pydantic import BaseModel,ConfigDict,Field,model_validator
 
@@ -57,6 +58,8 @@ class SearchHit(BaseModel):
     project_uid:str
     revision_uid:str
     title:str
+    source_item_id:str
+    source_url:str|None=None
     score:float|None=None
     item:dict|None=None
     matched_chunks:list[MatchedChunk]|None=None
@@ -114,7 +117,7 @@ class SearchService:
     @staticmethod
     def _candidate(c,point,project,generation):
         row=c.execute("""SELECT p.point_uuid,p.source_hash,c.*,r.item_uid,r.raw_payload,r.source_revision,
-                i.project_uid,u.result_uid,u.dense_evidence,scope.scope_id
+                i.project_uid,i.source_item_id,u.result_uid,u.dense_evidence,scope.scope_id
             FROM index_points p JOIN chunks c USING(chunk_uid)
             JOIN item_revisions r ON r.revision_uid=c.revision_uid
             JOIN items i ON i.item_uid=r.item_uid
@@ -165,6 +168,9 @@ class SearchService:
     def _restore(self,c,row,ranked,options,allowed):
         envelope=self._raw(row)
         hit={'item_uid':row['item_uid'],'project_uid':row['project_uid'],'revision_uid':row['revision_uid'],'title':envelope.get('title','')}
+        source=c.execute('SELECT s.source_type,s.base_url,p.source_project_id FROM projects p JOIN instances s USING(instance_uid) WHERE p.project_uid=?',(row['project_uid'],)).fetchone()
+        hit['source_item_id']=row['source_item_id']
+        hit['source_url']=item_browser_url(source['source_type'],source['base_url'],source['source_project_id'],row['source_item_id'],envelope)
         if options.include_scores:hit['score']=max(score for _,score,_ in ranked)
         if options.include_full_item:hit['item']=envelope
         if options.include_matched_chunks:

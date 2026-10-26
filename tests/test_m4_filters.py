@@ -105,4 +105,5 @@ def test_exact_id_restores_metadata_only_publication_with_zero_chunks(setup):
     assert len(result['results'])==1
     hit=result['results'][0]
     assert hit['item']['title']=='Valid nonempty title' and hit['matched_chunks']==[]
+    assert hit['source_item_id']=='META-ID' and hit['source_url']=='https://source.invalid/issue/META-ID'
     assert search.item_detail(p,hit['item_uid'],allowed_projects=[p])['item']==hit['item']

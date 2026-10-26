@@ -7720,6 +7720,21 @@
             "type": "string",
             "title": "Title"
           },
+          "source_item_id": {
+            "type": "string",
+            "title": "Source Item Id"
+          },
+          "source_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Url"
+          },
           "score": {
             "anyOf": [
               {
@@ -7793,7 +7808,8 @@
           "item_uid",
           "project_uid",
           "revision_uid",
-          "title"
+          "title",
+          "source_item_id"
         ],
         "title": "SearchHit"
       },

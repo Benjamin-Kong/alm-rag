@@ -9,7 +9,7 @@ async function mock(page:Page,admin=false) {
     const value=path.endsWith('/healthz')?{status:'ok'}:path.endsWith('/auth/me')?{admin_session:admin,project_uids:['p'],permissions:admin?['system_admin','project_manage','project_read','search']:['project_read','search']}:
       path.endsWith('/projects')?[{project_uid:'p',alm_instance_uid:'s',source_project_id:'sp',name:'테스트 프로젝트'}]:
       path.endsWith('/jobs')&&req.method()==='GET'?[]:
-      path.endsWith('/search')?{total:1,results:[{item_uid:'i',project_uid:'p',revision_uid:'r',title:'<img src=x onerror=alert(1)>',item:{title:'<script>window.__xss=1</script>',description:{raw:'<img src=x onerror="window.__xss=1">'}},matched_chunks:[]}],exhausted:true,backfill_limited:false,rounds:1,unindexed_project_uids:[]}:
+      path.endsWith('/search')?{total:1,results:[{item_uid:'i',project_uid:'p',revision_uid:'r',title:'<img src=x onerror=alert(1)>',source_item_id:'123',source_url:'https://alm.invalid/cb/issue/123',item:{title:'<script>window.__xss=1</script>',description:{raw:'<img src=x onerror="window.__xss=1">'}},matched_chunks:[{chunk_uid:'c',revision_uid:'r',input_text:'일치 본문',source_span_offsets:[],row_ids:[]}]}],exhausted:true,backfill_limited:false,rounds:1,unindexed_project_uids:[]}:
       path.endsWith('/alm-instances')&&req.method()==='GET'?[]:
       path.endsWith('/backups')&&req.method()==='GET'?[]:[];
     await route.fulfill({status:200,json:value});
@@ -40,6 +40,14 @@ test('explicit project search escapes source HTML and forwards only checked scop
   await page.getByRole('checkbox',{name:'테스트 프로젝트',exact:true}).check();
   await page.getByRole('button',{name:'검색 실행',exact:true}).click();
   await expect(page.getByText('<img src=x onerror=alert(1)>',{exact:true})).toBeVisible();
+  await expect(page.getByText('ALM ID: 123',{exact:true}).first()).toBeVisible();
+  await page.getByText('일치 Chunk c',{exact:true}).click();
+  await expect(page.getByText('ALM ID: 123',{exact:true}).last()).toBeVisible();
+  const links=page.getByRole('link',{name:'ALM 원문 열기',exact:true});
+  await expect(links).toHaveCount(2);
+  await expect(links.last()).toHaveAttribute('href','https://alm.invalid/cb/issue/123');
+  await expect(links.last()).toHaveAttribute('target','_blank');
+  await expect(links.last()).toHaveAttribute('rel','noopener noreferrer');
   await expect(page.locator('main img')).toHaveCount(0);
   expect(await page.evaluate(()=>Boolean((window as any).__xss))).toBe(false);
   expect(calls.find(c=>c.path.endsWith('/search'))?.body.project_uids).toEqual(['p']);
@@ -55,9 +63,10 @@ test('forbidden response renders sanitized error without server content',async({
 
 for(const kind of ['codebeamer','polarion'] as const) {
  test(`${kind} wizard discovers product scopes and pins preflight before SYNC`,async({page})=>{
-  await mock(page,true);const posts:{path:string,body:any}[]=[];
+  await mock(page,true);const posts:{path:string,body:any}[]=[];const fieldRequests:string[]=[];
   await page.route('**/api/v1/alm-instances**',async route=>{
     const req=route.request(),path=new URL(req.url()).pathname;let body:any={};try{body=req.postDataJSON();}catch{}
+    if(path.endsWith('/fields'))fieldRequests.push(req.url());
     if(req.method()!=='GET')posts.push({path,body});
     const value=path.endsWith('/probe')?{status:'OK'}:path.endsWith('/scopes')?[{id:'t',name:'Requirements',kind:kind==='codebeamer'?'TRACKER':'WORK_ITEM_TYPE'}]:path.endsWith('/fields')?[{id:'cf',name:'Custom'}]:path.endsWith('/projects')?[{id:'source-p',name:'Source Project',url:'https://source.invalid/p'}]:path.endsWith('/rate-policy')?body:{instance_uid:'s',source_type:kind,display_name:'Server',base_url:'https://source.invalid',api_profile:kind==='codebeamer'?'cb-rest-v3':'polarion-rest-v1',auth_configured:true};
     await route.fulfill({status:path.endsWith('/alm-instances')?201:200,json:value});
@@ -79,7 +88,11 @@ for(const kind of ['codebeamer','polarion'] as const) {
   const label=kind==='codebeamer'?'Tracker':'Work Item Type';
   await page.getByRole('checkbox',{name:`모든 ${label} 수집`,exact:true}).uncheck();
   await page.getByRole('checkbox',{name:'Requirements (t)',exact:true}).check();
+  expect(fieldRequests).toEqual([]);
+  await page.getByRole('button',{name:`선택한 ${label}의 필드 불러오기`,exact:true}).click();
   await page.getByRole('checkbox',{name:'Custom · 원본 cf',exact:true}).check();
+  expect(fieldRequests).toHaveLength(1);
+  expect(new URL(fieldRequests[0]).searchParams.getAll('scope_ids')).toEqual(['t']);
   await page.getByRole('button',{name:'프로젝트 · 정책 저장',exact:true}).click();
   await expect(page.getByRole('button',{name:'검증된 프로젝트 동기화',exact:true})).toBeDisabled();
   await page.getByRole('button',{name:'사전 검증 실행',exact:true}).click();

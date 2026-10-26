@@ -5,6 +5,17 @@ import { ApiClient } from './client';
 import { SafeHtml, SearchExplorer } from './SearchExplorer';
 import type { ConsoleContext } from './App';
 afterEach(cleanup);
+test.each(['https://alm.invalid/issue/123','javascript:alert(1)',null])('SRS-014/020: chunks display ALM ID and safe link (%s)',async(sourceUrl)=>{
+ const hit={item_uid:'i',project_uid:'p',revision_uid:'r',title:'검색 결과',source_item_id:'123',source_url:sourceUrl,matched_chunks:[{chunk_uid:'c',revision_uid:'r',input_text:'일치 내용',source_span_offsets:[],row_ids:[]}]};
+ const fetcher=vi.fn(async()=>({ok:true,status:200,json:async()=>({total:1,results:[hit],unindexed_project_uids:[]})}) as Response);
+ const ctx:ConsoleContext={client:new ApiClient({},fetcher as typeof fetch),principal:{admin_session:true,permissions:[],project_uids:[]},projects:[{project_uid:'p',alm_instance_uid:'s',source_project_id:'sp',name:'프로젝트'}],refresh:async()=>{}};
+ render(<SearchExplorer ctx={ctx}/>);
+ fireEvent.change(screen.getByLabelText('검색어'),{target:{value:'test'}});fireEvent.click(screen.getByRole('checkbox',{name:'프로젝트'}));fireEvent.click(screen.getByRole('button',{name:'검색 실행'}));
+ await screen.findByRole('button',{name:'검색 결과'});
+ expect(screen.getAllByText('ALM ID: 123')).toHaveLength(2);
+ if(sourceUrl?.startsWith('https:')){const links=screen.getAllByRole('link',{name:'ALM 원문 열기'});expect(links).toHaveLength(2);for(const link of links){expect(link.getAttribute('href')).toBe(sourceUrl);expect(link.getAttribute('rel')).toContain('noreferrer');}}
+ else {expect(screen.queryByRole('link',{name:'ALM 원문 열기'})).toBeNull();expect(screen.getAllByText('원문 링크 없음')).toHaveLength(2);}
+});
 test('structural preview retains tables but removes active content and every source URL/attribute',()=>{
  const {container}=render(<SafeHtml html={'<table onclick="evil()"><tr><td colspan="2">원본 셀</td></tr></table><img src="https://secret.invalid" onerror="evil()"><script>private-secret</script><svg><a href="javascript:evil()">bad</a></svg><a href="https://secret.invalid">링크 내용</a>'}/>);
  expect(screen.getByText('원본 셀')).toBeTruthy();expect(container.querySelector('table')).toBeTruthy();
