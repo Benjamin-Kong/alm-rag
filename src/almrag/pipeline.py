@@ -18,6 +18,7 @@ from almrag.storage import canonical_uid
 class PipelineError(ProcessingError):pass
 
 
+RECENT_PREFLIGHT_SECONDS=900
 STAGES=('COLLECT','PROCESS','EMBED','INDEX')
 RECOVERABLE=frozenset(('MODEL_SERVER_PAUSED','VECTOR_SERVER_PAUSED','VECTOR_TRANSPORT_ERROR',
     'MODEL_TRANSPORT_ERROR','VECTOR_DEADLINE_EXCEEDED','HTTP_429','HTTP_503','ABORTED',
@@ -32,7 +33,7 @@ def _code(error):
 class PipelineService:
     def __init__(self,db,collection,processing,indexing,*,fault_hook=lambda event:None):
         self.db,self.collection,self.processing,self.indexing=db,collection,processing,indexing
-        self.queue=Queue(db);self.fault_hook=fault_hook
+        self.queue=Queue(db);self.fault_hook=fault_hook;self._recent={}
 
     @staticmethod
     def _signature(snapshot):return fingerprint({k:v for k,v in snapshot.items() if k!='refs'})
@@ -44,8 +45,14 @@ class PipelineService:
         with self.db.transaction() as c:self._guard(c,job)
         if abort_check():raise PipelineError('ABORT_REQUESTED',stop_state='CANCELLED')
 
-    def _prepare(self,project_uid):
-        pre,collection=self.collection._preflight(project_uid)
+    def _prepare(self,project_uid,reuse=False):
+        # Enumerating every Tracker is throttled and slow, so the sync that follows a preflight
+        # reuses its ALM catalog snapshot; local processing state is always recomputed.
+        recent=self._recent.get(project_uid)
+        if reuse and recent and time.monotonic()-recent[0]<RECENT_PREFLIGHT_SECONDS:pre,collection=recent[1],recent[2]
+        else:
+            pre,collection=self.collection._preflight(project_uid)
+            self._recent[project_uid]=(time.monotonic(),pre,collection)
         _,processing=self.processing._prepare(project_uid)
         snapshot={'project_uid':project_uid,'collection':collection,'processing':processing}
         return {'status':'READY','sync_ready':True,'config_revision':fingerprint(snapshot),
@@ -58,7 +65,8 @@ class PipelineService:
 
     def enqueue(self,project_uid,stage='SYNC',config_revision=None):
         if stage!='SYNC':raise PipelineError('STAGE_NOT_IMPLEMENTED')
-        pre,snapshot=self._prepare(project_uid)
+        pre,snapshot=self._prepare(project_uid,reuse=config_revision is not None)
+        self._recent.pop(project_uid,None)
         if config_revision is not None and pre['config_revision']!=config_revision:raise PipelineError('STALE_PREFLIGHT')
         job_id=str(uuid.uuid4());now=time.time()
         with self.db.transaction() as c:

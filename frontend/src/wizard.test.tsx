@@ -22,3 +22,24 @@ test.each(['project','product'])('clears source fields on %s switch before savin
  fireEvent.click(screen.getByRole('button',{name:'프로젝트 · 정책 저장'}));await waitFor(()=>expect(requests.some(r=>r.url.endsWith('/processing-config'))).toBe(true));
  expect(requests.find(r=>r.url.endsWith('/processing-config'))!.body.fields).toEqual([{kind:'NORMALIZED',key:'title'},{kind:'NORMALIZED',key:'description'}]);
 });
+
+test('source profile table updates and deletes entries',async()=>{
+ const source={instance_uid:'s',source_type:'codebeamer',display_name:'Server',base_url:'https://fixture.invalid',api_profile:'cb-rest-v3',auth_configured:true,auth_method:'bearer',auth_ref:'env:TOKEN',ca_bundle_ref:null,username:null};
+ const calls:{method?:string;url:string;body?:Record<string,unknown>}[]=[];
+ const fetcher=vi.fn(async(path:RequestInfo|URL,init?:RequestInit)=>{
+  const url=String(path);calls.push({method:init?.method,url,body:init?.body?JSON.parse(String(init.body)):undefined});
+  if(init?.method==='DELETE')return {ok:true,status:204,json:async()=>undefined} as Response;
+  const data=init?.method==='PUT'?{...source,...JSON.parse(String(init.body)),ca_bundle_ref:null,username:null}:[source];
+  return {ok:true,status:200,json:async()=>data} as Response;
+ });
+ vi.spyOn(window,'confirm').mockReturnValue(true);
+ const ctx:ConsoleContext={client:new ApiClient({},fetcher as typeof fetch),principal:{admin_session:true,permissions:[],project_uids:[]},projects:[],refresh:async()=>{}};
+ render(<Wizard ctx={ctx}/>);
+ fireEvent.click(screen.getByText('기존 서버 프로필 재사용'));fireEvent.click(screen.getByRole('button',{name:'서버 목록 조회'}));
+ fireEvent.change(await screen.findByLabelText('Server 표시명'),{target:{value:'Renamed'}});
+ fireEvent.click(screen.getByRole('button',{name:'Server 수정'}));
+ await waitFor(()=>expect(calls.find(c=>c.method==='PUT')?.body).toMatchObject({source_type:'codebeamer',display_name:'Renamed',auth_ref:'env:TOKEN'}));
+ fireEvent.click(await screen.findByRole('button',{name:'Renamed 삭제'}));
+ await waitFor(()=>expect(calls.some(c=>c.method==='DELETE'&&c.url.endsWith('/alm-instances/s'))).toBe(true));
+ await waitFor(()=>expect(screen.queryByLabelText('Renamed 표시명')).toBeNull());
+});

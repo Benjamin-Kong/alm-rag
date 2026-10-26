@@ -64,6 +64,28 @@ class Connections:
         profile=self.profile(uid)
         return {'instance_uid':uid,'source_type':profile.source_type,'display_name':profile.display_name,'base_url':profile.base_url,'api_profile':profile.api_profile,'auth_configured':True}
 
+    def detail(self,uid):
+        profile=self.profile(uid)
+        return {**self.info(uid),'auth_method':profile.auth_method,'auth_ref':profile.auth_ref,'ca_bundle_ref':profile.ca_bundle_ref,'username':getattr(profile,'username',None)}
+
+    def update(self,uid,profile):
+        existing=self.profile(uid)
+        if profile.source_type!=existing.source_type:raise AlmError('SOURCE_TYPE_IMMUTABLE',False,status=409)
+        profile.http_policy=existing.http_policy
+        with self.db.transaction() as c:
+            clash=c.execute('SELECT 1 FROM instances WHERE source_type=? AND base_url=? AND instance_uid<>?',(profile.source_type,profile.base_url,uid)).fetchone()
+            if clash:raise AlmError('INSTANCE_EXISTS',False,status=409)
+            c.execute('UPDATE instances SET base_url=?,display_name=?,auth_ref=? WHERE instance_uid=?',(profile.base_url,profile.display_name,profile.auth_ref,uid))
+            c.execute('UPDATE connection_profiles SET config=?,verified_at=NULL WHERE instance_uid=?',(profile.model_dump_json(),uid))
+        return self.detail(uid)
+
+    def delete(self,uid):
+        self.profile(uid)
+        with self.db.transaction() as c:
+            if c.execute('SELECT 1 FROM projects WHERE instance_uid=?',(uid,)).fetchone():raise AlmError('INSTANCE_IN_USE',False,status=409)
+            for table in ('rate_limit_policies','processing_instance_policies','field_definitions','connection_profiles','instances'):
+                c.execute(f'DELETE FROM {table} WHERE instance_uid=?',(uid,))
+
     def profile(self,uid):
         with self.db.connect() as c:row=c.execute('SELECT config FROM connection_profiles WHERE instance_uid=?',(uid,)).fetchone()
         if row is None:raise AlmError('INSTANCE_NOT_FOUND',False,status=404)

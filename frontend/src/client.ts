@@ -33,7 +33,11 @@ export class ApiClient {
   }
 
   me() { return this.request<Schema['PrincipalInfo']>('GET', '/auth/me'); }
-  sources() { return this.request<Schema['InstanceInfo'][]>('GET', '/alm-instances'); }
+  sources() { return this.request<Schema['InstanceDetail'][]>('GET', '/alm-instances'); }
+  updateSource(source: string, input: Schema['CodebeamerProfile'] | Schema['PolarionProfile']) {
+    return this.request<Schema['InstanceDetail']>('PUT', '/alm-instances/' + encodeURIComponent(source), input);
+  }
+  deleteSource(source: string) { return this.request<void>('DELETE', '/alm-instances/' + encodeURIComponent(source)); }
   items(project: string) { return this.request<Schema['ItemMetadata'][]>('GET', '/projects/' + encodeURIComponent(project) + '/items'); }
   revisions(item: string) { return this.request<Schema['RevisionInfo'][]>('GET', '/items/' + encodeURIComponent(item) + '/revisions'); }
   chunks(item: string) { return this.request<Schema['ChunkInfo'][]>('GET', '/items/' + encodeURIComponent(item) + '/chunks'); }

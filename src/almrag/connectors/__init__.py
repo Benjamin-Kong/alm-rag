@@ -8,6 +8,7 @@ from __future__ import annotations
 from copy import deepcopy
 from contextlib import contextmanager
 import json
+import time
 from typing import Any, Iterator
 from urllib.parse import parse_qs, quote, urlsplit
 
@@ -18,6 +19,7 @@ PAGE_SIZE = 100
 MAX_PAGES = 10000
 MAX_ATTACHMENT_BYTES = 100 * 1024 * 1024
 MAX_RENDER_BYTES = 16 * 1024 * 1024
+CATALOG_MEMO_SECONDS = 300
 
 
 class ConnectorError(Exception):
@@ -117,6 +119,15 @@ class _Connector:
     def __init__(self, client, renderer_verified: bool = False):
         self.client = client
         self.renderer_verified = renderer_verified
+        self._catalog_memo = {}
+
+    def _memo(self, key, fetch):
+        # One operation (probe/preflight/discovery) otherwise re-lists the same catalog
+        # several times; with many trackers that is thousands of throttled requests.
+        hit = self._catalog_memo.get(key)
+        if hit is None or time.monotonic() - hit[0] >= CATALOG_MEMO_SECONDS:
+            hit = self._catalog_memo[key] = (time.monotonic(), fetch())
+        return deepcopy(hit[1])
 
     def _call(self, action, *args, **kwargs):
         try:
@@ -233,11 +244,17 @@ class CodebeamerConnector(_Connector):
                 "server_compatibility": "NOT_VERIFIED"}
 
     def list_projects(self) -> list[dict]:
+        return self._memo(("projects",), self._fetch_projects)
+
+    def _fetch_projects(self) -> list[dict]:
         return [{"id": _id(p.get("id")), "name": p.get("name", str(p.get("id"))),
                  "url": p.get("url") or self._url(f"/v3/projects/{_segment(p.get('id'))}")}
                 for p in self._pages("/v3/projects", ("projects", "references", "items"))]
 
     def list_scopes(self, project_id) -> list[dict]:
+        return self._memo(("scopes", str(project_id)), lambda: self._fetch_scopes(project_id))
+
+    def _fetch_scopes(self, project_id) -> list[dict]:
         path = f"/v3/projects/{_segment(project_id)}/trackers"
         return [{"id": _id(s.get("id")), "name": s.get("name", str(s.get("id"))), "kind": "TRACKER"}
                 for s in self._pages(path, ("trackers", "references", "items"))]
@@ -375,6 +392,9 @@ class PolarionConnector(_Connector):
                 "processed_html": "UNSUPPORTED", "server_compatibility": "NOT_VERIFIED"}
 
     def list_projects(self) -> list[dict]:
+        return self._memo(("projects",), self._fetch_projects)
+
+    def _fetch_projects(self) -> list[dict]:
         projects = []
         for project in self._pages("/projects", {"fields[projects]": "@all"}):
             pid = _id(project.get("id"))
@@ -384,6 +404,9 @@ class PolarionConnector(_Connector):
         return projects
 
     def list_scopes(self, project_id) -> list[dict]:
+        return self._memo(("scopes", str(project_id)), lambda: self._fetch_scopes(project_id))
+
+    def _fetch_scopes(self, project_id) -> list[dict]:
         payload = _dict(self._get(f"/projects/{_segment(project_id)}/enumerations/~/workitem-type/~"))
         options = _list(_dict(_dict(payload.get("data")).get("attributes")).get("options"))
         return [{"id": _id(o.get("id")), "name": o.get("name", str(o.get("id"))), "kind": "WORK_ITEM_TYPE"} for o in options]

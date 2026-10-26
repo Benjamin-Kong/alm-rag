@@ -91,7 +91,7 @@ class RecoveryInfo(BaseModel):
     auth_state:Literal['REREGISTRATION_REQUIRED']
 
 
-def register_admin_routes(app,db,settings,auth,connections,require,project_exists,ApiFailure,InstanceInfo,JobInfo):
+def register_admin_routes(app,db,settings,auth,connections,require,project_exists,ApiFailure,InstanceDetail,JobInfo):
     def getops():
         if app.state.operations is None:
             from almrag.operations import OperationsService
@@ -136,11 +136,11 @@ def register_admin_routes(app,db,settings,auth,connections,require,project_exist
         p=request.state.principal
         return dict(admin_session=p['admin_session'],project_uids=[] if p['admin_session'] else p['project_uids'],permissions=['system_admin','project_read','project_manage','search'] if p['admin_session'] else p['permissions'])
 
-    @app.get('/api/v1/alm-instances',response_model=list[InstanceInfo],operation_id='listAlmInstances',openapi_extra={'x-required-scope':'system_admin','x-session-only':True,'x-milestone':'M5'})
+    @app.get('/api/v1/alm-instances',response_model=list[InstanceDetail],operation_id='listAlmInstances',openapi_extra={'x-required-scope':'system_admin','x-session-only':True,'x-milestone':'M5'})
     def instances(request:Request,limit:int=Query(100,ge=1,le=1000),offset:int=Query(0,ge=0)):
         require(request,'system_admin',session_only=True)
         with db.connect() as c:uids=[r[0] for r in c.execute('SELECT instance_uid FROM connection_profiles ORDER BY instance_uid LIMIT ? OFFSET ?',(limit,offset))]
-        return [connections.info(uid) for uid in uids]
+        return [connections.detail(uid) for uid in uids]
 
     @app.get('/api/v1/projects/{project_uid}/items',response_model=list[ItemMetadata],operation_id='listProjectItems',openapi_extra={'x-required-scope':'project_read','x-milestone':'M5'})
     def items(project_uid:str,request:Request,limit:int=Query(100,ge=1,le=1000),offset:int=Query(0,ge=0)):

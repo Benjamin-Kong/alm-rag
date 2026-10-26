@@ -164,3 +164,24 @@ def test_fields_discovery_requests_only_selected_trackers(tmp_path):
         assert r.status_code==200 and [f['scope_id'] for f in r.json()]==['31']
         assert '/v3/trackers/32/fields' not in paths
         assert c.get(base,params={'scope_ids':['999']}).status_code==422
+
+
+def test_instance_profile_list_update_delete(env):
+    _,client,headers,db,_=env
+    uid=register(env)
+    listed=client.get('/api/v1/alm-instances',headers=headers).json()
+    assert listed[0]['auth_ref']==PROFILE['auth_ref'] and listed[0]['auth_method']=='bearer'
+    updated=client.put(f'/api/v1/alm-instances/{uid}',headers=headers,json={**PROFILE,'display_name':'Renamed','ca_bundle_ref':'env:SYNTHETIC_CA'})
+    assert updated.status_code==200,updated.text
+    assert updated.json()['display_name']=='Renamed' and updated.json()['ca_bundle_ref']=='env:SYNTHETIC_CA'
+    assert client.put(f'/api/v1/alm-instances/{uid}',headers=headers,json={**PROFILE,'source_type':'polarion','api_profile':'polarion-rest-v1'}).status_code==409
+    assert client.put('/api/v1/alm-instances/missing',headers=headers,json=PROFILE).status_code==404
+    assert client.put(f'/api/v1/alm-instances/{uid}',json=PROFILE).status_code==403
+    assert client.delete(f'/api/v1/alm-instances/{uid}').status_code==403
+    assert client.put(f'/api/v1/alm-instances/{uid}',headers=headers,json=PROFILE).json()['ca_bundle_ref'] is None
+    project(env,uid)
+    assert client.delete(f'/api/v1/alm-instances/{uid}',headers=headers).status_code==409
+    other=client.post('/api/v1/alm-instances',json={**PROFILE,'base_url':'https://other.example.invalid'},headers=headers).json()['instance_uid']
+    assert client.put(f'/api/v1/alm-instances/{other}',headers=headers,json=PROFILE).status_code==409
+    assert client.delete(f'/api/v1/alm-instances/{other}',headers=headers).status_code==204
+    assert [i['instance_uid'] for i in client.get('/api/v1/alm-instances',headers=headers).json()]==[uid]

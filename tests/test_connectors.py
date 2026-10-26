@@ -337,3 +337,14 @@ def test_srs_055_lease_lost_propagates_through_connector():
 @pytest.mark.parametrize("cls", [CodebeamerConnector, PolarionConnector])
 def test_srs_004_normalized_fields_are_explicit_and_not_source_catalog_ids(cls):
     assert cls(FakeClient({})).normalized_fields == ("title", "description")
+
+
+def test_catalog_listing_is_requested_once_for_many_trackers():
+    client = FakeClient({"/v3/projects": [{"id": 1}], "/v3/projects/1/trackers": [{"id": n} for n in range(1, 4)],
+                         **{f"/v3/trackers/{n}/fields": [{"id": 3}] for n in range(1, 4)},
+                         **{f"/v3/trackers/{n}/items": {"page": 1, "total": 0, "pageSize": 100, "itemRefs": []} for n in range(1, 4)}})
+    c = CodebeamerConnector(client)
+    c.probe(); c.list_projects(); c.list_scopes("1")
+    c.list_fields("1", ["1", "2", "3"]); list(c.iter_refs("1", ["1", "2", "3"]))
+    paths = [call[1] for call in client.calls]
+    assert paths.count("/v3/projects") == 1 and paths.count("/v3/projects/1/trackers") == 1

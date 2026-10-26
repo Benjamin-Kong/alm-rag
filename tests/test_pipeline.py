@@ -190,3 +190,14 @@ def test_retry_can_find_failure_beyond_first_page(setup,monkeypatch):
     filler=dict(failure,item_uid='different',source_item_id='different')
     monkeypatch.setattr(s,'list_failures',lambda job_id,limit=100,offset=0:[filler]*1000 if offset==0 else [failure])
     assert s.retry(job['job_id'],failure['item_uid'])['stage']=='REPLAY'
+
+
+def test_sync_reuses_fresh_preflight_catalog_instead_of_relisting_source(setup):
+    db,a,p,r,s,index=setup
+    seen=[]
+    original=s.collection._preflight
+    s.collection._preflight=lambda uid:(seen.append(uid),original(uid))[1]
+    pre=s.preflight(p);s.enqueue(p,config_revision=pre['config_revision'])
+    assert seen==[p]
+    s.enqueue(p)
+    assert seen==[p,p]

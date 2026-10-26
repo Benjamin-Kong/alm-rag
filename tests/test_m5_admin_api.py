@@ -9,7 +9,7 @@ def test_effective_principal_and_profiles_do_not_expose_credentials(env):
     assert response.json()['admin_session'] is True and 'csrf_hash' not in response.text
     response=c.get('/api/v1/alm-instances',headers=h)
     assert response.status_code==200 and len(response.json())==1
-    assert 'auth_ref' not in response.text and 'fixture-token' not in response.text
+    assert response.json()[0]['auth_ref'].startswith(('env:','vault:')) and 'fixture-token' not in response.text and 'synthetic-secret' not in response.text
     _,key=app.state.security.create_key('reader',[p],['project_read'],actor='admin');c.cookies.clear();headers={'X-API-Key':key}
     response=c.get('/api/v1/auth/me',headers=headers)
     assert response.status_code==200 and response.json()=={'admin_session':False,'project_uids':[p],'permissions':['project_read']}

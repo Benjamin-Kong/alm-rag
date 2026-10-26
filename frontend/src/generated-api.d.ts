@@ -346,6 +346,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/alm-instances/{instance_uid}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Instance */
+        put: operations["updateAlmInstance"];
+        post?: never;
+        /** Delete Instance */
+        delete: operations["deleteAlmInstance"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/alm-instances/{instance_uid}/probe": {
         parameters: {
             query?: never;
@@ -1244,6 +1262,35 @@ export interface components {
             /** Diagnostics */
             diagnostics: string[];
         };
+        /** InstanceDetail */
+        InstanceDetail: {
+            /** Instance Uid */
+            instance_uid: string;
+            /**
+             * Source Type
+             * @enum {string}
+             */
+            source_type: "codebeamer" | "polarion";
+            /** Display Name */
+            display_name: string;
+            /** Base Url */
+            base_url: string;
+            /** Api Profile */
+            api_profile: string;
+            /** Auth Configured */
+            auth_configured: boolean;
+            /**
+             * Auth Method
+             * @enum {string}
+             */
+            auth_method: "bearer" | "basic";
+            /** Auth Ref */
+            auth_ref: string;
+            /** Ca Bundle Ref */
+            ca_bundle_ref?: string | null;
+            /** Username */
+            username?: string | null;
+        };
         /** InstanceInfo */
         InstanceInfo: {
             /** Instance Uid */
@@ -1943,7 +1990,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InstanceInfo"][];
+                    "application/json": components["schemas"]["InstanceDetail"][];
                 };
             };
             /** @description Sanitized error */
@@ -3337,6 +3384,142 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["QualityReport"];
                 };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    updateAlmInstance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                instance_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CodebeamerProfile"] | components["schemas"]["PolarionProfile"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstanceDetail"];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    deleteAlmInstance: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                instance_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description Sanitized error */
             401: {

@@ -106,6 +106,13 @@ class InstanceInfo(BaseModel):
     auth_configured: bool
 
 
+class InstanceDetail(InstanceInfo):
+    auth_method: Literal['bearer','basic']
+    auth_ref: str
+    ca_bundle_ref: str | None = None
+    username: str | None = None
+
+
 class SourceProject(BaseModel):
     id: str
     name: str
@@ -275,7 +282,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
     async def source_failure(request,exc):
         code=exc.code
         if code in {'INSTANCE_NOT_FOUND','PROJECT_NOT_CONFIGURED'}:status=404
-        elif code in {'STALE_PREFLIGHT'}:status=409
+        elif code in {'STALE_PREFLIGHT','SOURCE_TYPE_IMMUTABLE','INSTANCE_EXISTS','INSTANCE_IN_USE'}:status=409
         elif code in {'INVALID_SCOPE','INVALID_SCOPE_KIND','INVALID_SCOPE_SELECTION','EMPTY_SCOPE','INVALID_FIELDS','PROJECT_NOT_DISCOVERED','SCOPE_NOT_DISCOVERED'}:status=422
         else:status=503
         return error(request,status,code)
@@ -339,7 +346,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
                 raise ApiFailure(404,'NOT_FOUND')
 
     from almrag.admin_api import register_admin_routes
-    register_admin_routes(app,db,settings,auth,connections,require,project_exists,ApiFailure,InstanceInfo,JobInfo)
+    register_admin_routes(app,db,settings,auth,connections,require,project_exists,ApiFailure,InstanceDetail,JobInfo)
     from almrag.quality_api import register_quality_routes
     register_quality_routes(app,db,settings,require,project_exists,ApiFailure,JobInfo)
 
@@ -347,6 +354,20 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
     def register_instance(payload:SourceProfileCreate,request:Request):
         require(request,'system_admin',session_only=True)
         return connections.register(payload)
+
+    @app.put('/api/v1/alm-instances/{instance_uid}',response_model=InstanceDetail,operation_id='updateAlmInstance',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def update_instance(instance_uid:str,payload:SourceProfileCreate,request:Request):
+        principal=require(request,'system_admin',session_only=True)
+        result=connections.update(instance_uid,payload)
+        app.state.security.audit(action='alm_instance_update',outcome='ok',actor_ref=digest('admin:'+principal['username']),project_uid=None,trace_id=request.state.trace_id)
+        return result
+
+    @app.delete('/api/v1/alm-instances/{instance_uid}',status_code=204,operation_id='deleteAlmInstance',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def delete_instance(instance_uid:str,request:Request):
+        principal=require(request,'system_admin',session_only=True)
+        connections.delete(instance_uid)
+        app.state.security.audit(action='alm_instance_delete',outcome='ok',actor_ref=digest('admin:'+principal['username']),project_uid=None,trace_id=request.state.trace_id)
+        return Response(status_code=204)
 
     @app.post('/api/v1/alm-instances/{instance_uid}/probe',response_model=dict,operation_id='probeAlmInstance',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
     def probe_instance(instance_uid:str,request:Request):
