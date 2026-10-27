@@ -20,6 +20,9 @@ class IndexError(ProcessingError):
     pass
 
 
+VECTOR_BATCH_SIZE=256
+
+
 def collection_name_for(generation_uid):
     return 'almrag_' + uuid.UUID(generation_uid).hex
 
@@ -158,7 +161,9 @@ class IndexService:
         result,points=self._points(snapshot,ref)
         collection=collection_name_for(snapshot['generation_uid'])
         dense=self._dense(points)
-        if dense:self.vector_store.upsert(collection,dense)
+        for start in range(0,len(dense),VECTOR_BATCH_SIZE):
+            self._live(job,abort_check)
+            self.vector_store.upsert(collection,dense[start:start+VECTOR_BATCH_SIZE])
         self._live(job,abort_check);self.fault_hook('after_dense')
         self._verify_dense(collection,points)
         self._live(job,abort_check)
@@ -176,7 +181,10 @@ class IndexService:
         return {'ref':ref,'result_uid':result,'points':points,'lexical_digest':fingerprint(documents)}
 
     def _verify_dense(self,collection,points):
-        found=self.vector_store.retrieve(collection,[p['id'] for p in points]) if points else []
+        # Items can have more chunks than the store accepts per call; the item is still published atomically afterwards.
+        found=[]
+        for start in range(0,len(points),VECTOR_BATCH_SIZE):
+            found.extend(self.vector_store.retrieve(collection,[p['id'] for p in points[start:start+VECTOR_BATCH_SIZE]]))
         if len(found)!=len(points) or {p.get('id') for p in found}!={p['id'] for p in points}:raise IndexError('DENSE_COVERAGE_MISMATCH')
         expected={p['id']:p for p in points}
         for row in found:

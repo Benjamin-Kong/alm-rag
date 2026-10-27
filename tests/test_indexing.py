@@ -52,6 +52,21 @@ def test_index_idempotent_exact_coverage_and_normalized_vectors(setup):
     vectors=list(store.collections.values())[0]
     assert all(abs(sum(v*v for v in x['vector'])-1)<1e-6 for x in vectors.values())
 
+def test_item_with_more_chunks_than_store_batch_limit_is_indexed_in_batches(setup,monkeypatch):
+    import almrag.indexing as indexing
+    monkeypatch.setattr(indexing,'VECTOR_BATCH_SIZE',1)
+    db,_,p,r,s=setup;revision=add_item(setup);ready(setup)
+    class Capped(MemoryVector):
+        def upsert(self,name,points):
+            assert len(points)<=1;super().upsert(name,points)
+        def retrieve(self,name,ids):
+            assert len(ids)<=1;return super().retrieve(name,ids)
+    store=Capped();index=IndexService(db,s,store)
+    assert run(setup,index)[0]=='SUCCEEDED'
+    with db.connect() as c:count=c.execute('SELECT count(*) FROM chunks').fetchone()[0]
+    assert count>1 and sum(1 for call in store.calls if call[0]=='upsert')==count
+    assert set(active(setup)[1].values())=={revision}
+
 def test_unready_item_failure_keeps_old_and_continues_sibling(setup):
     db,_,p,r,s=setup;old=add_item(setup);ready(setup);index=IndexService(db,s,MemoryVector());assert run(setup,index)[0]=='SUCCEEDED'
     new=add_item(setup,revision='2');other=add_item(setup,'2');ready(setup)
