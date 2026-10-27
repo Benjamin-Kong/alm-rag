@@ -313,6 +313,12 @@ class PipelineService:
             if len(page)<1000:return result
             offset+=len(page)
 
+    def pause(self,job_id):
+        job=self.queue.request_pause(job_id)
+        if job is None:raise PipelineError('JOB_NOT_FOUND')
+        if job.pop('rejected',False):raise PipelineError('PAUSE_STATE_INVALID')
+        return job
+
     def resume(self,job_id):
         job=self.queue.get_job(job_id)
         if job is None:raise PipelineError('JOB_NOT_FOUND')

@@ -606,6 +606,13 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         operator_audit(request,principal,project_uid,job_id,'job_resume')
         return result
 
+    @app.post('/api/v1/jobs/{job_id}/pause',status_code=202,response_model=JobInfo,operation_id='pauseJob',openapi_extra={'x-required-scope':'project_manage'})
+    def pause_job(job_id:str,request:Request):
+        principal,project_uid=owned_job(job_id,request,'project_manage')
+        result=app.state.pipeline.pause(job_id)
+        operator_audit(request,principal,project_uid,job_id,'job_pause')
+        return result
+
     @app.get('/api/v1/jobs/{job_id}/events',response_model=list[JobEvent],operation_id='listJobEvents',openapi_extra={'x-required-scope':'project_read'})
     def job_events(job_id:str,request:Request,limit:int=100,offset:int=0):
         job(job_id,request)
@@ -656,7 +663,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
                 if 'processing-' in path:
                     op['x-implementation-status']='M3_IMPLEMENTED'
                     codes += [409]
-                if any(part in path for part in ('index-preflight','pipeline-preflight','failed-items','/resume')):
+                if any(part in path for part in ('index-preflight','pipeline-preflight','failed-items','/resume','/pause')):
                     op['x-implementation-status']='M4_IMPLEMENTED'
                     codes += [409]
                 if path=='/api/v1/search' or path.startswith('/api/v1/items/'):

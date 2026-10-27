@@ -145,6 +145,9 @@ export class ApiClient {
   retryFailedItems(job: string, input: Schema['RetryItemRequest'] = {}) {
     return this.request<Schema['JobInfo'][]>('POST', '/jobs/' + encodeURIComponent(job) + '/failed-items/retry', input);
   }
+  pauseJob(job: string) {
+    return this.request<Schema['JobInfo']>('POST', '/jobs/' + encodeURIComponent(job) + '/pause');
+  }
   resumeJob(job: string) {
     return this.request<Schema['JobInfo']>('POST', '/jobs/' + encodeURIComponent(job) + '/resume');
   }

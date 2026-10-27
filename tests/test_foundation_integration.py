@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import subprocess
+import time
 import sys
 
 import pytest
@@ -85,3 +86,23 @@ def test_native_cli_and_separate_worker(tmp_path):
     assert worker.returncode==0
     assert Queue(db).get_job(job['job_id'])['state']=='BLOCKED'
     assert Queue(db).get_job(job['job_id'])['last_error_code']=='PIPELINE_SNAPSHOT_MISSING'
+
+
+def test_pause_queued_job_is_never_claimed_and_running_job_pauses_cooperatively(tmp_path):
+    db,p1,_=setup_db(tmp_path);q=Queue(db)
+    queued=q.enqueue(p1,'COLLECT')
+    paused=q.request_pause(queued['job_id'])
+    assert (paused['state'],paused['last_error_code'])==('PAUSED','ABORT_REQUESTED') and q.claim('w') is None
+    assert q.request_pause(queued['job_id']).get('rejected') and q.request_pause('missing') is None
+    running=q.enqueue(p1,'COLLECT')
+
+    class Service:
+        def run(self,job,abort_check):
+            q.request_pause(job['job_id'])
+            for _ in range(100):
+                if abort_check():return q.finish(job['job_id'],job['fencing_token'],state='PAUSED',error_code='ABORT_REQUESTED')
+                time.sleep(0.05)
+            q.finish(job['job_id'],job['fencing_token'])
+    run_once(q,'w',Service(),heartbeat_interval=0.1)
+    done=q.get_job(running['job_id'])
+    assert (done['state'],done['last_error_code'])==('PAUSED','ABORT_REQUESTED') and not q.pause_requested(running['job_id'])

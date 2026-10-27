@@ -88,4 +88,7 @@ test('M4 pipeline and recovery use safe same-origin methods and generated inputs
   expect(JSON.parse(fetcher.mock.calls[4][1].body)).toEqual({});
   await client.resumeJob('j/id');
   expect(fetcher.mock.calls[5][0]).toBe('/api/v1/jobs/j%2Fid/resume');
+  await client.pauseJob('j/id');
+  expect(fetcher.mock.calls[6][0]).toBe('/api/v1/jobs/j%2Fid/pause');
+  expect(fetcher.mock.calls[6][1].method).toBe('POST');
 });

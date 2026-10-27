@@ -287,6 +287,11 @@ def retry_failed_items(job_id:str,from_stage:str='FAILED_STAGE',force_recollect:
 
 
 @app.command()
+def pause(job_id:str):
+    request('POST','/jobs/'+quote(job_id,safe='')+'/pause')
+
+
+@app.command()
 def resume(job_id:str):
     request('POST','/jobs/'+quote(job_id,safe='')+'/resume')
 

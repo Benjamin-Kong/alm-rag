@@ -77,6 +77,25 @@ class Queue:
             now=time.time(); self._guard(c,job_id,token,now)
             c.execute('UPDATE jobs SET lease_expires_at=?,updated_at=? WHERE job_id=?',(now+lease_seconds,now,job_id))
 
+    def request_pause(self,job_id):
+        """QUEUED jobs pause at once; RUNNING jobs stop cooperatively at the worker's next abort check."""
+        with self.db.transaction() as c:
+            now=time.time()
+            row=c.execute('SELECT state FROM jobs WHERE job_id=?',(job_id,)).fetchone()
+            if row is None: return None
+            if row['state']=='QUEUED':
+                c.execute("UPDATE jobs SET state='PAUSED',last_error_code='ABORT_REQUESTED',updated_at=? WHERE job_id=?",(now,job_id))
+                self._event(c,job_id,'PAUSED',now,'ABORT_REQUESTED')
+            elif row['state']=='RUNNING':
+                c.execute('UPDATE jobs SET pause_requested=1,updated_at=? WHERE job_id=?',(now,job_id))
+            else: return self._row(c.execute('SELECT * FROM jobs WHERE job_id=?',(job_id,)).fetchone())|{'rejected':True}
+            return self._row(c.execute('SELECT * FROM jobs WHERE job_id=?',(job_id,)).fetchone())
+
+    def pause_requested(self,job_id):
+        with self.db.connect() as c:
+            row=c.execute('SELECT pause_requested FROM jobs WHERE job_id=?',(job_id,)).fetchone()
+        return bool(row and row['pause_requested'])
+
     def finish(self,job_id,token,state='SUCCEEDED',error_code=None):
         if state not in {'SUCCEEDED','COMPLETED_WITH_ERRORS','PAUSED','BLOCKED','FAILED','CANCELLED'}:
             raise ValueError('invalid terminal state')
@@ -84,5 +103,5 @@ class Queue:
             raise ValueError('invalid error code')
         with self.db.transaction() as c:
             now=time.time(); self._guard(c,job_id,token,now)
-            c.execute('UPDATE jobs SET state=?,last_error_code=?,owner=NULL,fencing_token=NULL,lease_expires_at=NULL,updated_at=? WHERE job_id=?',(state,error_code,now,job_id))
+            c.execute('UPDATE jobs SET state=?,last_error_code=?,pause_requested=0,owner=NULL,fencing_token=NULL,lease_expires_at=NULL,updated_at=? WHERE job_id=?',(state,error_code,now,job_id))
             self._event(c,job_id,state,now,error_code)

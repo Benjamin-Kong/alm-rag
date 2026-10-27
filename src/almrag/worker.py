@@ -55,16 +55,19 @@ def run_once(queue, owner, collection_service=None, *, stop_check=lambda: False,
 
     finished = threading.Event()
     heartbeat_errors = []
+    pause_event = threading.Event()
 
     def abort_check():
         if heartbeat_errors:
             raise heartbeat_errors[0]
-        return bool(stop_check())
+        return bool(stop_check()) or pause_event.is_set()
 
     def renew():
         while not finished.wait(interval):
             try:
                 queue.heartbeat(job['job_id'], job['fencing_token'], lease_seconds=lease_seconds)
+                if queue.pause_requested(job['job_id']):
+                    pause_event.set()
                 if health_path is not None:
                     write_health(health_path)
             except Exception as error:
