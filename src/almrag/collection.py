@@ -392,7 +392,7 @@ class CollectionService:
     @staticmethod
     def _progress(c, job, source_id):
         counts = dict(c.execute('SELECT state,count(*) FROM collection_outcomes WHERE job_id=? GROUP BY state', (job['job_id'],)).fetchall())
-        c.execute('UPDATE jobs SET succeeded_items=?,failed_items=?,skipped_items=?,checkpoint=?,updated_at=? WHERE job_id=?', (counts.get('SUCCEEDED', 0), counts.get('FAILED', 0), counts.get('SKIPPED', 0), _json({'last_source_item_id': source_id, 'outcomes': sum(counts.values())}), time.time(), job['job_id']))
+        c.execute('UPDATE jobs SET succeeded_items=?,failed_items=?,skipped_items=?,checkpoint=?,updated_at=? WHERE job_id=?', (counts.get('SUCCEEDED', 0), counts.get('FAILED', 0), counts.get('SKIPPED', 0), _json({'stage': 'COLLECT', 'last_source_item_id': source_id, 'outcomes': sum(counts.values())}), time.time(), job['job_id']))
 
     def _memberships(self, job, snapshot, refs):
         ids = {str(x['id']) for x in refs}

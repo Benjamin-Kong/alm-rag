@@ -78,6 +78,15 @@ class JobInfo(BaseModel):
     retry_count:int=0
     created_at:float|None=None
     started_at:float|None=None
+    current_stage:Literal['COLLECT','PROCESS','EMBED','INDEX','DONE']|None=None
+
+
+def _job_info(row):
+    data=dict(row)
+    try:stage=json.loads(data.get('checkpoint') or '{}').get('stage')
+    except (TypeError,ValueError,AttributeError):stage=None
+    data['current_stage']=stage if stage in {'COLLECT','PROCESS','EMBED','INDEX','DONE'} else None
+    return JobInfo(**data)
 
 
 class ApiError(BaseModel):
@@ -547,7 +556,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
             else:
                 marks=','.join('?' for _ in p['project_uids'])
                 rows=c.execute(f"SELECT jobs.*,(SELECT MIN(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state='RUNNING') AS started_at FROM jobs WHERE project_uid IN ({marks}) ORDER BY job_id LIMIT ? OFFSET ?",(*p['project_uids'],limit,offset)).fetchall()
-        return [JobInfo(**dict(r)) for r in rows]
+        return [_job_info(r) for r in rows]
 
     @app.get('/api/v1/jobs/{job_id}',response_model=JobInfo,operation_id='getJob',openapi_extra={'x-required-scope':'project_read'})
     def job(job_id:str,request:Request):
@@ -557,7 +566,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         if not row:
             raise ApiFailure(404,'NOT_FOUND')
         require(request,'project_read',row['project_uid'])
-        return JobInfo(**dict(row))
+        return _job_info(row)
 
     @app.post('/api/v1/projects/{project_uid}/jobs',status_code=202,response_model=JobInfo,operation_id='startProjectStageJob',openapi_extra={'x-required-scope':'project_manage'})
     def stage(project_uid:str,payload:Stage,request:Request):

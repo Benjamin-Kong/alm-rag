@@ -1415,6 +1415,8 @@ export interface components {
             created_at?: number | null;
             /** Started At */
             started_at?: number | null;
+            /** Current Stage */
+            current_stage?: ("COLLECT" | "PROCESS" | "EMBED" | "INDEX" | "DONE") | null;
         };
         /** KeyCreate */
         KeyCreate: {

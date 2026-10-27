@@ -4006,6 +4006,16 @@ components:
           title: Started At
           nullable: true
           type: number
+        current_stage:
+          title: Current Stage
+          nullable: true
+          type: string
+          enum:
+          - COLLECT
+          - PROCESS
+          - EMBED
+          - INDEX
+          - DONE
       type: object
       required:
       - job_id

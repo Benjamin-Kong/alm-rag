@@ -6841,6 +6841,24 @@
               }
             ],
             "title": "Started At"
+          },
+          "current_stage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "COLLECT",
+                  "PROCESS",
+                  "EMBED",
+                  "INDEX",
+                  "DONE"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Stage"
           }
         },
         "type": "object",

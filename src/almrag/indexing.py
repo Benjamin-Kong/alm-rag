@@ -247,7 +247,7 @@ class IndexService:
         c.execute('INSERT INTO index_outcomes VALUES(?,?,?,?,?,?) ON CONFLICT(job_id,item_uid) DO NOTHING',(job['job_id'],ref['item_uid'],ref['revision_uid'],result_uid,'FAILED' if error else 'SUCCEEDED',error))
         if error:c.execute('INSERT OR IGNORE INTO failed_items(failed_item_uid,job_id,project_uid,item_uid,revision_uid,failed_stage,error_class,retryable) VALUES(?,?,?,?,?,?,?,1)',(canonical_uid(job['job_id'],ref['item_uid'],'INDEX'),job['job_id'],job['project_uid'],ref['item_uid'],ref['revision_uid'],'INDEX',error))
         counts=dict(c.execute('SELECT state,count(*) FROM index_outcomes WHERE job_id=? GROUP BY state',(job['job_id'],)).fetchall())
-        c.execute('UPDATE jobs SET succeeded_items=?,failed_items=?,checkpoint=?,updated_at=? WHERE job_id=?',(counts.get('SUCCEEDED',0),counts.get('FAILED',0),_json({'last_item_uid':ref['item_uid'],'outcomes':sum(counts.values())}),time.time(),job['job_id']))
+        c.execute('UPDATE jobs SET succeeded_items=?,failed_items=?,checkpoint=?,updated_at=? WHERE job_id=?',(counts.get('SUCCEEDED',0),counts.get('FAILED',0),_json({'stage':'INDEX','last_item_uid':ref['item_uid'],'outcomes':sum(counts.values())}),time.time(),job['job_id']))
 
     def _activate(self,c,snapshot):
         generation=snapshot['generation_uid'];old=snapshot['previous_generation_uid']

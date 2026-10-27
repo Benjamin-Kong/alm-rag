@@ -129,6 +129,12 @@ def test_pause_resume_and_config_drift_guard(setup):
     with pytest.raises(PipelineError,match='MODEL_RUNTIME_DRIFT'):s.resume(job['job_id'])
 
 
+def test_model_response_schema_mismatch_block_is_resumable(setup):
+    db,a,p,r,s,index=setup;r.error=ProcessingError('MODEL_RESPONSE_SCHEMA_MISMATCH')
+    state,job=run(setup);assert state=='BLOCKED' and job['last_error_code']=='MODEL_RESPONSE_SCHEMA_MISMATCH'
+    r.error=None;assert run(setup,s.resume(job['job_id']))[0]=='SUCCEEDED'
+
+
 def test_queued_model_drift_blocks_before_collection(setup):
     db,a,p,r,s,index=setup;queued=s.enqueue(p);reprofile(r,expected_digest='sha256:'+'b'*64)
     a.get_item=lambda *args:pytest.fail('drift fetched source')
