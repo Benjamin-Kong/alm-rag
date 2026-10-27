@@ -160,7 +160,7 @@ class ProcessingService:
 
     def _live(self,job,abort_check):
         with self.db.transaction() as c:self._guard(c,job)
-        if abort_check():raise ProcessingError('ABORT_REQUESTED',stop_state='CANCELLED')
+        if abort_check():raise ProcessingError('ABORT_REQUESTED',stop_state='PAUSED')
 
     def _snapshot(self,job):
         with self.db.connect() as c:row=c.execute('SELECT config_revision,snapshot FROM processing_snapshots WHERE job_id=?',(job['job_id'],)).fetchone()

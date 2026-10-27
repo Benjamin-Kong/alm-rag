@@ -220,7 +220,7 @@ def test_actual_collection_service_stop_prevents_late_result_commit(queued):
         return original(*args)
     adapter.get_item=stop_after_request
     assert run_once(q,'collector',service,stop_check=stopped.is_set,health_path=path)
-    assert q.get_job(job['job_id'])['state']=='CANCELLED'
+    assert q.get_job(job['job_id'])['state']=='PAUSED'
     with db.connect() as c:
         assert c.execute('SELECT count(*) FROM item_revisions').fetchone()[0]==0
         assert c.execute('SELECT count(*) FROM collection_outcomes').fetchone()[0]==0

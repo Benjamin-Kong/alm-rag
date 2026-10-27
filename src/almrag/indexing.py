@@ -21,6 +21,10 @@ class IndexError(ProcessingError):
 
 
 VECTOR_BATCH_SIZE=256
+# The model runtime probe issues several Ollama calls, so it runs at most this often per claimed job instead of per item.
+MODEL_RECHECK_SECONDS=300
+MODEL_PROBE_ATTEMPTS=3
+MODEL_PROBE_BACKOFF_SECONDS=(2,5)
 
 
 def collection_name_for(generation_uid):
@@ -44,13 +48,15 @@ class IndexService:
         self.readers=readers or ReaderRegistry(db)
         self.fault_hook=fault_hook
         self.queue=Queue(db)
+        self._model_checked={}
+        self.sleep=time.sleep
 
     @staticmethod
     def _guard(c,job):Queue._guard(c,job['job_id'],job['fencing_token'],time.time())
 
     def _live(self,job,abort_check):
         with self.db.transaction() as c:self._guard(c,job)
-        if abort_check():raise IndexError('ABORT_REQUESTED',stop_state='CANCELLED')
+        if abort_check():raise IndexError('ABORT_REQUESTED',stop_state='PAUSED')
 
     @staticmethod
     def _fingerprint(snapshot):
@@ -174,9 +180,7 @@ class IndexService:
                 c.execute("INSERT INTO index_points VALUES(?,?,?,'PREPARED',?) ON CONFLICT(point_uuid) DO NOTHING",(point['id'],snapshot['generation_uid'],point['payload']['chunk_uid'],point['payload']['content_hash']))
             documents=self._lexical_rows(c,snapshot['generation_uid'],result)
             if {r['point_uuid'] for r in documents}!={p['id'] for p in points}:raise IndexError('LEXICAL_COVERAGE_MISMATCH')
-            for doc in documents:
-                rows=c.execute('SELECT terms,project_uid,generation_uid FROM keyword_fts WHERE point_uuid=?',(doc['point_uuid'],)).fetchall()
-                if len(rows)!=1 or tuple(rows[0])!=(doc['terms'],doc['project_uid'],doc['generation_uid']):raise IndexError('LEXICAL_COVERAGE_MISMATCH')
+            self._check_fts(c,documents)
         self._live(job,abort_check);self.fault_hook('after_lexical')
         return {'ref':ref,'result_uid':result,'points':points,'lexical_digest':fingerprint(documents)}
 
@@ -191,13 +195,31 @@ class IndexService:
             wanted=expected[row['id']];vector=row.get('vector')
             if row.get('payload')!=wanted['payload'] or not isinstance(vector,list) or len(vector)!=len(wanted['vector']) or any(isinstance(a,bool) or not isinstance(a,(float,int)) or not math.isfinite(a) or abs(a-b)>1e-5 for a,b in zip(vector,wanted['vector'])):raise IndexError('DENSE_COVERAGE_MISMATCH')
 
-    def _revalidate_external(self,job,snapshot,artifact,abort_check):
-        self._live(job,abort_check)
-        _,profile=self.processing._runtime(job['project_uid'])
+    def _check_model(self,job,snapshot,abort_check):
+        key=(job['job_id'],job.get('fencing_token'));last=self._model_checked.get(key)
+        if last is not None and time.monotonic()-last<MODEL_RECHECK_SECONDS:return
+        for attempt in range(MODEL_PROBE_ATTEMPTS):
+            try:
+                _,profile=self.processing._runtime(job['project_uid']);break
+            except Exception as error:
+                if getattr(error,'code',None)!='MODEL_TRANSPORT_ERROR' or attempt==MODEL_PROBE_ATTEMPTS-1:raise
+                self._live(job,abort_check);self.sleep(MODEL_PROBE_BACKOFF_SECONDS[min(attempt,len(MODEL_PROBE_BACKOFF_SECONDS)-1)])
         self._live(job,abort_check)
         if profile['fingerprint']!=snapshot['processing']['model_fingerprint']:raise IndexError('MODEL_RUNTIME_DRIFT')
+        self._model_checked={k:v for k,v in self._model_checked.items() if k[0]==job['job_id']};self._model_checked[key]=time.monotonic()
+
+    def _revalidate_external(self,job,snapshot,artifact,abort_check):
+        self._live(job,abort_check)
+        self._check_model(job,snapshot,abort_check)
         self._verify_dense(collection_name_for(snapshot['generation_uid']),artifact['points'])
         self._live(job,abort_check)
+
+    @staticmethod
+    def _check_fts(c,documents):
+        found=LexicalIndex.fts_rows(c,[d['point_uuid'] for d in documents])
+        for doc in documents:
+            rows=found[doc['point_uuid']]
+            if len(rows)!=1 or tuple(rows[0])!=(doc['terms'],doc['project_uid'],doc['generation_uid']):raise IndexError('LEXICAL_COVERAGE_MISMATCH')
 
     @staticmethod
     def _lexical_rows(c,generation,result):
@@ -211,9 +233,7 @@ class IndexService:
         if row is None or row['state']!='EMBED_READY' or row['result_uid']!=artifact['result_uid']:raise IndexError('PROCESSING_RESULT_CHANGED')
         documents=self._lexical_rows(c,snapshot['generation_uid'],artifact['result_uid'])
         if fingerprint(documents)!=artifact['lexical_digest'] or {r['point_uuid'] for r in documents}!={p['id'] for p in artifact['points']}:raise IndexError('LEXICAL_COVERAGE_MISMATCH')
-        for doc in documents:
-            rows=c.execute('SELECT terms,project_uid,generation_uid FROM keyword_fts WHERE point_uuid=?',(doc['point_uuid'],)).fetchall()
-            if len(rows)!=1 or tuple(rows[0])!=(doc['terms'],doc['project_uid'],doc['generation_uid']):raise IndexError('LEXICAL_COVERAGE_MISMATCH')
+        self._check_fts(c,documents)
         current_result,current_points=self._points(snapshot,ref)
         if current_result!=artifact['result_uid'] or current_points!=artifact['points']:raise IndexError('EMBEDDING_COVERAGE_MISMATCH')
         dense=self._dense(artifact['points'])

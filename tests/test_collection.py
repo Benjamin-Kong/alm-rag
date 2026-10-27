@@ -151,7 +151,7 @@ def test_resume_same_job_avoids_duplicate_outcomes(setup):
         nonlocal calls
         calls+=1
         return calls>4
-    assert s.run(job,abort_check=abort)=='CANCELLED'
+    assert s.run(job,abort_check=abort)=='PAUSED'
     with db.transaction() as c: c.execute("UPDATE jobs SET state='QUEUED' WHERE job_id=?",(job['job_id'],))
     resumed=Queue(db).claim('new',300); assert s.run(resumed)=='SUCCEEDED'
     final=Queue(db).get_job(job['job_id']); assert final['succeeded_items']==2 and final['progress_total']==2
@@ -210,7 +210,7 @@ def test_resume_after_committed_item_pins_refs_and_counts(setup):
     db,a,s,p=setup; s.enqueue(p); job=Queue(db).claim('old',300)
     def abort():
         with db.connect() as c: return c.execute('SELECT count(*) FROM collection_outcomes').fetchone()[0]==1
-    assert s.run(job,abort_check=abort)=='CANCELLED'
+    assert s.run(job,abort_check=abort)=='PAUSED'
     a.refs.append({'id':'new','scope_id':'t1'})
     with db.transaction() as c: c.execute("UPDATE jobs SET state='QUEUED' WHERE job_id=?",(job['job_id'],))
     resumed=Queue(db).claim('new',300)

@@ -173,7 +173,7 @@ Codebeamer에서 Bearer를 선택하면 사용자 이름 대신 토큰을 서버
 | QUEUED / RUNNING | 대기 / 실행 중. Worker가 실행 중인지 확인합니다. |
 | SUCCEEDED | 해당 작업 실행 성공. 실제 ALM 완전성이나 검색 품질을 별도로 보장하는 표시는 아닙니다. |
 | COMPLETED_WITH_ERRORS | 일부 Item 실패가 남은 상태로 완료. 실패 목록을 확인합니다. |
-| PAUSED / BLOCKED | 원인 해결 후 재개 가능 여부를 확인합니다. |
+| PAUSED / BLOCKED | 원인 해결 후 재개 가능 여부를 확인합니다. Worker 종료(재배포·재시작)로 중단된 작업도 오류 코드 `ABORT_REQUESTED`와 함께 PAUSED로 남으며 작업 재개로 이어갈 수 있습니다. |
 | FAILED / CANCELLED / RETRY_WAIT | 실패 / 취소 / 재시도 대기. 이벤트와 오류 코드를 확인합니다. |
 
 전역 FIFO에서 한 번에 한 작업을 실행합니다. 개별 Item 실패는 보존된 실패 목록에서 확인합니다.

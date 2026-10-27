@@ -11,6 +11,7 @@ import time
 import uuid
 from pydantic import BaseModel,ConfigDict,Field,model_validator
 from almrag.embedding import fingerprint
+from almrag.lexical import LexicalIndex
 from almrag.queue import Queue,LeaseLost
 from almrag.storage import canonical_uid
 from almrag.retrieval import SearchError
@@ -284,8 +285,9 @@ class QualityService:
                     if set(actual_points)!={p['id'] for p in points} or any(actual_points[p['id']]['vector_status']!='READY' or actual_points[p['id']]['source_hash']!=p['payload']['content_hash'] for p in points if p['id'] in actual_points):active_errors+=1
                     docs=[dict(r) for r in c.execute('SELECT d.* FROM keyword_documents d JOIN processing_membership m USING(chunk_uid) WHERE d.generation_uid=? AND m.result_uid=? ORDER BY d.point_uuid',(generation,pub['result_uid']))]
                     if {r['point_uuid'] for r in docs}!={p['id'] for p in points} or fingerprint(docs)!=pub['lexical_digest']:lex_errors+=1
+                    found_fts=LexicalIndex.fts_rows(c,[d['point_uuid'] for d in docs])
                     for doc in docs:
-                        fts=c.execute('SELECT terms,project_uid,generation_uid FROM keyword_fts WHERE point_uuid=?',(doc['point_uuid'],)).fetchall()
+                        fts=found_fts[doc['point_uuid']]
                         if len(fts)!=1 or tuple(fts[0])!=(doc['terms'],project,generation):lex_errors+=1
                     if self.vector_store is not None and config is not None:
                         if not hasattr(self.vector_store,'retrieve'):dense_unknown=True;continue

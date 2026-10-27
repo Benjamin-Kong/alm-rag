@@ -67,6 +67,31 @@ def test_item_with_more_chunks_than_store_batch_limit_is_indexed_in_batches(setu
     assert count>1 and sum(1 for call in store.calls if call[0]=='upsert')==count
     assert set(active(setup)[1].values())=={revision}
 
+def _model_check_fixture(setup,monkeypatch,failures):
+    from almrag.embedding import ModelError
+    db,_,p,r,s=setup;state={'calls':0,'fail':failures}
+    def probe(project,runtime=None):
+        state['calls']+=1
+        if state['fail']:
+            state['fail']-=1;raise ModelError('MODEL_TRANSPORT_ERROR',stop_state='PAUSED')
+        return None,{'fingerprint':'fp'}
+    monkeypatch.setattr(s,'_runtime',probe)
+    index=IndexService(db,s,MemoryVector());index.sleep=lambda seconds:None
+    return index,state,{'job_id':'j','project_uid':p,'fencing_token':1},{'processing':{'model_fingerprint':'fp'}}
+
+def test_model_runtime_is_probed_once_per_interval_and_transient_errors_retry(setup,monkeypatch):
+    index,state,job,snapshot=_model_check_fixture(setup,monkeypatch,1)
+    monkeypatch.setattr(IndexService,'_live',lambda self,job,abort_check:None)
+    for _ in range(5):index._check_model(job,snapshot,lambda:False)
+    assert state['calls']==2
+
+def test_persistent_model_transport_error_still_raises(setup,monkeypatch):
+    from almrag.embedding import ModelError
+    index,state,job,snapshot=_model_check_fixture(setup,monkeypatch,99)
+    monkeypatch.setattr(IndexService,'_live',lambda self,job,abort_check:None)
+    with pytest.raises(ModelError,match='MODEL_TRANSPORT_ERROR'):index._check_model(job,snapshot,lambda:False)
+    assert state['calls']==3
+
 def test_unready_item_failure_keeps_old_and_continues_sibling(setup):
     db,_,p,r,s=setup;old=add_item(setup);ready(setup);index=IndexService(db,s,MemoryVector());assert run(setup,index)[0]=='SUCCEEDED'
     new=add_item(setup,revision='2');other=add_item(setup,'2');ready(setup)

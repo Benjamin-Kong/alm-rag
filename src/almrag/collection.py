@@ -181,7 +181,7 @@ class CollectionService:
         with self.db.transaction() as c:
             self._guard(c, job)
         if abort_check():
-            raise CollectionError('ABORT_REQUESTED', stop_state='CANCELLED')
+            raise CollectionError('ABORT_REQUESTED', stop_state='PAUSED')
 
     @staticmethod
     def _validate_refs(refs, chosen):

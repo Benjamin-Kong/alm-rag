@@ -49,6 +49,13 @@ def test_atomic_idempotent_replace(db):
     with db.connect() as c:
         assert c.execute('SELECT count(*) FROM keyword_fts').fetchone()[0]==1
 
+def test_fts_rows_returns_one_row_per_point_across_id_chunks(db):
+    put(db,*[point(str(n),'word%d'%n) for n in range(7)],point('0','replaced'))
+    with db.connect() as c:
+        rows=LexicalIndex.fts_rows(c,['%d'%n for n in range(7)]+['missing'],size=3)
+    assert [len(rows[str(n)]) for n in range(7)]==[1]*7 and rows['missing']==[]
+    assert rows['0'][0][1:]==('p','g')
+
 def test_safe_query_syntax_and_empty(db):
     index=LexicalIndex(db); put(db,point('a','safety brake'))
     assert index.search('p','g','" OR * NOT ( ) : safety',5)[0]['id']=='a'

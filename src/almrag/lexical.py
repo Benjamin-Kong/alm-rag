@@ -55,6 +55,18 @@ class LexicalIndex:
     def __init__(self, db):
         self.db = db
 
+    @staticmethod
+    def fts_rows(c, point_ids, size=500):
+        """FTS rows per point id using one table scan per chunk of ids instead of one scan per id."""
+        ids = list(point_ids)
+        rows = {i: [] for i in ids}
+        for start in range(0, len(ids), size):
+            part = ids[start:start + size]
+            marks = ','.join('?' * len(part))
+            for r in c.execute(f'SELECT point_uuid,terms,project_uid,generation_uid FROM keyword_fts WHERE point_uuid IN ({marks})', part):
+                rows[r[0]].append((r[1], r[2], r[3]))
+        return rows
+
     def put(self, c, point):
         _transaction(c)
         try:
@@ -73,7 +85,9 @@ class LexicalIndex:
         # the exception and continues its enclosing publication transaction.
         c.execute('SAVEPOINT lexical_put')
         try:
-            c.execute('DELETE FROM keyword_fts WHERE point_uuid=?', (point_id,))
+            # point_uuid is UNINDEXED in FTS5, so each FTS delete scans the whole table; only pay it when a document exists.
+            if c.execute('SELECT 1 FROM keyword_documents WHERE point_uuid=?', (point_id,)).fetchone():
+                c.execute('DELETE FROM keyword_fts WHERE point_uuid=?', (point_id,))
             c.execute('DELETE FROM keyword_documents WHERE point_uuid=?', (point_id,))
             c.execute('INSERT INTO keyword_documents VALUES(?,?,?,?,?,?,?)', (point_id, *values, document_terms))
             c.execute('INSERT INTO keyword_fts(point_uuid,project_uid,generation_uid,terms) VALUES(?,?,?,?)', (point_id, values[0], values[1], document_terms))

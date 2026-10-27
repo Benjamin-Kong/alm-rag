@@ -43,7 +43,7 @@ class PipelineService:
 
     def _live(self,job,abort_check):
         with self.db.transaction() as c:self._guard(c,job)
-        if abort_check():raise PipelineError('ABORT_REQUESTED',stop_state='CANCELLED')
+        if abort_check():raise PipelineError('ABORT_REQUESTED',stop_state='PAUSED')
 
     def _prepare(self,project_uid,reuse=False):
         # Enumerating every Tracker is throttled and slow, so the sync that follows a preflight
