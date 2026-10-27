@@ -3998,6 +3998,14 @@ components:
           type: integer
           title: Retry Count
           default: 0
+        created_at:
+          title: Created At
+          nullable: true
+          type: number
+        started_at:
+          title: Started At
+          nullable: true
+          type: number
       type: object
       required:
       - job_id

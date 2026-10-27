@@ -106,3 +106,16 @@ def test_pause_queued_job_is_never_claimed_and_running_job_pauses_cooperatively(
     run_once(q,'w',Service(),heartbeat_interval=0.1)
     done=q.get_job(running['job_id'])
     assert (done['state'],done['last_error_code'])==('PAUSED','ABORT_REQUESTED') and not q.pause_requested(running['job_id'])
+
+
+def test_job_list_exposes_created_and_started_time(tmp_path):
+    db,p1,_=setup_db(tmp_path);q=Queue(db);job=q.enqueue(p1,'COLLECT')
+    app=create_app(Settings(database_path=str(db.path)))
+    _,key=app.state.security.create_key('reader',[p1],['project_read'],actor='admin')
+    with TestClient(app,base_url='https://testserver') as client:
+        headers={'X-API-Key':key}
+        (queued,)=client.get('/api/v1/jobs',headers=headers).json()
+        assert queued['created_at'] and queued['started_at'] is None
+        q.claim('w');(running,)=client.get('/api/v1/jobs',headers=headers).json()
+        assert running['started_at']>=running['created_at']
+        assert client.get('/api/v1/jobs/'+job['job_id'],headers=headers).json()['started_at']

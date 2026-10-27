@@ -1411,6 +1411,10 @@ export interface components {
              * @default 0
              */
             retry_count?: number;
+            /** Created At */
+            created_at?: number | null;
+            /** Started At */
+            started_at?: number | null;
         };
         /** KeyCreate */
         KeyCreate: {

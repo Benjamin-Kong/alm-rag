@@ -76,6 +76,8 @@ class JobInfo(BaseModel):
     failed_items:int=0
     skipped_items:int=0
     retry_count:int=0
+    created_at:float|None=None
+    started_at:float|None=None
 
 
 class ApiError(BaseModel):
@@ -541,17 +543,17 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
             raise ApiFailure(422,'INVALID_REQUEST')
         with db.connect() as c:
             if p['admin_session']:
-                rows=c.execute('SELECT * FROM jobs ORDER BY job_id LIMIT ? OFFSET ?',(limit,offset)).fetchall()
+                rows=c.execute("SELECT jobs.*,(SELECT MIN(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state='RUNNING') AS started_at FROM jobs ORDER BY job_id LIMIT ? OFFSET ?",(limit,offset)).fetchall()
             else:
                 marks=','.join('?' for _ in p['project_uids'])
-                rows=c.execute(f'SELECT * FROM jobs WHERE project_uid IN ({marks}) ORDER BY job_id LIMIT ? OFFSET ?',(*p['project_uids'],limit,offset)).fetchall()
+                rows=c.execute(f"SELECT jobs.*,(SELECT MIN(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state='RUNNING') AS started_at FROM jobs WHERE project_uid IN ({marks}) ORDER BY job_id LIMIT ? OFFSET ?",(*p['project_uids'],limit,offset)).fetchall()
         return [JobInfo(**dict(r)) for r in rows]
 
     @app.get('/api/v1/jobs/{job_id}',response_model=JobInfo,operation_id='getJob',openapi_extra={'x-required-scope':'project_read'})
     def job(job_id:str,request:Request):
         require(request,'project_read')
         with db.connect() as c:
-            row=c.execute('SELECT * FROM jobs WHERE job_id=?',(job_id,)).fetchone()
+            row=c.execute("SELECT jobs.*,(SELECT MIN(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state='RUNNING') AS started_at FROM jobs WHERE job_id=?",(job_id,)).fetchone()
         if not row:
             raise ApiFailure(404,'NOT_FOUND')
         require(request,'project_read',row['project_uid'])
