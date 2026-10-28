@@ -12,7 +12,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 PERMISSIONS = {'search', 'project_read', 'project_manage', 'system_admin'}
 ERRORS = {'PUBLISH_RETRY_PENDING','MAINTENANCE_RETRY_PENDING','CLEANUP_RETRY_PENDING', 'INVALID_AUTH', 'FORBIDDEN', 'INVALID_REQUEST', 'NOT_FOUND', 'STAGE_UNAVAILABLE', 'DATABASE_UNAVAILABLE', 'INTERNAL_ERROR', 'LEASE_LOST'}
-ACTIONS = {'docs_publish','artifact_export','artifact_import','backup_create','backup_restore','operations_maintenance','index_cleanup', 'item_replay', 'failed_items_replay', 'job_resume', 'job_pause', 'login', 'logout', 'key_created', 'key_revoked', 'key_listed', 'bootstrap', 'job_claim', 'job_blocked', 'request', 'worker_start', 'worker_stop', 'alm_instance_update', 'alm_instance_delete', 'scope_added'}
+ACTIONS = {'docs_publish','artifact_export','artifact_import','backup_create','backup_restore','operations_maintenance','index_cleanup', 'item_replay', 'failed_items_replay', 'job_resume', 'job_pause', 'login', 'logout', 'key_created', 'key_revoked', 'key_listed', 'search', 'bootstrap', 'job_claim', 'job_blocked', 'request', 'worker_start', 'worker_stop', 'alm_instance_update', 'alm_instance_delete', 'scope_added'}
 
 
 def digest(value: str) -> str:
@@ -30,13 +30,24 @@ def safe_event(**values):
             result[key] = value
         elif key == 'stage' and value in {'SYNC', 'COLLECT', 'PROCESS', 'EMBED', 'INDEX', 'REBUILD_INDEX', 'REBUILD', 'REPLAY', 'EXPORT', 'IMPORT', 'INTEGRITY', 'EVALUATE'}:
             result[key] = value
+        elif key == 'key_name' and isinstance(value, str):
+            result[key] = re.sub(r'[\x00-\x1f\x7f]', ' ', value)[:128]
+        elif key in {'project_count', 'result_count'} and isinstance(value, int) and 0 <= value <= 10**9:
+            result[key] = value
         elif key in {'attempt', 'http_status', 'elapsed_ms'} and isinstance(value, int) and 0 <= value <= 10**9:
             result[key] = value
         elif key == 'actor_ref' and isinstance(value,str) and re.fullmatch(r'[0-9a-f]{64}',value):
             result[key] = value
-        elif key in {'alm_instance_uid', 'project_uid', 'job_uid', 'item_uid', 'step_uid', 'trace_id', 'target_uid'} and isinstance(value, str) and re.fullmatch(r'[0-9a-f-]{36}', value):
+        elif key in {'alm_instance_uid', 'project_uid', 'job_uid', 'item_uid', 'step_uid', 'trace_id', 'target_uid', 'key_id'} and isinstance(value, str) and re.fullmatch(r'[0-9a-f-]{36}', value):
             result[key] = value
     return result
+
+
+def actor_fields(principal):
+    """Audit identity: key id + name snapshot for API keys, hashed reference for admin sessions."""
+    if principal.get('admin_session'):
+        return {'actor_ref': digest('admin:' + principal['username'])}
+    return {'key_id': principal['key_id'], 'key_name': principal.get('name', '')}
 
 
 class Security:
@@ -102,24 +113,24 @@ class Security:
             c.execute('DELETE FROM sessions WHERE token_hash=?', (digest(token),))
             self._audit(c,action='logout',outcome='ok',actor_ref=digest('admin:'+row['username']) if row else None,trace_id=trace_id)
 
-    def create_key(self, name, project_uids, permissions, actor,trace_id=None):
+    def create_key(self, name, project_uids, permissions, actor,trace_id=None,actor_fields=None):
         if not project_uids or not permissions or not set(permissions) <= PERMISSIONS:
             raise ValueError('invalid_key_scope')
         key_id, raw = str(uuid4()), secrets.token_urlsafe(32)
         with self.db.transaction() as c:
             c.execute('INSERT INTO api_keys(key_id,name,key_hash,project_uids,permissions,created_at) VALUES(?,?,?,?,?,?)',
                       (key_id, name, digest(raw), json.dumps(sorted(set(project_uids))), json.dumps(sorted(set(permissions))), time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())))
-            self._audit(c,action='key_created',outcome='ok',actor_ref=digest(actor),target_uid=key_id,trace_id=trace_id)
+            self._audit(c,action='key_created',outcome='ok',**(actor_fields or {'actor_ref':digest(actor)}),target_uid=key_id,trace_id=trace_id)
         return key_id, raw
 
     def api_key(self, raw):
         with self.db.connect() as c:
-            row = c.execute('SELECT key_id,project_uids,permissions FROM api_keys WHERE key_hash=? AND revoked=0', (digest(raw),)).fetchone()
+            row = c.execute('SELECT key_id,name,project_uids,permissions FROM api_keys WHERE key_hash=? AND revoked=0', (digest(raw),)).fetchone()
         if not row:
             return None
-        return {'key_id': row['key_id'], 'project_uids': json.loads(row['project_uids']), 'permissions': json.loads(row['permissions'])}
+        return {'key_id': row['key_id'], 'name': row['name'], 'project_uids': json.loads(row['project_uids']), 'permissions': json.loads(row['permissions'])}
 
-    def revoke_key(self, key_id, actor,trace_id=None):
+    def revoke_key(self, key_id, actor,trace_id=None,actor_fields=None):
         """Logically revokes a key; returns 'revoked', 'already_revoked' or 'missing'."""
         with self.db.transaction() as c:
             row = c.execute('SELECT revoked FROM api_keys WHERE key_id=?', (key_id,)).fetchone()
@@ -128,7 +139,7 @@ class Security:
             if row['revoked']:
                 return 'already_revoked'
             c.execute('UPDATE api_keys SET revoked=1 WHERE key_id=?', (key_id,))
-            self._audit(c,action='key_revoked',outcome='ok',actor_ref=digest(actor),target_uid=key_id,trace_id=trace_id)
+            self._audit(c,action='key_revoked',outcome='ok',**(actor_fields or {'actor_ref':digest(actor)}),target_uid=key_id,trace_id=trace_id)
         return 'revoked'
 
     @staticmethod

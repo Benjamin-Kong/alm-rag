@@ -148,7 +148,7 @@ def test_failure_read_allowed_but_replay_and_resume_require_manage_before_servic
     with db.connect() as sql:events=[__import__('json').loads(r[0]) for r in sql.execute('SELECT event FROM security_audit')]
     accepted=[e for e in events if e.get('action') in {'item_replay','failed_items_replay','job_resume'}]
     assert len(accepted)==3
-    assert all(len(e['actor_ref'])==64 and e['project_uid']==p and e['job_uid']==j for e in accepted)
+    assert all(e['key_id'] and e['key_name'] and 'actor_ref' not in e and e['project_uid']==p and e['job_uid']==j for e in accepted)
     assert manager not in str(events) and 'synthetic' not in str(accepted)
 
 

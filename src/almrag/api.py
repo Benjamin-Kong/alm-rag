@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from almrag.config import Settings
-from almrag.security import Security, digest
+from almrag.security import Security, actor_fields, digest
 from almrag.alm_http import AlmError, HttpPolicy
 from almrag.collection import CollectionError, CollectionService
 from almrag.connection import Connections, SourceProfileCreate
@@ -326,7 +326,8 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
     @app.exception_handler(ApiFailure)
     async def failure(request, exc):
         if exc.status in {403,404}:
-            auth.audit(action='request',outcome='denied',error_code=exc.code,trace_id=request.state.trace_id)
+            principal=request.state.principal
+            auth.audit(action='request',outcome='denied',error_code=exc.code,trace_id=request.state.trace_id,**(actor_fields(principal) if principal else {}))
         return error(request, exc.status, exc.code)
 
     @app.exception_handler(RequestValidationError)
@@ -505,7 +506,9 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         principal=require(request,'search')
         allowed=payload.project_uids if principal['admin_session'] else principal['project_uids']
         if not set(payload.project_uids).issubset(set(allowed)):raise ApiFailure(403,'FORBIDDEN')
-        return app.state.search.search(payload,allowed_projects=allowed)
+        result=app.state.search.search(payload,allowed_projects=allowed)
+        auth.audit(action='search',outcome='ok',project_count=len(payload.project_uids),result_count=len(result['results'] if isinstance(result,dict) else result.results),trace_id=request.state.trace_id,**actor_fields(principal))
+        return result
 
     @app.get('/api/v1/items/{item_uid}',response_model=ItemDetail,operation_id='getActiveItem',openapi_extra={'x-required-scope':'project_read'})
     def active_item(item_uid:str,request:Request):
@@ -556,7 +559,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         for uid in payload.project_uids:
             project_exists(uid)
         actor='admin:'+p['username'] if p['admin_session'] else 'api_key:'+p['key_id']
-        key_id,key=auth.create_key(payload.name,payload.project_uids,payload.permissions,actor=actor,trace_id=request.state.trace_id)
+        key_id,key=auth.create_key(payload.name,payload.project_uids,payload.permissions,actor=actor,trace_id=request.state.trace_id,actor_fields=actor_fields(p))
         return KeyCreated(key_id=key_id,key=key)
 
     @app.get('/api/v1/api-keys',response_model=KeyList,operation_id='listApiKeys',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
@@ -565,7 +568,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         if not 1<=limit<=200 or offset<0 or (name is not None and len(name)>128):
             raise ApiFailure(422,'INVALID_REQUEST')
         items,total=auth.list_keys(name=name or None,project_uid=project_uid or None,status=status,limit=limit,offset=offset)
-        auth.audit(action='key_listed',outcome='ok',actor_ref=digest('admin:'+p['username']),trace_id=request.state.trace_id)
+        auth.audit(action='key_listed',outcome='ok',**actor_fields(p),trace_id=request.state.trace_id)
         return KeyList(items=items,total=total)
 
     @app.delete('/api/v1/api-keys/{key_id}',status_code=204,operation_id='revokeApiKey',openapi_extra={'x-required-scope':'system_admin'})
@@ -577,7 +580,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
             if not row or not set(json.loads(row['project_uids']))<=set(p['project_uids']) or not set(json.loads(row['permissions']))<=set(p['permissions']):
                 raise ApiFailure(404,'NOT_FOUND')
         actor='admin:'+p['username'] if p['admin_session'] else 'api_key:'+p['key_id']
-        if auth.revoke_key(key_id,actor=actor,trace_id=request.state.trace_id)=='missing':
+        if auth.revoke_key(key_id,actor=actor,trace_id=request.state.trace_id,actor_fields=actor_fields(p))=='missing':
             raise ApiFailure(404,'NOT_FOUND')
         return Response(status_code=204)
 
@@ -641,8 +644,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         return principal,row['project_uid']
 
     def operator_audit(request,principal,project_uid,job_id,action):
-        actor='admin:'+principal['username'] if principal['admin_session'] else 'api_key:'+principal['key_id']
-        auth.audit(action=action,outcome='ok',actor_ref=digest(actor),project_uid=project_uid,job_uid=job_id,trace_id=request.state.trace_id)
+        auth.audit(action=action,outcome='ok',**actor_fields(principal),project_uid=project_uid,job_uid=job_id,trace_id=request.state.trace_id)
 
     @app.get('/api/v1/jobs/{job_id}/failed-items',response_model=list[FailedItemInfo],operation_id='listFailedItems',openapi_extra={'x-required-scope':'project_read'})
     def failed_items(job_id:str,request:Request,limit:int=100,offset:int=0):

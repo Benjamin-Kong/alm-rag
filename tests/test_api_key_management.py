@@ -74,7 +74,7 @@ def test_legacy_key_without_created_at_survives_migration(tmp_path):
     legacy.execute('INSERT INTO api_keys VALUES(?,?,?,?,?,0)', ('old', 'legacy', digest('raw-legacy'), '["p"]', '["search"]'))
     legacy.commit(); legacy.close()
     auth = Security(db)
-    assert auth.api_key('raw-legacy') == {'key_id': 'old', 'project_uids': ['p'], 'permissions': ['search']}
+    assert auth.api_key('raw-legacy') == {'key_id': 'old', 'name': 'legacy', 'project_uids': ['p'], 'permissions': ['search']}
     items, total = auth.list_keys()
     assert total == 1 and items[0]['created_at'] is None and items[0]['status'] == 'active'
     new_id, _ = auth.create_key('new', ['p'], ['search'], actor='admin')
@@ -89,3 +89,21 @@ def test_search_only_key_lists_projects_and_no_admin_access(env):
     assert [x['project_uid'] for x in c.get('/api/v1/projects', headers=key).json()] == [p]
     assert c.get('/api/v1/jobs', headers=key).status_code == 403
     assert c.get('/api/v1/alm-instances', headers=key).status_code == 403
+
+
+def test_audit_records_key_id_and_name_snapshot_without_secrets(env):
+    app, c, h, db, _ = env
+    p, created = make(env, 'audited')
+    c.cookies.clear(); key = {'X-API-Key': created['key']}
+    assert c.post('/api/v1/search', headers=key, json={'query': 'private-query-text', 'project_uids': [p]}).status_code == 200
+    assert c.get('/api/v1/jobs', headers=key).status_code == 403
+    with db.connect() as sql:
+        events = [json.loads(r[0]) for r in sql.execute('SELECT event FROM security_audit')]
+    mine = [e for e in events if e.get('key_id') == created['key_id']]
+    assert {(e['action'], e['outcome']) for e in mine} == {('search', 'ok'), ('request', 'denied')}
+    assert all(e['key_name'] == 'audited' and 'actor_ref' not in e for e in mine)
+    search = next(e for e in mine if e['action'] == 'search')
+    assert search['project_count'] == 1 and 'result_count' in search
+    assert 'private-query-text' not in json.dumps(events) and created['key'] not in json.dumps(events)
+    created_event = next(e for e in events if e['action'] == 'key_created')
+    assert 'actor_ref' in created_event and 'key_id' not in created_event

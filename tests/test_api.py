@@ -142,7 +142,7 @@ def test_scoped_admin_key_revoke_boundary(env):
     principal=auth.api_key(limited)
     with app.state.db.connect() as c:
         event=json.loads(c.execute('SELECT event FROM security_audit ORDER BY audit_id DESC LIMIT 1').fetchone()[0])
-    assert event['actor_ref']==digest('api_key:'+principal['key_id'])
+    assert event['key_id']==principal['key_id'] and event['key_name']==principal['name'] and 'actor_ref' not in event
     assert event['target_uid']==created.json()['key_id']
 
 

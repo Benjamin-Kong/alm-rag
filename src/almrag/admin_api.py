@@ -4,7 +4,7 @@ import re
 from fastapi import Query,Request,Response
 from pydantic import BaseModel,ConfigDict,Field
 from typing import Literal
-from almrag.security import digest
+from almrag.security import actor_fields, digest
 from almrag.docs_publish import Summary,SummaryOutbox
 
 
@@ -128,7 +128,7 @@ def register_admin_routes(app,db,settings,auth,connections,require,project_exist
 
     def audit(request,action,project=None):
         p=request.state.principal
-        auth.audit(action=action,outcome='ok',actor_ref=digest('admin:'+p['username'] if p['admin_session'] else 'key:'+p['key_id']),project_uid=project,trace_id=request.state.trace_id)
+        auth.audit(action=action,outcome='ok',**actor_fields(p),project_uid=project,trace_id=request.state.trace_id)
 
     extra={'x-required-scope':'authenticated','x-milestone':'M5'}
     @app.get('/api/v1/auth/me',response_model=PrincipalInfo,operation_id='getPrincipal',openapi_extra=extra)
