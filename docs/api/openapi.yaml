@@ -1018,11 +1018,11 @@ paths:
       summary: Create Key
       operationId: createApiKey
       requestBody:
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/KeyCreate'
-        required: true
       responses:
         '201':
           description: Successful Response
@@ -1065,6 +1065,90 @@ paths:
       - ApiKeyAuth: []
       - AdminSession: []
       x-implementation-status: M1_IMPLEMENTED
+    get:
+      summary: List Keys
+      operationId: listApiKeys
+      parameters:
+      - name: name
+        in: query
+        required: false
+        schema:
+          title: Name
+          nullable: true
+          type: string
+      - name: project_uid
+        in: query
+        required: false
+        schema:
+          title: Project Uid
+          nullable: true
+          type: string
+      - name: status
+        in: query
+        required: false
+        schema:
+          title: Status
+          nullable: true
+          enum:
+          - active
+          - revoked
+          type: string
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 50
+          title: Limit
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Offset
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KeyList'
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
   /api-keys/{key_id}:
     delete:
       summary: Revoke
@@ -1174,6 +1258,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiError'
       x-required-scope: project_read
+      x-alternate-scope: search
       security:
       - ApiKeyAuth: []
       - AdminSession: []
@@ -5492,6 +5577,57 @@ components:
       - auth_method
       - auth_ref
       title: InstanceDetail
+    KeyInfo:
+      properties:
+        key_id:
+          type: string
+          title: Key Id
+        name:
+          type: string
+          title: Name
+        project_uids:
+          items:
+            type: string
+          type: array
+          title: Project Uids
+        permissions:
+          items:
+            type: string
+          type: array
+          title: Permissions
+        created_at:
+          title: Created At
+          nullable: true
+          type: string
+        status:
+          type: string
+          enum:
+          - active
+          - revoked
+          title: Status
+      type: object
+      required:
+      - key_id
+      - name
+      - project_uids
+      - permissions
+      - status
+      title: KeyInfo
+    KeyList:
+      properties:
+        items:
+          items:
+            $ref: '#/components/schemas/KeyInfo'
+          type: array
+          title: Items
+        total:
+          type: integer
+          title: Total
+      type: object
+      required:
+      - items
+      - total
+      title: KeyList
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

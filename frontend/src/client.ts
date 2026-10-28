@@ -78,6 +78,12 @@ export class ApiClient {
   job(id: string) { return this.request<Schema['JobInfo']>('GET', '/jobs/' + encodeURIComponent(id)); }
   jobEvents(id: string) { return this.request<Schema['JobEvent'][]>('GET', '/jobs/' + encodeURIComponent(id) + '/events'); }
   login(input: Schema['Login']) { return this.request<void>('POST', '/auth/login', input); }
+  listKeys(query: { name?: string; project_uid?: string; status?: 'active' | 'revoked'; limit?: number; offset?: number } = {}) {
+    const params = new URLSearchParams();
+    for (const [k, v] of Object.entries(query)) if (v !== undefined && v !== '') params.set(k, String(v));
+    const qs = params.toString();
+    return this.request<Schema['KeyList']>('GET', '/api-keys' + (qs ? '?' + qs : ''));
+  }
   logout() { return this.request<void>('POST', '/auth/logout'); }
   createKey(input: Schema['KeyCreate']) { return this.request<Schema['KeyCreated']>('POST', '/api-keys', input); }
   revokeKey(id: string) { return this.request<void>('DELETE', '/api-keys/' + encodeURIComponent(id)); }

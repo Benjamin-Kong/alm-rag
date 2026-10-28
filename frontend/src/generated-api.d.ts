@@ -696,7 +696,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** List Keys */
+        get: operations["listApiKeys"];
         put?: never;
         /** Create Key */
         post: operations["createApiKey"];
@@ -1433,6 +1434,31 @@ export interface components {
             key_id: string;
             /** Key */
             key: string;
+        };
+        /** KeyInfo */
+        KeyInfo: {
+            /** Key Id */
+            key_id: string;
+            /** Name */
+            name: string;
+            /** Project Uids */
+            project_uids: string[];
+            /** Permissions */
+            permissions: string[];
+            /** Created At */
+            created_at?: string | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "revoked";
+        };
+        /** KeyList */
+        KeyList: {
+            /** Items */
+            items: components["schemas"]["KeyInfo"][];
+            /** Total */
+            total: number;
         };
         /** Login */
         Login: {
@@ -5013,6 +5039,77 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listApiKeys: {
+        parameters: {
+            query?: {
+                name?: string | null;
+                project_uid?: string | null;
+                status?: ("active" | "revoked") | null;
+                limit?: number;
+                offset?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KeyList"];
+                };
             };
             /** @description Sanitized error */
             401: {

@@ -48,6 +48,20 @@ class KeyCreated(BaseModel):
     key: str
 
 
+class KeyInfo(BaseModel):
+    key_id: str
+    name: str
+    project_uids: list[str]
+    permissions: list[str]
+    created_at: str | None = None
+    status: Literal['active','revoked']
+
+
+class KeyList(BaseModel):
+    items: list[KeyInfo]
+    total: int
+
+
 class Stage(Input):
     stage: Literal['SYNC','COLLECT','PROCESS','EMBED','INDEX','REBUILD_INDEX']
     force: bool = False
@@ -520,6 +534,15 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         key_id,key=auth.create_key(payload.name,payload.project_uids,payload.permissions,actor=actor,trace_id=request.state.trace_id)
         return KeyCreated(key_id=key_id,key=key)
 
+    @app.get('/api/v1/api-keys',response_model=KeyList,operation_id='listApiKeys',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def list_keys(request:Request,name:str|None=None,project_uid:str|None=None,status:Literal['active','revoked']|None=None,limit:int=50,offset:int=0):
+        p=require(request,'system_admin',session_only=True)
+        if not 1<=limit<=200 or offset<0 or (name is not None and len(name)>128):
+            raise ApiFailure(422,'INVALID_REQUEST')
+        items,total=auth.list_keys(name=name or None,project_uid=project_uid or None,status=status,limit=limit,offset=offset)
+        auth.audit(action='key_listed',outcome='ok',actor_ref=digest('admin:'+p['username']),trace_id=request.state.trace_id)
+        return KeyList(items=items,total=total)
+
     @app.delete('/api/v1/api-keys/{key_id}',status_code=204,operation_id='revokeApiKey',openapi_extra={'x-required-scope':'system_admin'})
     def revoke(key_id:str,request:Request):
         p=require(request,'system_admin')
@@ -529,12 +552,18 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
             if not row or not set(json.loads(row['project_uids']))<=set(p['project_uids']) or not set(json.loads(row['permissions']))<=set(p['permissions']):
                 raise ApiFailure(404,'NOT_FOUND')
         actor='admin:'+p['username'] if p['admin_session'] else 'api_key:'+p['key_id']
-        auth.revoke_key(key_id,actor=actor,trace_id=request.state.trace_id)
+        if auth.revoke_key(key_id,actor=actor,trace_id=request.state.trace_id)=='missing':
+            raise ApiFailure(404,'NOT_FOUND')
         return Response(status_code=204)
 
-    @app.get('/api/v1/projects',response_model=list[ProjectInfo],operation_id='listProjects',openapi_extra={'x-required-scope':'project_read'})
+    @app.get('/api/v1/projects',response_model=list[ProjectInfo],operation_id='listProjects',openapi_extra={'x-required-scope':'project_read','x-alternate-scope':'search'})
     def projects(request:Request,limit:int=100,offset:int=0):
-        p=require(request,'project_read')
+        try:
+            p=require(request,'project_read')
+        except ApiFailure as failure:
+            if failure.status!=403:
+                raise
+            p=require(request,'search')
         if not 1<=limit<=1000 or offset<0:
             raise ApiFailure(422,'INVALID_REQUEST')
         with db.connect() as c:

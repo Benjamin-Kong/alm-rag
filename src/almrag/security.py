@@ -12,7 +12,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 PERMISSIONS = {'search', 'project_read', 'project_manage', 'system_admin'}
 ERRORS = {'PUBLISH_RETRY_PENDING','MAINTENANCE_RETRY_PENDING','CLEANUP_RETRY_PENDING', 'INVALID_AUTH', 'FORBIDDEN', 'INVALID_REQUEST', 'NOT_FOUND', 'STAGE_UNAVAILABLE', 'DATABASE_UNAVAILABLE', 'INTERNAL_ERROR', 'LEASE_LOST'}
-ACTIONS = {'docs_publish','artifact_export','artifact_import','backup_create','backup_restore','operations_maintenance','index_cleanup', 'item_replay', 'failed_items_replay', 'job_resume', 'job_pause', 'login', 'logout', 'key_created', 'key_revoked', 'bootstrap', 'job_claim', 'job_blocked', 'request', 'worker_start', 'worker_stop', 'alm_instance_update', 'alm_instance_delete'}
+ACTIONS = {'docs_publish','artifact_export','artifact_import','backup_create','backup_restore','operations_maintenance','index_cleanup', 'item_replay', 'failed_items_replay', 'job_resume', 'job_pause', 'login', 'logout', 'key_created', 'key_revoked', 'key_listed', 'bootstrap', 'job_claim', 'job_blocked', 'request', 'worker_start', 'worker_stop', 'alm_instance_update', 'alm_instance_delete'}
 
 
 def digest(value: str) -> str:
@@ -52,6 +52,8 @@ class Security:
                 'CREATE TABLE IF NOT EXISTS security_audit(audit_id INTEGER PRIMARY KEY AUTOINCREMENT, event TEXT NOT NULL)',
             ]:
                 c.execute(sql)
+            if 'created_at' not in {r['name'] for r in c.execute('PRAGMA table_info(api_keys)')}:
+                c.execute('ALTER TABLE api_keys ADD COLUMN created_at TEXT')
 
     def audit(self, **values):
         with self.db.transaction() as c:
@@ -105,8 +107,8 @@ class Security:
             raise ValueError('invalid_key_scope')
         key_id, raw = str(uuid4()), secrets.token_urlsafe(32)
         with self.db.transaction() as c:
-            c.execute('INSERT INTO api_keys(key_id,name,key_hash,project_uids,permissions) VALUES(?,?,?,?,?)',
-                      (key_id, name, digest(raw), json.dumps(sorted(set(project_uids))), json.dumps(sorted(set(permissions)))))
+            c.execute('INSERT INTO api_keys(key_id,name,key_hash,project_uids,permissions,created_at) VALUES(?,?,?,?,?,?)',
+                      (key_id, name, digest(raw), json.dumps(sorted(set(project_uids))), json.dumps(sorted(set(permissions))), time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())))
             self._audit(c,action='key_created',outcome='ok',actor_ref=digest(actor),target_uid=key_id,trace_id=trace_id)
         return key_id, raw
 
@@ -118,9 +120,45 @@ class Security:
         return {'key_id': row['key_id'], 'project_uids': json.loads(row['project_uids']), 'permissions': json.loads(row['permissions'])}
 
     def revoke_key(self, key_id, actor,trace_id=None):
+        """Logically revokes a key; returns 'revoked', 'already_revoked' or 'missing'."""
         with self.db.transaction() as c:
+            row = c.execute('SELECT revoked FROM api_keys WHERE key_id=?', (key_id,)).fetchone()
+            if not row:
+                return 'missing'
+            if row['revoked']:
+                return 'already_revoked'
             c.execute('UPDATE api_keys SET revoked=1 WHERE key_id=?', (key_id,))
             self._audit(c,action='key_revoked',outcome='ok',actor_ref=digest(actor),target_uid=key_id,trace_id=trace_id)
+        return 'revoked'
+
+    @staticmethod
+    def _key_metadata(row):
+        return {'key_id': row['key_id'], 'name': row['name'], 'project_uids': json.loads(row['project_uids']),
+                'permissions': json.loads(row['permissions']), 'created_at': row['created_at'],
+                'status': 'revoked' if row['revoked'] else 'active'}
+
+    def get_key_metadata(self, key_id):
+        with self.db.connect() as c:
+            row = c.execute('SELECT key_id,name,project_uids,permissions,created_at,revoked FROM api_keys WHERE key_id=?', (key_id,)).fetchone()
+        return self._key_metadata(row) if row else None
+
+    def list_keys(self, name=None, project_uid=None, status=None, limit=50, offset=0):
+        where, args = [], []
+        if name:
+            where.append("name LIKE ? ESCAPE '\\'")
+            args.append('%' + name.replace('\\', '\\\\').replace('%', '\\%').replace('_', '\\_') + '%')
+        if project_uid:
+            where.append('EXISTS(SELECT 1 FROM json_each(api_keys.project_uids) WHERE value=?)')
+            args.append(project_uid)
+        if status:
+            where.append('revoked=?')
+            args.append(1 if status == 'revoked' else 0)
+        clause = ' WHERE ' + ' AND '.join(where) if where else ''
+        with self.db.connect() as c:
+            total = c.execute('SELECT COUNT(*) FROM api_keys' + clause, args).fetchone()[0]
+            rows = c.execute('SELECT key_id,name,project_uids,permissions,created_at,revoked FROM api_keys' + clause +
+                             ' ORDER BY created_at IS NULL, created_at DESC, rowid DESC LIMIT ? OFFSET ?', (*args, limit, offset)).fetchall()
+        return [self._key_metadata(r) for r in rows], total
 
 
 class SecretVault:
