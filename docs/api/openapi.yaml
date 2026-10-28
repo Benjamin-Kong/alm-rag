@@ -3509,6 +3509,123 @@ paths:
       - ApiKeyAuth: []
       - AdminSession: []
       x-implementation-status: M4_IMPLEMENTED
+  /projects/{project_uid}/scopes:
+    get:
+      summary: Project Scopes
+      operationId: listProjectScopes
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectScope'
+                title: Response Listprojectscopes
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
+    post:
+      summary: Add Project Scopes
+      operationId: addProjectScopes
+      parameters:
+      - name: project_uid
+        in: path
+        required: true
+        schema:
+          type: string
+          title: Project Uid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddScopes'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectScope'
+                title: Response Addprojectscopes
+        '422':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '503':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: Sanitized error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      x-required-scope: system_admin
+      x-session-only: true
+      security:
+      - AdminSession: []
+      x-implementation-status: M2_IMPLEMENTED
 components:
   securitySchemes:
     ApiKeyAuth:
@@ -5628,6 +5745,52 @@ components:
       - items
       - total
       title: KeyList
+    AddScopes:
+      properties:
+        source_scope_ids:
+          items:
+            type: string
+          type: array
+          maxItems: 10000
+          minItems: 1
+          title: Source Scope Ids
+      additionalProperties: false
+      type: object
+      required:
+      - source_scope_ids
+      title: AddScopes
+    ProjectScope:
+      properties:
+        id:
+          type: string
+          title: Id
+        name:
+          type: string
+          title: Name
+        kind:
+          type: string
+          enum:
+          - TRACKER
+          - WORK_ITEM_TYPE
+          title: Kind
+        selected:
+          type: boolean
+          title: Selected
+        item_count:
+          type: integer
+          title: Item Count
+        last_synced_at:
+          title: Last Synced At
+          nullable: true
+          type: number
+      type: object
+      required:
+      - id
+      - name
+      - kind
+      - selected
+      - item_count
+      title: ProjectScope
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

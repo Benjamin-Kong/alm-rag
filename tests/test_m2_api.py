@@ -20,9 +20,10 @@ def env(tmp_path):
         calls.append(request)
         path=request.url.path
         if path=='/v3/projects':return httpx.Response(200,json=[{'id':1,'name':'Project'}])
-        if path=='/v3/projects/1/trackers':return httpx.Response(200,json=[{'id':31,'name':'Requirements'}])
-        if path=='/v3/trackers/31/fields':return httpx.Response(200,json=[{'id':3,'name':'Name'},{'id':80,'name':'Description'}])
+        if path=='/v3/projects/1/trackers':return httpx.Response(200,json=[{'id':31,'name':'Requirements'},{'id':32,'name':'Bugs'}])
+        if path in {'/v3/trackers/31/fields','/v3/trackers/32/fields'}:return httpx.Response(200,json=[{'id':3,'name':'Name'},{'id':80,'name':'Description'}])
         if path=='/v3/trackers/31/items':return httpx.Response(200,json=[{'id':100,'version':1}])
+        if path=='/v3/trackers/32/items':return httpx.Response(200,json=[])
         if path=='/v3/items/100':return httpx.Response(200,json={'id':100,'tracker':{'id':31},'version':1,'name':'Synthetic','description':'Full original','descriptionFormat':'PlainText'})
         if path=='/v3/items/100/relations':return httpx.Response(200,json={})
         if path=='/v3/items/100/attachments':return httpx.Response(200,json=[])
@@ -185,3 +186,40 @@ def test_instance_profile_list_update_delete(env):
     assert client.put(f'/api/v1/alm-instances/{other}',headers=headers,json=PROFILE).status_code==409
     assert client.delete(f'/api/v1/alm-instances/{other}',headers=headers).status_code==204
     assert [i['instance_uid'] for i in client.get('/api/v1/alm-instances',headers=headers).json()]==[uid]
+
+
+def selected_project(env,uid):
+    _,client,headers,_,_=env
+    r=client.post('/api/v1/projects',headers=headers,json={'alm_instance_uid':uid,'source_project_id':'1','name':'Project','scope_kind':'TRACKER','selection_mode':'SELECTED','source_scope_ids':['31']})
+    assert r.status_code==201,r.text
+    return r.json()['project_uid']
+
+def test_add_scopes_marks_synced_and_requires_admin_session(env):
+    app,c,h,db,calls=env;uid=register(env);p=selected_project(env,uid)
+    pre=c.post(f'/api/v1/projects/{p}/preflight',headers=h).json()
+    c.post(f'/api/v1/projects/{p}/jobs',headers=h,json={'stage':'COLLECT','config_revision':pre['config_revision']})
+    assert app.state.collection.run(Queue(db).claim('test',300))=='SUCCEEDED'
+    rows={x['id']:x for x in c.get(f'/api/v1/projects/{p}/scopes').json()}
+    assert rows['31']['selected'] and rows['31']['item_count']==1 and rows['31']['last_synced_at'] is not None
+    assert not rows['32']['selected'] and rows['32']['item_count']==0 and rows['32']['last_synced_at'] is None
+    r=c.post(f'/api/v1/projects/{p}/scopes',headers=h,json={'source_scope_ids':['32']})
+    assert r.status_code==200,r.text
+    rows={x['id']:x for x in r.json()}
+    assert rows['31']['selected'] and rows['32']['selected']
+    with db.connect() as sql:
+        cfg=sql.execute('SELECT scope_ids,config_revision FROM project_selections').fetchone()
+        assert json.loads(cfg[0])==['31','32'] and cfg[1]==2
+        assert 'scope_added' in ' '.join(x[0] for x in sql.execute('SELECT event FROM security_audit'))
+    assert c.post(f'/api/v1/projects/{p}/scopes',headers=h,json={'source_scope_ids':['999']}).status_code==422
+    assert c.post(f'/api/v1/projects/{p}/scopes',headers=h,json={'source_scope_ids':[]}).status_code==422
+    _,manager=app.state.security.create_key('manager',[p],['project_manage','project_read','system_admin'],actor='admin')
+    c.cookies.clear();before=len(calls)
+    for method in ['GET','POST']:
+        r=c.request(method,f'/api/v1/projects/{p}/scopes',headers={'X-API-Key':manager},json={'source_scope_ids':['32']} if method=='POST' else None)
+        assert r.status_code==403
+    assert len(calls)==before
+
+def test_add_scopes_rejected_when_all_selected(env):
+    _,c,h,_,_=env;uid=register(env);p=project(env,uid)
+    r=c.post(f'/api/v1/projects/{p}/scopes',headers=h,json={'source_scope_ids':['32']})
+    assert r.status_code==409 and r.json()['code']=='ALL_SCOPES_SELECTED'

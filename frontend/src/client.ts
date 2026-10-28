@@ -74,6 +74,8 @@ export class ApiClient {
   health() { return this.request<Schema['Health']>('GET', '/healthz'); }
   readiness() { return this.request<Schema['Health']>('GET', '/readyz'); }
   projects() { return this.request<Schema['ProjectInfo'][]>('GET', '/projects'); }
+  projectScopes(project: string) { return this.request<Schema['ProjectScope'][]>('GET', '/projects/' + encodeURIComponent(project) + '/scopes'); }
+  addProjectScopes(project: string, ids: string[]) { return this.request<Schema['ProjectScope'][]>('POST', '/projects/' + encodeURIComponent(project) + '/scopes', {source_scope_ids: ids}); }
   jobs() { return this.request<Schema['JobInfo'][]>('GET', '/jobs'); }
   job(id: string) { return this.request<Schema['JobInfo']>('GET', '/jobs/' + encodeURIComponent(id)); }
   jobEvents(id: string) { return this.request<Schema['JobEvent'][]>('GET', '/jobs/' + encodeURIComponent(id) + '/events'); }

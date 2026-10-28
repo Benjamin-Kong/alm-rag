@@ -12,7 +12,7 @@ from cryptography.fernet import Fernet, InvalidToken
 
 PERMISSIONS = {'search', 'project_read', 'project_manage', 'system_admin'}
 ERRORS = {'PUBLISH_RETRY_PENDING','MAINTENANCE_RETRY_PENDING','CLEANUP_RETRY_PENDING', 'INVALID_AUTH', 'FORBIDDEN', 'INVALID_REQUEST', 'NOT_FOUND', 'STAGE_UNAVAILABLE', 'DATABASE_UNAVAILABLE', 'INTERNAL_ERROR', 'LEASE_LOST'}
-ACTIONS = {'docs_publish','artifact_export','artifact_import','backup_create','backup_restore','operations_maintenance','index_cleanup', 'item_replay', 'failed_items_replay', 'job_resume', 'job_pause', 'login', 'logout', 'key_created', 'key_revoked', 'key_listed', 'bootstrap', 'job_claim', 'job_blocked', 'request', 'worker_start', 'worker_stop', 'alm_instance_update', 'alm_instance_delete'}
+ACTIONS = {'docs_publish','artifact_export','artifact_import','backup_create','backup_restore','operations_maintenance','index_cleanup', 'item_replay', 'failed_items_replay', 'job_resume', 'job_pause', 'login', 'logout', 'key_created', 'key_revoked', 'key_listed', 'bootstrap', 'job_claim', 'job_blocked', 'request', 'worker_start', 'worker_stop', 'alm_instance_update', 'alm_instance_delete', 'scope_added'}
 
 
 def digest(value: str) -> str:

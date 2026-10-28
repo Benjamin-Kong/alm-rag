@@ -82,6 +82,33 @@ class CollectionService:
             c.execute('INSERT INTO collection_configs VALUES(?,?) ON CONFLICT(project_uid) DO UPDATE SET embedding_fields=excluded.embedding_fields', (project_uid, _json(embedding_fields)))
         return project_uid
 
+    def scope_status(self, project_uid):
+        config = self._config(project_uid)
+        catalog = self.connector_factory(config['instance_uid']).list_scopes(config['source_project_id'])
+        with self.db.connect() as c:
+            stats = {r['scope_id']: r for r in c.execute(
+                "SELECT m.scope_id,count(*) AS n,max(j.updated_at) AS ts FROM collection_memberships m JOIN jobs j ON j.job_id=m.last_job_id "
+                "WHERE m.project_uid=? AND m.state='IN_SCOPE' GROUP BY m.scope_id", (project_uid,))}
+        chosen = {str(x['id']) for x in catalog} if config['selection_mode'] == 'ALL' else set(config['scope_ids'])
+        return [{'id': str(x['id']), 'name': x['name'], 'kind': x.get('kind', config['scope_kind']),
+                 'selected': str(x['id']) in chosen,
+                 'item_count': stats[str(x['id'])]['n'] if str(x['id']) in stats else 0,
+                 'last_synced_at': stats[str(x['id'])]['ts'] if str(x['id']) in stats else None}
+                for x in catalog]
+
+    def add_scopes(self, project_uid, scope_ids):
+        config = self._config(project_uid)
+        if config['selection_mode'] == 'ALL':
+            raise CollectionError('ALL_SCOPES_SELECTED')
+        added = sorted(set(str(x) for x in scope_ids))
+        if not added:
+            raise CollectionError('EMPTY_SCOPE')
+        with self.db.connect() as c:
+            row = c.execute('SELECT name FROM projects WHERE project_uid=?', (project_uid,)).fetchone()
+        self.configure_project(config['instance_uid'], config['source_project_id'], row['name'], 'SELECTED',
+                               config['scope_kind'], sorted(set(config['scope_ids']) | set(added)), config['embedding_fields'])
+        return added
+
     def _config(self, project_uid, c=None):
         if c is None:
             with self.db.connect() as connection:

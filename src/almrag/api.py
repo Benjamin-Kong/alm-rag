@@ -150,6 +150,16 @@ class SourceScope(BaseModel):
     kind: Literal['TRACKER','WORK_ITEM_TYPE']
 
 
+class ProjectScope(SourceScope):
+    selected: bool
+    item_count: int
+    last_synced_at: float | None = None
+
+
+class AddScopes(Input):
+    source_scope_ids: list[str] = Field(min_length=1,max_length=10000)
+
+
 class PreflightInfo(BaseModel):
     status: Literal['READY','BLOCKED']
     collect_ready: bool
@@ -309,6 +319,7 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         if code in {'INSTANCE_NOT_FOUND','PROJECT_NOT_CONFIGURED'}:status=404
         elif code in {'STALE_PREFLIGHT','SOURCE_TYPE_IMMUTABLE','INSTANCE_EXISTS','INSTANCE_IN_USE'}:status=409
         elif code in {'INVALID_SCOPE','INVALID_SCOPE_KIND','INVALID_SCOPE_SELECTION','EMPTY_SCOPE','INVALID_FIELDS','PROJECT_NOT_DISCOVERED','SCOPE_NOT_DISCOVERED'}:status=422
+        elif code=='ALL_SCOPES_SELECTED':status=409
         else:status=503
         return error(request,status,code)
 
@@ -433,6 +444,20 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
         with db.connect() as c:row=c.execute('SELECT * FROM projects WHERE project_uid=?',(project_uid,)).fetchone()
         collection.configure_project(row['instance_uid'],row['source_project_id'],row['name'],payload.selection_mode,payload.scope_kind,payload.source_scope_ids,payload.embedding_fields)
         return ProjectInfo(project_uid=project_uid,alm_instance_uid=row['instance_uid'],source_project_id=row['source_project_id'],name=row['name'])
+
+    @app.get('/api/v1/projects/{project_uid}/scopes',response_model=list[ProjectScope],operation_id='listProjectScopes',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def project_scopes(project_uid:str,request:Request):
+        require(request,'system_admin',session_only=True)
+        project_exists(project_uid)
+        return collection.scope_status(project_uid)
+
+    @app.post('/api/v1/projects/{project_uid}/scopes',response_model=list[ProjectScope],operation_id='addProjectScopes',openapi_extra={'x-required-scope':'system_admin','x-session-only':True})
+    def add_project_scopes(project_uid:str,payload:AddScopes,request:Request):
+        principal=require(request,'system_admin',session_only=True)
+        project_exists(project_uid)
+        added=collection.add_scopes(project_uid,payload.source_scope_ids)
+        auth.audit(action='scope_added',outcome='ok',actor_ref=digest('admin:'+principal['username']),project_uid=project_uid,trace_id=request.state.trace_id)
+        return collection.scope_status(project_uid)
 
     @app.post('/api/v1/projects/{project_uid}/preflight',response_model=PreflightInfo,operation_id='preflightProject',openapi_extra={'x-required-scope':'project_manage'})
     def preflight_project(project_uid:str,request:Request):

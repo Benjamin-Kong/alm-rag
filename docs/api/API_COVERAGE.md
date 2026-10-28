@@ -16,6 +16,8 @@ M1 implements login/logout, key creation/revocation, projects, jobs/job detail/e
 | GET | `/alm-instances/{instance_uid}/projects` | `discoverAlmProjects` | `system_admin` |
 | GET | `/alm-instances/{instance_uid}/projects/{source_project_id}/scopes` | `discoverCollectionScopes` | `system_admin` |
 | PUT | `/projects/{project_uid}/collection-config` | `configureCollectionScope` | `project_manage` |
+| GET | `/projects/{project_uid}/scopes` | `listProjectScopes` | `system_admin` (session only) |
+| POST | `/projects/{project_uid}/scopes` | `addProjectScopes` | `system_admin` (session only) |
 | POST | `/projects/{project_uid}/preflight` | `preflightProject` | `project_manage` |
 | PUT | `/alm-instances/{instance_uid}/rate-policy` | `setServerRateLimit` | `system_admin` |
 | GET | `/jobs/{job_id}/failed-items` | `listFailedItems` | `project_read` |

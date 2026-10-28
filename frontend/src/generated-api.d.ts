@@ -484,6 +484,24 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{project_uid}/scopes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Project Scopes */
+        get: operations["listProjectScopes"];
+        put?: never;
+        /** Add Project Scopes */
+        post: operations["addProjectScopes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{project_uid}/preflight": {
         parameters: {
             query?: never;
@@ -915,6 +933,11 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AddScopes */
+        AddScopes: {
+            /** Source Scope Ids */
+            source_scope_ids: string[];
+        };
         /** ArtifactInfo */
         ArtifactInfo: {
             /** Artifact Ref */
@@ -1679,6 +1702,24 @@ export interface components {
             source_project_id: string;
             /** Name */
             name: string;
+        };
+        /** ProjectScope */
+        ProjectScope: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "TRACKER" | "WORK_ITEM_TYPE";
+            /** Selected */
+            selected: boolean;
+            /** Item Count */
+            item_count: number;
+            /** Last Synced At */
+            last_synced_at?: number | null;
         };
         /** QualityReport */
         QualityReport: {
@@ -4127,6 +4168,144 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ProjectInfo"];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    listProjectScopes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectScope"][];
+                };
+            };
+            /** @description Sanitized error */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+            /** @description Sanitized error */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiError"];
+                };
+            };
+        };
+    };
+    addProjectScopes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                project_uid: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddScopes"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProjectScope"][];
                 };
             };
             /** @description Sanitized error */
