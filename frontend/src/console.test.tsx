@@ -53,3 +53,9 @@ test('search-only keys land on Search and other menus are disabled',async()=>{
  for(const name of ['프로젝트','서버 등록','작업 · 실패 목록','백업 · 패키지','감사 로그','검색 평가'])expect((screen.getByRole('button',{name}) as HTMLButtonElement).disabled).toBe(true);
  expect((screen.getByRole('button',{name:'검색 · Explorer'}) as HTMLButtonElement).disabled).toBe(false);
 });
+test('job timeline shows start and per-stage end times on multiple lines',async()=>{
+ const job={job_id:'j1',project_uid:'p',stage:'SYNC',state:'FAILED',current_stage:'EMBED',created_at:1,started_at:100,finished_at:400,stage_ends:[{stage:'COLLECT',ended_at:200},{stage:'EMBED',ended_at:400}]};
+ vi.stubGlobal('fetch',vi.fn(async(path:string)=>({ok:true,status:200,json:async()=>path.endsWith('healthz')?{status:'ok'}:path.endsWith('/auth/me')?{admin_session:false,permissions:['project_read'],project_uids:['p'],username:null}:path.endsWith('/projects')?[{project_uid:'p',alm_instance_uid:'s',source_project_id:'sp',name:'테스트 프로젝트'}]:path.includes('/jobs')?[job]:[]})));
+ render(<App/>);await connect();fireEvent.click(screen.getByRole('button',{name:'작업 · 실패 목록'}));
+ await screen.findByText(/^시작:/);expect(screen.getByText(/^수집 종료:/)).toBeTruthy();expect(screen.getByText(/^임베딩 실패:/)).toBeTruthy();expect(screen.getByRole('columnheader',{name:'타임라인'})).toBeTruthy();
+});

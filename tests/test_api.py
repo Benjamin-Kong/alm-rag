@@ -17,6 +17,7 @@ class ApiDB:
             c.execute('CREATE TABLE projects(project_uid TEXT, instance_uid TEXT, source_project_id TEXT, name TEXT)')
             c.execute('CREATE TABLE jobs(job_id TEXT, project_uid TEXT, stage TEXT, state TEXT, checkpoint TEXT)')
             c.execute('CREATE TABLE job_events(job_id TEXT, occurred_at REAL, state TEXT)')
+            c.execute('CREATE TABLE job_stage_times(job_id TEXT, stage TEXT, ended_at REAL)')
             c.executemany('INSERT INTO projects VALUES(?,?,?,?)', [('p1','i1','1','one'), ('p2','i2','2','two')])
             c.execute("INSERT INTO jobs VALUES('j2','p2','SYNC','QUEUED','{}')")
 

@@ -79,6 +79,11 @@ class ProjectInfo(BaseModel):
     name: str
 
 
+class StageEnd(BaseModel):
+    stage: Literal['COLLECT','PROCESS','EMBED','INDEX']
+    ended_at: float
+
+
 class JobInfo(BaseModel):
     job_id: str
     project_uid: str
@@ -92,14 +97,36 @@ class JobInfo(BaseModel):
     retry_count:int=0
     created_at:float|None=None
     started_at:float|None=None
+    finished_at:float|None=None
+    stage_ends:list[StageEnd]=[]
     current_stage:Literal['COLLECT','PROCESS','EMBED','INDEX','DONE']|None=None
 
 
-def _job_info(row):
+JOB_TIMES=("(SELECT MIN(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state='RUNNING') AS started_at,"
+           "CASE WHEN jobs.state IN ('SUCCEEDED','COMPLETED_WITH_ERRORS','FAILED','CANCELLED') THEN "
+           "(SELECT MAX(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state=jobs.state) END AS finished_at")
+
+
+STAGE_ORDER=('COLLECT','PROCESS','EMBED','INDEX')
+
+
+def _stage_ends(c,rows):
+    marks=','.join('?' for _ in rows)
+    recorded={}
+    for r in c.execute(f'SELECT job_id,stage,ended_at FROM job_stage_times WHERE job_id IN ({marks})',[r['job_id'] for r in rows]) if rows else []:
+        recorded.setdefault(r['job_id'],{})[r['stage']]=r['ended_at']
+    return recorded
+
+
+def _job_info(row,recorded=None):
     data=dict(row)
     try:stage=json.loads(data.get('checkpoint') or '{}').get('stage')
     except (TypeError,ValueError,AttributeError):stage=None
     data['current_stage']=stage if stage in {'COLLECT','PROCESS','EMBED','INDEX','DONE'} else None
+    ends=dict((recorded or {}).get(data['job_id'],{}))
+    if data.get('finished_at') is not None and data['current_stage'] in STAGE_ORDER:
+        ends.setdefault(data['current_stage'],data['finished_at'])
+    data['stage_ends']=[{'stage':k,'ended_at':ends[k]} for k in STAGE_ORDER if k in ends]
     return JobInfo(**data)
 
 
@@ -609,21 +636,23 @@ def create_app(settings=None, db=None, *, connections=None, collection=None, pro
             raise ApiFailure(422,'INVALID_REQUEST')
         with db.connect() as c:
             if p['admin_session']:
-                rows=c.execute("SELECT jobs.*,(SELECT MIN(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state='RUNNING') AS started_at FROM jobs ORDER BY job_id LIMIT ? OFFSET ?",(limit,offset)).fetchall()
+                rows=c.execute(f"SELECT jobs.*,{JOB_TIMES} FROM jobs ORDER BY job_id LIMIT ? OFFSET ?",(limit,offset)).fetchall()
             else:
                 marks=','.join('?' for _ in p['project_uids'])
-                rows=c.execute(f"SELECT jobs.*,(SELECT MIN(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state='RUNNING') AS started_at FROM jobs WHERE project_uid IN ({marks}) ORDER BY job_id LIMIT ? OFFSET ?",(*p['project_uids'],limit,offset)).fetchall()
-        return [_job_info(r) for r in rows]
+                rows=c.execute(f"SELECT jobs.*,{JOB_TIMES} FROM jobs WHERE project_uid IN ({marks}) ORDER BY job_id LIMIT ? OFFSET ?",(*p['project_uids'],limit,offset)).fetchall()
+            recorded=_stage_ends(c,rows)
+        return [_job_info(r,recorded) for r in rows]
 
     @app.get('/api/v1/jobs/{job_id}',response_model=JobInfo,operation_id='getJob',openapi_extra={'x-required-scope':'project_read'})
     def job(job_id:str,request:Request):
         require(request,'project_read')
         with db.connect() as c:
-            row=c.execute("SELECT jobs.*,(SELECT MIN(e.occurred_at) FROM job_events e WHERE e.job_id=jobs.job_id AND e.state='RUNNING') AS started_at FROM jobs WHERE job_id=?",(job_id,)).fetchone()
+            row=c.execute(f"SELECT jobs.*,{JOB_TIMES} FROM jobs WHERE job_id=?",(job_id,)).fetchone()
+            recorded=_stage_ends(c,[row]) if row else None
         if not row:
             raise ApiFailure(404,'NOT_FOUND')
         require(request,'project_read',row['project_uid'])
-        return _job_info(row)
+        return _job_info(row,recorded)
 
     @app.post('/api/v1/projects/{project_uid}/jobs',status_code=202,response_model=JobInfo,operation_id='startProjectStageJob',openapi_extra={'x-required-scope':'project_manage'})
     def stage(project_uid:str,payload:Stage,request:Request):

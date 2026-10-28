@@ -4208,6 +4208,16 @@ components:
           title: Started At
           nullable: true
           type: number
+        finished_at:
+          title: Finished At
+          nullable: true
+          type: number
+        stage_ends:
+          items:
+            $ref: '#/components/schemas/StageEnd'
+          type: array
+          title: Stage Ends
+          default: []
         current_stage:
           title: Current Stage
           nullable: true
@@ -5791,6 +5801,24 @@ components:
       - selected
       - item_count
       title: ProjectScope
+    StageEnd:
+      properties:
+        stage:
+          type: string
+          enum:
+          - COLLECT
+          - PROCESS
+          - EMBED
+          - INDEX
+          title: Stage
+        ended_at:
+          type: number
+          title: Ended At
+      type: object
+      required:
+      - stage
+      - ended_at
+      title: StageEnd
 tags:
 - name: DRAFT
   description: Contract design only; no endpoints are implemented.

@@ -1439,6 +1439,13 @@ export interface components {
             created_at?: number | null;
             /** Started At */
             started_at?: number | null;
+            /** Finished At */
+            finished_at?: number | null;
+            /**
+             * Stage Ends
+             * @default []
+             */
+            stage_ends?: components["schemas"]["StageEnd"][];
             /** Current Stage */
             current_stage?: ("COLLECT" | "PROCESS" | "EMBED" | "INDEX" | "DONE") | null;
         };
@@ -1935,6 +1942,16 @@ export interface components {
             force?: boolean;
             /** Config Revision */
             config_revision?: string | null;
+        };
+        /** StageEnd */
+        StageEnd: {
+            /**
+             * Stage
+             * @enum {string}
+             */
+            stage: "COLLECT" | "PROCESS" | "EMBED" | "INDEX";
+            /** Ended At */
+            ended_at: number;
         };
         /** Summary */
         Summary: {

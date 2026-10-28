@@ -107,3 +107,22 @@ def test_audit_records_key_id_and_name_snapshot_without_secrets(env):
     assert 'private-query-text' not in json.dumps(events) and created['key'] not in json.dumps(events)
     created_event = next(e for e in events if e['action'] == 'key_created')
     assert 'actor_ref' in created_event and 'key_id' not in created_event
+
+
+def test_job_list_reports_stage_end_times_via_checkpoint_trigger(env):
+    app, c, h, db, _ = env
+    p = project(env, register(env))
+    with db.transaction() as sql:
+        sql.execute('INSERT INTO jobs(job_id,project_uid,stage,state,created_at,updated_at) VALUES(?,?,?,?,?,?)', ('j-sync', p, 'SYNC', 'RUNNING', 10.0, 10.0))
+        sql.executemany('INSERT INTO job_events(job_id,occurred_at,state) VALUES(?,?,?)', [('j-sync', 10.0, 'QUEUED'), ('j-sync', 11.0, 'RUNNING')])
+        for stage, at in [('COLLECT', 12.0), ('PROCESS', 13.0), ('EMBED', 14.0), ('INDEX', 15.0)]:
+            sql.execute('UPDATE jobs SET checkpoint=?,updated_at=? WHERE job_id=?', (json.dumps({'stage': stage}), at, 'j-sync'))
+        sql.execute("UPDATE jobs SET state='FAILED',updated_at=16 WHERE job_id='j-sync'")
+        sql.execute("INSERT INTO job_events(job_id,occurred_at,state) VALUES('j-sync',16.0,'FAILED')")
+        sql.execute("INSERT INTO jobs(job_id,project_uid,stage,state,created_at,updated_at) VALUES('j-queued',?,'COLLECT','QUEUED',20.0,20.0)", (p,))
+    jobs = {j['job_id']: j for j in c.get('/api/v1/jobs', headers=h).json()}
+    done = jobs['j-sync']
+    assert done['started_at'] == 11.0 and done['finished_at'] == 16.0
+    assert done['stage_ends'] == [{'stage': 'COLLECT', 'ended_at': 13.0}, {'stage': 'PROCESS', 'ended_at': 14.0}, {'stage': 'EMBED', 'ended_at': 15.0}, {'stage': 'INDEX', 'ended_at': 16.0}]
+    assert jobs['j-queued']['finished_at'] is None and jobs['j-queued']['stage_ends'] == []
+    assert c.get('/api/v1/jobs/j-sync', headers=h).json()['stage_ends'] == done['stage_ends']
