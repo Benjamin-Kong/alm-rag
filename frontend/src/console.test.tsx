@@ -47,3 +47,9 @@ test('a forbidden response shows safe text without disclosing the backend body',
  await waitFor(()=>expect(screen.getByRole('alert').textContent).toContain('권한'));
  expect(document.body.textContent).not.toContain('private-server-secret');
 });
+test('search-only keys land on Search and other menus are disabled',async()=>{
+ mockApi(['search']);render(<App/>);await connect();
+ expect(screen.getByLabelText('검색어')).toBeTruthy();
+ for(const name of ['프로젝트','서버 등록','작업 · 실패 목록','백업 · 패키지','감사 로그','검색 평가'])expect((screen.getByRole('button',{name}) as HTMLButtonElement).disabled).toBe(true);
+ expect((screen.getByRole('button',{name:'검색 · Explorer'}) as HTMLButtonElement).disabled).toBe(false);
+});
